@@ -1,18 +1,20 @@
 #include "Mutex.hpp"
+#include "Common.hpp"
 
 #include <assert.h>
 #include <time.h>
 
 
-Mutex::Mutex(int type)
+Mutex::Mutex(int kind) : m_mutex(PTHREAD_MUTEX_INITIALIZER)
 {
+  TRACE(this);
   int ret;
-  if ( type == PTHREAD_MUTEX_DEFAULT ) {
+  if ( kind == PTHREAD_MUTEX_DEFAULT ) {
     ret = pthread_mutex_init( &m_mutex, 0 );
   } else {
     pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
+    pthread_mutexattr_init( &attr );
+    pthread_mutexattr_settype( &attr, kind );
     ret = pthread_mutex_init( &m_mutex, &attr );
   }
   assert( ret == 0 );
@@ -21,6 +23,7 @@ Mutex::Mutex(int type)
 
 Mutex::~Mutex()
 {
+  TRACE(this);
   int ret = pthread_mutex_destroy ( &m_mutex );
   assert( ret == 0);
 }
@@ -28,6 +31,7 @@ Mutex::~Mutex()
 
 void Mutex::lock()
 {
+  TRACE(this);
   int ret = pthread_mutex_lock( &m_mutex );
   assert( ret == 0);
 }
@@ -35,6 +39,7 @@ void Mutex::lock()
 
 void Mutex::unlock()
 {
+  TRACE(this);
   int ret = pthread_mutex_unlock ( &m_mutex );
   assert( ret == 0);
 }
@@ -42,6 +47,7 @@ void Mutex::unlock()
 
 bool Mutex::tryLock(int interval)
 {
+  TRACE(this);
   if ( interval == 0 ) {
     int result = pthread_mutex_trylock ( &m_mutex );
     return result == 0;
