@@ -64,3 +64,8 @@ bool Mutex::tryLock(int interval)
   }
 }
 
+
+pthread_mutex_t* Mutex::getPThreadMutex()
+{
+  return &m_mutex;
+}

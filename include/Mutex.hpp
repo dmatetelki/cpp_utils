@@ -14,6 +14,7 @@ public:
   void lock();
   void unlock();
   bool tryLock(int interval = 0);
+  pthread_mutex_t* getPThreadMutex();
 
 
 private:
