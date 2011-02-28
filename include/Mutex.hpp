@@ -13,7 +13,7 @@ public:
 
   void lock();
   void unlock();
-  bool tryLock(int interval = 0);
+  bool tryLock(const int interval = 0);
   pthread_mutex_t* getPThreadMutex();
 
 

@@ -2,20 +2,22 @@
 #include "Common.hpp"
 
 #include <time.h>
+#include <assert.h>
 
-ConditionVariable::ConditionVariable(Mutex* m)
-  : m_mutex(m)
-  , m_condVar(PTHREAD_COND_INITIALIZER)
+ConditionVariable::ConditionVariable(const Mutex* const mutex)
+  : m_mutex(mutex)
 {
   TRACE(this);
-  pthread_cond_init( &m_condVar, 0 );
+  int ret = pthread_cond_init( &m_condVar, 0 );
+  assert( ret == 0);
 }
 
 
 ConditionVariable::~ConditionVariable()
 {
   TRACE(this);
-  pthread_cond_destroy( &m_condVar );
+  int ret = pthread_cond_destroy( &m_condVar );
+  assert( ret == 0);
 }
 
 
@@ -23,7 +25,9 @@ void ConditionVariable::wait(const int interval)
 {
   TRACE(this);
   if ( interval == 0 ) {
-    pthread_cond_wait( &m_condVar, m_mutex->getPThreadMutex() );
+    int ret = pthread_cond_wait( &m_condVar,
+                                 const_cast<Mutex*>(m_mutex)->getPThreadMutex() );
+    assert( ret == 0);
   } else {
     timespec abs_time;
     clock_gettime ( CLOCK_REALTIME, &abs_time );
@@ -32,18 +36,23 @@ void ConditionVariable::wait(const int interval)
       abs_time.tv_nsec -= 1000000000;
       abs_time.tv_sec += 1;
     }
-    pthread_cond_timedwait( &m_condVar, m_mutex->getPThreadMutex(), &abs_time );
+    int ret = pthread_cond_timedwait( &m_condVar,
+                                      const_cast<Mutex*>(m_mutex)->getPThreadMutex(),
+                                      &abs_time );
+    assert( ret == 0);
   }
 }
 
 void ConditionVariable::signal()
 {
   TRACE(this);
-  pthread_cond_signal( &m_condVar );
+  int ret = pthread_cond_signal( &m_condVar );
+  assert( ret == 0);
 }
 
 void ConditionVariable::broadcast()
 {
   TRACE(this);
-  pthread_cond_broadcast( &m_condVar );
+  int ret = pthread_cond_broadcast( &m_condVar );
+  assert( ret == 0);
 }

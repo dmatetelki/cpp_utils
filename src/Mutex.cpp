@@ -5,7 +5,7 @@
 #include <time.h>
 
 
-Mutex::Mutex(int kind) : m_mutex(PTHREAD_MUTEX_INITIALIZER)
+Mutex::Mutex(int kind)
 {
   TRACE(this);
   int ret;
@@ -45,7 +45,7 @@ void Mutex::unlock()
 }
 
 
-bool Mutex::tryLock(int interval)
+bool Mutex::tryLock(const int interval)
 {
   TRACE(this);
   if ( interval == 0 ) {

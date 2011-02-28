@@ -9,7 +9,7 @@ class ConditionVariable
 
 public:
 
-  ConditionVariable(Mutex* m);
+  ConditionVariable(const Mutex* const mutex);
   ~ConditionVariable();
 
   void wait(const int interval = 0);
@@ -21,7 +21,7 @@ private:
   ConditionVariable(const ConditionVariable&);
   ConditionVariable& operator=(const ConditionVariable&);
 
-  Mutex* m_mutex;
+  const Mutex* const m_mutex;
   pthread_cond_t m_condVar;
 
 };

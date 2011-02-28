@@ -2,15 +2,15 @@
 #include "Common.hpp"
 
 
-ScopedLock::ScopedLock(Mutex* m) : m_mutex(m)
+ScopedLock::ScopedLock( const Mutex* const mutex) : m_mutex(mutex)
 {
   TRACE(this);
-  m_mutex->lock();
+  const_cast<Mutex*>(m_mutex)->lock();
 }
 
 
 ScopedLock::~ScopedLock()
 {
   TRACE(this);
-  m_mutex->unlock();
+  const_cast<Mutex*>(m_mutex)->unlock();
 }
