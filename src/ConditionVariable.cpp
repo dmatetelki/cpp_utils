@@ -4,7 +4,7 @@
 #include <time.h>
 #include <assert.h>
 
-ConditionVariable::ConditionVariable(const Mutex* const mutex)
+ConditionVariable::ConditionVariable(Mutex& mutex)
   : m_mutex(mutex)
 {
   TRACE(this);
@@ -26,7 +26,7 @@ void ConditionVariable::wait(const int interval)
   TRACE(this);
   if ( interval == 0 ) {
     int ret = pthread_cond_wait( &m_condVar,
-                                 const_cast<Mutex*>(m_mutex)->getPThreadMutex() );
+                                 m_mutex.getPThreadMutex() );
     assert( ret == 0);
   } else {
     timespec abs_time;
@@ -37,7 +37,7 @@ void ConditionVariable::wait(const int interval)
       abs_time.tv_sec += 1;
     }
     int ret = pthread_cond_timedwait( &m_condVar,
-                                      const_cast<Mutex*>(m_mutex)->getPThreadMutex(),
+                                      m_mutex.getPThreadMutex(),
                                       &abs_time );
     assert( ret == 0);
   }

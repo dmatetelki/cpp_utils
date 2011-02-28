@@ -21,7 +21,7 @@ class ConcurrentQueue {
     ConcurrentQueue()
       : m_cancelled(false)
       , m_mutex()
-      , m_condition(&m_mutex)
+      , m_condition(m_mutex)
     {
       TRACE(this);
     }
