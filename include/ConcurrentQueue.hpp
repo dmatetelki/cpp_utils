@@ -35,7 +35,7 @@ class ConcurrentQueue {
     void push(const T task)
     {
       TRACE(this);
-      ScopedLock sl(&m_mutex);
+      ScopedLock sl(m_mutex);
       if (m_cancelled) throw CancelledException();
       m_queue.push( task );
       m_condition.signal();
@@ -45,7 +45,7 @@ class ConcurrentQueue {
     bool tryPop(T &popped_value)
     {
       TRACE(this);
-      ScopedLock sl(&m_mutex);
+      ScopedLock sl(m_mutex);
       if (m_cancelled) throw CancelledException();
       if ( m_queue.empty() ) return false;
 
@@ -58,7 +58,7 @@ class ConcurrentQueue {
     T waitAndPop()
     {
       TRACE(this);
-      ScopedLock sl(&m_mutex);
+      ScopedLock sl(m_mutex);
 
       while ( m_queue.empty() and not m_cancelled) {
         m_condition.wait();
@@ -74,7 +74,7 @@ class ConcurrentQueue {
     bool empty() const
     {
       TRACE(this);
-      ScopedLock sl(&m_mutex);
+      ScopedLock sl(m_mutex);
       if (m_cancelled) throw CancelledException();
       return m_queue.empty();
     }
@@ -83,7 +83,7 @@ class ConcurrentQueue {
     void cancel()
     {
       TRACE(this);
-      ScopedLock sl(&m_mutex);
+      ScopedLock sl(m_mutex);
       m_cancelled = true;
       m_condition.broadcast();
     }
