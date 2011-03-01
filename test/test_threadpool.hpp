@@ -5,7 +5,7 @@
 #include "Common.hpp"
 
 
-class MyTestSuite : public CxxTest::TestSuite
+class TestThreadPoolSuite : public CxxTest::TestSuite
 {
 
 public:

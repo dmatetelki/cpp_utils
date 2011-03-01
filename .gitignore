@@ -6,8 +6,10 @@
 *.so
 */cov
 */lcov.info
+*/lcov2.info
 */core
 *.kdev_include_paths
 test/generated_main.cpp
 test/test
 leak.log
+

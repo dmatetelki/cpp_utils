@@ -18,11 +18,14 @@ valgrind --log-file=leak.log --leak-check=full --show-reachable=yes --show-below
 
 echo -e "${pre}Capture coverage info${post}"
 lcov --directory ../build --capture -o lcov.info
-
+# some classes are not used in the lib yet
+lcov --directory ../test --capture -o lcov2.info
+cat lcov2.info >> lcov.info
 
 echo -e "${pre}Filtering coverage tracefile${post}"
 lcov -r lcov.info "g++-v*" -o lcov.info
 lcov -r lcov.info "/usr/include/cxxtest*" -o lcov.info
+lcov -r lcov.info "*cpp_utils/test*" -o lcov.info
 
 echo -e "${pre}Generating HTML${post}"
 rm -rf ./cov
