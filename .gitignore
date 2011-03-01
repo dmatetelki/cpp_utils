@@ -10,4 +10,4 @@
 *.kdev_include_paths
 test/generated_main.cpp
 test/test
-
+leak.log
