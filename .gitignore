@@ -1,0 +1,10 @@
+*CMakeCache*
+*CMakeFiles*
+*Makefile*
+*cmake
+*.a
+*.so
+*/cov
+*/lcov.info
+*/core
+*.kdev_include_paths

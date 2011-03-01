@@ -21,10 +21,9 @@ public:
     static void createInstance()
     {
       TRACE("Simgleton::createInstance()");
-      if ( m_instance ) {
-        delete m_instance;
+      if ( not m_instance ) {
+        m_instance = new T();
       }
-      m_instance = new T();
     }
 
 

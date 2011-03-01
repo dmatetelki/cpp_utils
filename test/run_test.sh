@@ -13,12 +13,12 @@ echo -e "${pre}Run tests${post}"
 $1
 
 echo -e "${pre}Capture coverage info${post}"
-lcov --directory . --capture -o lcov.info
+lcov --directory ../build --capture -o lcov.info
+
 
 echo -e "${pre}Filtering coverage tracefile${post}"
 lcov -r lcov.info "g++-v*" -o lcov.info
 lcov -r lcov.info "/usr/include/cxxtest*" -o lcov.info
-lcov -r lcov.info "$(PWD)/test/*" -o lcov.info
 
 echo -e "${pre}Generating HTML${post}"
 rm -rf ./cov
