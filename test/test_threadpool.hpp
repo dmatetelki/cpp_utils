@@ -15,9 +15,9 @@ class MyTestSuite : public CxxTest::TestSuite
 
 public:
 
-  void testACica()
+  void testBasic()
   {
-    TRACE("Main start");
+    TRACE("testBasic begin");
 
     ThreadPool* tp = new ThreadPool(5);
     tp->startWorkerThreads();
@@ -31,6 +31,6 @@ public:
     tp->join();
     delete tp;
 
-    TRACE("Main end");
+    TRACE("testBasic end");
   }
 };
