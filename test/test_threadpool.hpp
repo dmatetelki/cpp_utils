@@ -1,9 +1,4 @@
 #include <cxxtest/TestSuite.h>
-/*
-
-#include <signal.h>
-#include <stdlib.h>
-#include <string.h>*/
 
 #include "ThreadPool.hpp"
 #include "Task.hpp"

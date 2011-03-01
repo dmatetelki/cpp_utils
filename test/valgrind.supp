@@ -1,0 +1,50 @@
+{
+   Conditional jump blabla
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib64/ld-2.13.so
+}
+
+{
+   Conditional jump blabla
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib64/ld-2.13.so
+}
+
+{
+   Conditional jump blabla
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib64/ld-2.13.so
+}
+
+{
+   Conditional jump blabla
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib64/ld-2.13.so
+}
+
+{
+   pthread create stuff
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.2.5
+   fun:_ZN6Thread5startEv
+   fun:_ZN10ThreadPool18startWorkerThreadsEv
+   fun:main
+}

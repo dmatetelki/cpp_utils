@@ -10,7 +10,8 @@ lcov --directory . -z
 rm -f ./lcov.info
 
 echo -e "${pre}Run tests${post}"
-$1
+valgrind --leak-check=full --show-reachable=yes --show-below-main=no --track-origins=yes --num-callers=30 --malloc-fill=0xaa --free-fill=0xdd --suppressions=valgrind.supp  $1
+
 
 echo -e "${pre}Capture coverage info${post}"
 lcov --directory ../build --capture -o lcov.info
