@@ -4,6 +4,7 @@
 *cmake
 *.a
 *.so
+*/a.out
 */cov
 */lcov.info
 */lcov2.info

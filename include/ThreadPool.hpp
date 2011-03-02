@@ -14,7 +14,7 @@ class ThreadPool
 
   public:
 
-    ThreadPool( const int threadNum );
+    ThreadPool();
     ~ThreadPool();
 
     void pushTask( Task* task );
@@ -31,10 +31,8 @@ class ThreadPool
     ThreadPool( const ThreadPool& );
     ThreadPool& operator=( const ThreadPool& );
 
-    int m_threadNum;
     std::vector<Thread*> m_threads;
     ConcurrentQueue<Task*> m_tasks;
-//     Mutex m_mutex;
 };
 
 
