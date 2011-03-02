@@ -1,8 +1,3 @@
-
-
-// gpp ./generated_main.cpp ../src/*.cpp  -I../include -lpthread -lrt
-
-
 #include <cxxtest/TestSuite.h>
 
 #define private public // need to reach Singleton's private m_instance

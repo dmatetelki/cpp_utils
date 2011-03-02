@@ -44,7 +44,6 @@
    fun:calloc
    fun:_dl_allocate_tls
    fun:pthread_create@@GLIBC_2.2.5
-   fun:_ZN6Thread5startEv
-   fun:_ZN10ThreadPool18startWorkerThreadsEv
-   fun:main
 }
+
+

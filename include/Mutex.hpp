@@ -11,8 +11,8 @@ public:
   Mutex(int kind = PTHREAD_MUTEX_DEFAULT);
   ~Mutex();
 
-  void lock();
-  void unlock();
+  int lock();
+  int unlock();
   bool tryLock(const int interval = 0);
   pthread_mutex_t* getPThreadMutex();
 

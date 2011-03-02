@@ -2,7 +2,7 @@
 #include "Common.hpp"
 
 
-ThreadPool::ThreadPool( const int threadNum ) : m_threadNum( threadNum )
+ThreadPool::ThreadPool()
 {
   TRACE(this);
 }
@@ -10,7 +10,7 @@ ThreadPool::ThreadPool( const int threadNum ) : m_threadNum( threadNum )
 ThreadPool::~ThreadPool()
 {
   TRACE(this);
-  std::vector<WorkerThread*>::iterator it;
+  std::vector<Thread*>::iterator it;
   for( it = m_threads.begin() ; it != m_threads.end(); it++ ) 
   {
     delete (*it);
@@ -24,6 +24,7 @@ void ThreadPool::pushTask( Task* task )
   m_tasks.push(task);
 }
 
+
 Task* ThreadPool::popTask()
 {
   TRACE(this);
@@ -31,21 +32,28 @@ Task* ThreadPool::popTask()
 }
 
 
+void ThreadPool::pushWorkerThread( Thread * thread)
+{
+  TRACE(this);
+  m_threads.push_back( thread );
+}
+
+
 void ThreadPool::startWorkerThreads()
 {
   TRACE(this);
-  for( int i = 0; i<m_threadNum; i++ ) 
+  std::vector<Thread*>::iterator it;
+  for( it = m_threads.begin() ; it != m_threads.end(); it++ )
   {
-    WorkerThread* t = new WorkerThread ( *this );
-    m_threads.push_back( t );
-    t->start();
+    (*it)->start();
   }
+
 }
 
 void ThreadPool::stop()
 {
   TRACE(this);
-  std::vector<WorkerThread*>::iterator it;
+  std::vector<Thread*>::iterator it;
   for( it = m_threads.begin() ; it != m_threads.end(); it++ ) 
   {
     (*it)->stop();
@@ -58,7 +66,7 @@ void ThreadPool::stop()
 void ThreadPool::join() const
 {
   TRACE(this);
-  std::vector<WorkerThread*>::const_iterator it;
+  std::vector<Thread*>::const_iterator it;
   for( it = m_threads.begin() ; it != m_threads.end(); it++ ) 
   {
     (*it)->join();

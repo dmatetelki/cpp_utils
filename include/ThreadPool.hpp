@@ -4,12 +4,10 @@
 #include <vector>
 
 #include "ConcurrentQueue.hpp"
-#include "WorkerThread.hpp"
 #include "Task.hpp"
+#include "Thread.hpp"
 #include "Mutex.hpp"
 
-
-class WorkerThread;
 
 class ThreadPool
 {
@@ -17,12 +15,13 @@ class ThreadPool
   public:
 
     ThreadPool( const int threadNum );
-    virtual ~ThreadPool();
+    ~ThreadPool();
 
-    void startWorkerThreads();
-
-    virtual void pushTask( Task* task );
+    void pushTask( Task* task );
     Task* popTask();
+
+    void pushWorkerThread( Thread * thread);
+    void startWorkerThreads();
 
     void stop();
     void join() const;
@@ -33,7 +32,7 @@ class ThreadPool
     ThreadPool& operator=( const ThreadPool& );
 
     int m_threadNum;
-    std::vector<WorkerThread*> m_threads;
+    std::vector<Thread*> m_threads;
     ConcurrentQueue<Task*> m_tasks;
 //     Mutex m_mutex;
 };

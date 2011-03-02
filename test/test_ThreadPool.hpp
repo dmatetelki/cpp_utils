@@ -24,8 +24,7 @@ class TestThreadPoolSuite : public CxxTest::TestSuite
     {
       TRACE(this);
       m_startedToRun = time(NULL);
-      std::cout << "I'm a task..." << std::endl;
-      // other stuff
+      TRACE("I'm a task...");
       m_startedToRun = 0;
     }
 
@@ -60,17 +59,13 @@ class TestThreadPoolSuite : public CxxTest::TestSuite
             task->run();
             delete task;
           } catch (CancelledException) {
-            std::cout << "Now I die." << std::endl;
+            TRACE("Now I die.");
           }
-
         }
-
         return 0;
       }
 
       ThreadPool& m_tp;
-      bool m_isRunning;
-
   };
 
 
@@ -78,26 +73,25 @@ public:
 
   void testBasic()
   {
-    TRACE("testBasic begin");
+    ThreadPool* tp = new ThreadPool();
 
-    ThreadPool* tp = new ThreadPool(5);
     Thread* wt1 = new WorkerThread(*tp);
-//     Thread* wt2 = new WorkerThread(*tp);
-//     Thread* wt3 = new WorkerThread(*tp);
+    Thread* wt2 = new WorkerThread(*tp);
+    Thread* wt3 = new WorkerThread(*tp);
     tp->pushWorkerThread(wt1);
-//     tp->pushWorkerThread(wt2);
-//     tp->pushWorkerThread(wt3);
+    tp->pushWorkerThread(wt2);
+    tp->pushWorkerThread(wt3);
     tp->startWorkerThreads();
 
     Task* t1 = new DummyTask();
     tp->pushTask(t1);
+    Task* t2 = new DummyTask();
+    tp->pushTask(t2);
 
     sleep(2);
 
     tp->stop();
     tp->join();
     delete tp;
-
-    TRACE("testBasic end");
   }
 };

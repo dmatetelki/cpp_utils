@@ -6,24 +6,28 @@
 
 class Thread
 {
-  public:
+public:
 
-      Thread();
-      virtual ~Thread();
+  Thread();
+  virtual ~Thread();
 
-      void start();
-      void* join() const;
-      void sendSignal( const int nSignal ) const;
+  void start();
+  void* join() const;
+  void stop();
+  void sendSignal( const int nSignal ) const;
 
-  private:
+private:
 
-      virtual void* run() = 0;
-      static void* threadStarter( void* pData );
+  virtual void* run() = 0;
+  static void* threadStarter( void* pData );
 
-  private:
+protected:
 
-      pthread_t m_nThread;
+  bool m_isRunning;
 
+private:
+
+  pthread_t m_threadHandler;
 };
 
 

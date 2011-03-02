@@ -8,13 +8,10 @@ class Task
 
 public:
 
-    Task();
+    virtual void run () = 0;
+    virtual bool isItStucked () const = 0;
 
-    void run ();
-
-    bool isItStucked () const;
-
-private:
+protected:
 
   time_t m_startedToRun;
   time_t m_timeOut;

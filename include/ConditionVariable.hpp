@@ -12,9 +12,9 @@ public:
   ConditionVariable(Mutex& mutex);
   ~ConditionVariable();
 
-  void wait(const int interval = 0);
-  void signal();
-  void broadcast();
+  int wait(const int interval = 0);
+  int signal();
+  int broadcast();
 
 private:
 

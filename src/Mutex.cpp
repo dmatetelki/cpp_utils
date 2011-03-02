@@ -1,47 +1,41 @@
 #include "Mutex.hpp"
 #include "Common.hpp"
 
-#include <assert.h>
 #include <time.h>
 
 
 Mutex::Mutex(int kind)
 {
   TRACE(this);
-  int ret;
   if ( kind == PTHREAD_MUTEX_DEFAULT ) {
-    ret = pthread_mutex_init( &m_mutex, 0 );
+    pthread_mutex_init( &m_mutex, 0 );
   } else {
     pthread_mutexattr_t attr;
     pthread_mutexattr_init( &attr );
     pthread_mutexattr_settype( &attr, kind );
-    ret = pthread_mutex_init( &m_mutex, &attr );
+    pthread_mutex_init( &m_mutex, &attr );
   }
-  assert( ret == 0 );
 }
 
 
 Mutex::~Mutex()
 {
   TRACE(this);
-  int ret = pthread_mutex_destroy ( &m_mutex );
-  assert( ret == 0);
+  pthread_mutex_destroy ( &m_mutex );
 }
 
 
-void Mutex::lock()
+int Mutex::lock()
 {
   TRACE(this);
-  int ret = pthread_mutex_lock( &m_mutex );
-  assert( ret == 0);
+  return pthread_mutex_lock( &m_mutex );
 }
 
 
-void Mutex::unlock()
+int Mutex::unlock()
 {
   TRACE(this);
-  int ret = pthread_mutex_unlock ( &m_mutex );
-  assert( ret == 0);
+  return pthread_mutex_unlock ( &m_mutex );
 }
 
 
