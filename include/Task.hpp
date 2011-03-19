@@ -8,6 +8,9 @@ class Task
 
 public:
 
+//     Task() {};
+//     virtual ~Task() {};
+
     virtual void run () = 0;
     virtual bool isItStucked () const = 0;
 

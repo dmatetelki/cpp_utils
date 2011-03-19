@@ -9,6 +9,7 @@
 */lcov.info
 */lcov2.info
 */core
+*.gcno
 *.kdev_include_paths
 test/generated_main.cpp
 test/test

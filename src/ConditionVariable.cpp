@@ -2,7 +2,7 @@
 #include "Common.hpp"
 
 #include <time.h>
-#include <assert.h>
+
 
 ConditionVariable::ConditionVariable(Mutex& mutex)
   : m_mutex(mutex)
@@ -26,16 +26,10 @@ int ConditionVariable::wait(const int interval)
     return pthread_cond_wait( &m_condVar,
                                  m_mutex.getPThreadMutex() );
   } else {
-    timespec abs_time;
-    clock_gettime ( CLOCK_REALTIME, &abs_time );
-    abs_time.tv_nsec += interval * 1000000;
-    if ( abs_time.tv_nsec >= 1000000000 ) {
-      abs_time.tv_nsec -= 1000000000;
-      abs_time.tv_sec += 1;
-    }
+    timespec tspec = intIntervalTotimespec(interval);
     return pthread_cond_timedwait( &m_condVar,
                                     m_mutex.getPThreadMutex(),
-                                   &abs_time );
+                                   &tspec);
   }
 }
 

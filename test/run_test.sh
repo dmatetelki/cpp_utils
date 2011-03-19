@@ -3,17 +3,68 @@
 # Usage:
 #   ./run_test.sh <TEST_BINARY>
 
-pre="\E[00;32m"
+pre="\E[00;33m"
+fail="\E[00;31m"
 post="\E[00;00m"
 
-echo -e "${pre}Reset coverage files${post}"
+ulimit -c unlimited
+
+# test=$1
+test=./test
+
+# if [ $# -ne 1 ]
+# then
+#   echo "Usage: `basename $0` <TEST_BINARY>"
+#   exit 1
+# fi
+
+if [ ! -e $test ]; then
+  echo -e "The parameter binary: $test does not exists"
+  exit 1
+fi
+
+echo -e "${pre}Reset & remove files${post}"
+# coverage
 lcov --directory . -z
 rm -f ./lcov.info
+# cores
+rm -f ./leak.log.core.*
+# cxxtest output
+rm -f $test.out
+
 
 echo -e "${pre}Run tests${post}"
-valgrind --log-file=leak.log --leak-check=full --show-reachable=yes --show-below-main=no  \
---track-origins=yes --num-callers=30 --malloc-fill=0xaa --free-fill=0xdd \
---suppressions=valgrind.supp  $1
+
+valgrind \
+      --log-file=leak.log \
+      --leak-check=full \
+      --show-reachable=yes \
+      --show-below-main=no \
+      --track-origins=yes \
+      --num-callers=30 \
+      --malloc-fill=0xaa \
+      --free-fill=0xdd \
+      --suppressions=valgrind.supp \
+      $test | tee $test.out; retval=$PIPESTATUS; (( $retval == 0 ));
+
+# retval is 0 on success
+# or the number of failed cases
+# or 137 if segfault happens
+if [ $retval -ne 0 ]; then
+      echo -e "${fail}The executed binary: $test failed.${post}"
+
+      if [ $retval -ne 137 ]; then
+        echo -e "${pre}Failed checks:${post}"
+        cat $test.out | grep "Error:" | awk -F"/test/" '{ print $2  }'
+      fi
+
+      cores=$(ls leak.log.core.* 2>/dev/null)
+      if [ "$cores" != "" ]; then
+        echo -e "${pre}Core file generated: ${post}"
+        echo $cores
+      fi
+      exit -1
+fi
 
 
 echo -e "${pre}Capture coverage info${post}"

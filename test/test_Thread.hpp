@@ -15,16 +15,16 @@ private:
 
   class ThreadClass : public Thread
   {
-  public:
+//   public:
 
-    ThreadClass() { TRACE(this); }
-    ~ThreadClass() { TRACE(this); }
+//     ThreadClass() { TRACE(this); }
+//     ~ThreadClass() { TRACE(this); }
 
 
   private:
 
-    ThreadClass(const ThreadClass&) { TRACE(this); }
-    ThreadClass& operator=(const ThreadClass&) { TRACE(this); return*this; }
+//     ThreadClass(const ThreadClass&) : Thread() { TRACE(this); }
+//     ThreadClass& operator=(const ThreadClass&) { TRACE(this); return*this; }
 
     void* run( void ) {
       TRACE(this);
@@ -69,9 +69,6 @@ private:
 
   private:
 
-    ThreadClassWithSignal(const ThreadClassWithSignal&) { TRACE(this); }
-    ThreadClassWithSignal& operator=(const ThreadClassWithSignal&) { TRACE(this); return*this; }
-
     void* run( void ) {
       TRACE(this);
 
@@ -104,12 +101,15 @@ public:
   {
     ThreadClassWithSignal *m2 = new ThreadClassWithSignal;
     m2->start();
+    sleep(3);
     m2->sendSignal(SIGINT);
 
-    sleep(3);
     void *retVal = m2->join();
-    TS_ASSERT_EQUALS ( *((int*)retVal) , 16 );
-    free(retVal);
+    TS_ASSERT(retVal);
+    if (retVal != 0 ) {
+      TS_ASSERT_EQUALS ( *((int*)retVal) , 16 );
+      free(retVal);
+    }
     delete m2;
   }
 

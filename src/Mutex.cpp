@@ -46,15 +46,8 @@ bool Mutex::tryLock(const int interval)
     int result = pthread_mutex_trylock ( &m_mutex );
     return result == 0;
   } else {
-    timespec abs_time;
-    clock_gettime ( CLOCK_REALTIME, &abs_time );
-    abs_time.tv_nsec += interval * 1000000;
-    if ( abs_time.tv_nsec >= 1000000000 ) {
-      abs_time.tv_nsec -= 1000000000;
-      abs_time.tv_sec += 1;
-    }
-    int result = pthread_mutex_timedlock ( &m_mutex, &abs_time );
-    return result == 0;
+    timespec tspec = intIntervalTotimespec(interval);
+    return pthread_mutex_timedlock ( &m_mutex, &tspec ) == 0;
   }
 }
 
