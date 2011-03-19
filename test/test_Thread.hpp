@@ -56,6 +56,7 @@ private:
 
   class ThreadClassWithSignal : public Thread
   {
+
   public:
 
     ThreadClassWithSignal() {
@@ -75,7 +76,7 @@ private:
       /** @note the function will get stopped before it finishes sleeping
        * If signal arrives after malloc, it will be a memory leak.
        */
-      sleep(32);
+      sleep(665);
 
       void* retVal = malloc(sizeof(int));
       *((int*)retVal) = 15;
@@ -93,7 +94,9 @@ private:
         pthread_exit(retVal);
       }
     }
-  };
+
+  }; // class ThreadClassWithSignal
+
 
 public:
 
@@ -101,7 +104,7 @@ public:
   {
     ThreadClassWithSignal *m2 = new ThreadClassWithSignal;
     m2->start();
-    sleep(3);
+    sleep(1);
     m2->sendSignal(SIGINT);
 
     void *retVal = m2->join();

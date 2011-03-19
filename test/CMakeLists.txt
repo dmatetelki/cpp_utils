@@ -15,6 +15,7 @@ test_ScopedLock.hpp
 test_ConditionalVariable.hpp
 test_Thread.hpp
 test_ThreadPool.hpp
+test_Semaphore.hpp
 )
 target_link_libraries(test CppUtils gcov)
 endif()

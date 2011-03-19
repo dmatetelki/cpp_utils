@@ -29,7 +29,7 @@ inline timespec intIntervalTotimespec(const int & interval)
     abs_time.tv_sec += 1;
   }
   return abs_time;
-};
+}
 
 
 #endif // COMMON_HPP

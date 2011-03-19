@@ -5,6 +5,7 @@
 *.a
 *.so
 */a.out
+test.out
 */cov
 */lcov.info
 */lcov2.info

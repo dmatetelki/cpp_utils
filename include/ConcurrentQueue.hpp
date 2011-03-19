@@ -21,7 +21,7 @@ class ConcurrentQueue {
     ConcurrentQueue()
       : m_cancelled(false)
       , m_mutex()
-      , m_condition(m_mutex)
+      , m_condVar(m_mutex)
     {
       TRACE(this);
     }
@@ -38,7 +38,7 @@ class ConcurrentQueue {
       ScopedLock sl(m_mutex);
       if (m_cancelled) throw CancelledException();
       m_queue.push( task );
-      m_condition.signal();
+      m_condVar.signal();
     }
 
 
@@ -61,7 +61,7 @@ class ConcurrentQueue {
       ScopedLock sl(m_mutex);
 
       while ( m_queue.empty() and not m_cancelled) {
-        m_condition.wait();
+        m_condVar.wait();
       }
       if (m_cancelled) throw CancelledException();
 
@@ -85,7 +85,7 @@ class ConcurrentQueue {
       TRACE(this);
       ScopedLock sl(m_mutex);
       m_cancelled = true;
-      m_condition.broadcast();
+      m_condVar.broadcast();
     }
 
   private:
@@ -95,8 +95,8 @@ class ConcurrentQueue {
 
     std::queue<T> m_queue;
     bool m_cancelled;
-    Mutex m_mutex;
-    ConditionVariable m_condition;
+    mutable Mutex m_mutex;
+    ConditionVariable m_condVar;
 
 };
 

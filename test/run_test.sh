@@ -45,7 +45,7 @@ valgrind \
       --malloc-fill=0xaa \
       --free-fill=0xdd \
       --suppressions=valgrind.supp \
-      $test | tee $test.out; retval=$PIPESTATUS; (( $retval == 0 ));
+      $test | tee $test.out; retval=$PIPESTATUS
 
 # retval is 0 on success
 # or the number of failed cases
