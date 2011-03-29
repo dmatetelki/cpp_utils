@@ -4,24 +4,25 @@
 #include <signal.h>
 #include <iostream>
 
+
 Thread::Thread()
   : m_isRunning(false)
   , m_threadHandler( 0 )
 
 {
-  TRACE(this);
+  TRACE;
 }
 
 
 Thread::~Thread()
 {
-  TRACE(this);
+  TRACE;
 }
 
 
 void Thread::start()
 {
-  TRACE(this);
+  TRACE;
   m_isRunning = true;
   pthread_create( &m_threadHandler, NULL, threadStarter, ( void* )this );
 }
@@ -29,7 +30,7 @@ void Thread::start()
 
 void* Thread::join() const
 {
-  TRACE(this);
+  TRACE;
   void* retVal;
   pthread_join( m_threadHandler, &retVal );
   return retVal;
@@ -38,20 +39,20 @@ void* Thread::join() const
 
 void Thread::stop()
 {
-  TRACE(this);
+  TRACE;
   m_isRunning = false;
 }
 
 
 void Thread::sendSignal( const int nSignal ) const
 {
-  TRACE(this);
+  TRACE;
   pthread_kill( m_threadHandler, nSignal );
 }
 
 
 void* Thread::threadStarter( void* pData )
 {
-  TRACE("Thread::threadStarter");
+  LOG(Logger::FINEST, "static");
   return static_cast<Thread *>(pData)->run();
 }

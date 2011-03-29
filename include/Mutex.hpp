@@ -11,9 +11,24 @@ public:
   Mutex(int kind = PTHREAD_MUTEX_DEFAULT);
   ~Mutex();
 
+  /**
+   * Locks mutex. If already locked, the calling thread shall block until
+   * the mutex becomes available.
+   * @returns If successful, zero; otherwise, an error number.
+   */
   int lock();
+
+  /**
+   *
+   */
   int unlock();
-  bool tryLock(const int interval = 0);
+
+  /**
+   * If currently locked, the call shall return immediately.
+   * @returns Zero if a lock acquired. Otherwise, an error number.
+   */
+  int tryLock(const long int intervalSec = 0);
+
   pthread_mutex_t* getPThreadMutex();
 
 

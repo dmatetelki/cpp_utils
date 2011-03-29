@@ -2,11 +2,15 @@
 
 #define private public // need to reach Singleton's private m_instance
 
-#include "Singleton.hpp"
 #include "Common.hpp"
+#include "test_Common.hpp"
+#include "Singleton.hpp"
+
 
 class TestSingletonSuite : public CxxTest::TestSuite
 {
+
+private:
 
   class BasicSingleton : public Singleton<BasicSingleton>
   {
@@ -18,6 +22,8 @@ public:
 
   void testBasic( void )
   {
+    TEST_HEADER;
+
     // no instance yet
     TS_ASSERT_EQUALS (BasicSingleton::getInstance(), (BasicSingleton*)0);
 
@@ -48,12 +54,14 @@ public:
  * EvilClass and implements the expensice calls with dummy ones) to TestMe
  */
 
+private:
+
   class TestMe
   {
   public:
     int fv()
     {
-      TRACE(this);
+      TRACE;
       return EvilClass::getInstance()->getValue();
     }
   };
@@ -63,7 +71,7 @@ public:
   public:
     virtual int getValue(void)
     {
-      TRACE(this);
+      TRACE;
       return 665;
     }
   };
@@ -73,13 +81,17 @@ public:
   public:
     int getValue(void)
     {
-      TRACE(this);
+      TRACE;
       return 13;
     }
   };
 
+public:
+
   void testAdvancedTest( void )
   {
+    TEST_HEADER;
+
     TestMe tm;
 
     EvilClass::createInstance();

@@ -3,6 +3,7 @@
 #include "Semaphore.hpp"
 #include "Thread.hpp"
 #include "Common.hpp"
+#include "test_Common.hpp"
 
 class TestSemaphore : public CxxTest::TestSuite
 {
@@ -10,6 +11,7 @@ public:
 
   void testBasic( void )
   {
+    TEST_HEADER;
     Semaphore s;
     TS_ASSERT_EQUALS( s.getCount(), 1 );
 
@@ -30,27 +32,27 @@ private:
     ThreadClassWithSemaphore(Semaphore &semaphore)
       : m_semaphore(semaphore)
     {
-      TRACE(this);
+      TRACE;
     }
     ~ThreadClassWithSemaphore() {
-      TRACE(this);
+      TRACE;
     }
 
     bool use( int timeout = 0 ) {
-      TRACE(this);
-      bool retval = m_semaphore.lock(timeout);
-      return retval;
+      TRACE;
+      return m_semaphore.lock(timeout);
     }
 
     bool release( void ) {
-      TRACE(this);
+      TRACE;
       return m_semaphore.unLock();
     }
+
 
   private:
 
     void* run( void ) {
-      TRACE(this);
+      TRACE;
       while (m_isRunning) {
         sleep(1);
       }
@@ -65,6 +67,8 @@ public:
 
   void testWithTwoThreads( void )
   {
+    TEST_HEADER;
+
     Semaphore semaphore(2);
     TS_ASSERT_EQUALS( semaphore.getCount(), 2 );
 

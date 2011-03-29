@@ -1,5 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
+#include "test_Common.hpp"
+
 #include "Thread.hpp"
 #include "Common.hpp"
 #include "Mutex.hpp"
@@ -15,19 +17,11 @@ private:
 
   class ThreadClass : public Thread
   {
-//   public:
-
-//     ThreadClass() { TRACE(this); }
-//     ~ThreadClass() { TRACE(this); }
-
 
   private:
 
-//     ThreadClass(const ThreadClass&) : Thread() { TRACE(this); }
-//     ThreadClass& operator=(const ThreadClass&) { TRACE(this); return*this; }
-
     void* run( void ) {
-      TRACE(this);
+      TRACE;
 
       void* retVal = malloc(sizeof(int));
       *((int*)retVal) = 14;
@@ -39,6 +33,7 @@ public:
 
   void testBasic( void )
   {
+    TEST_HEADER;
     ThreadClass *m = new ThreadClass;
     m->start();
 
@@ -60,18 +55,18 @@ private:
   public:
 
     ThreadClassWithSignal() {
-      TRACE(this);
+      TRACE;
       signal(SIGINT, signal_handler);
     }
     ~ThreadClassWithSignal() {
-      TRACE(this);
+      TRACE;
     }
 
 
   private:
 
     void* run( void ) {
-      TRACE(this);
+      TRACE;
 
       /** @note the function will get stopped before it finishes sleeping
        * If signal arrives after malloc, it will be a memory leak.
@@ -85,9 +80,7 @@ private:
 
     static void signal_handler(int sig)
     {
-      TRACE("ThreadClassWithSignal::signal_handler");
       if (sig==SIGINT) {
-        TRACE("signal_handler got SIGINT");
 
         void* retVal = malloc(sizeof(int));
         *((int*)retVal) = 16;
@@ -102,6 +95,7 @@ public:
 
   void testSignalSend( void )
   {
+    TEST_HEADER;
     ThreadClassWithSignal *m2 = new ThreadClassWithSignal;
     m2->start();
     sleep(1);

@@ -3,6 +3,20 @@
 # Usage:
 #   ./run_test.sh <TEST_BINARY>
 
+
+function yesno()
+{
+  while true; do
+      read -p "$* (y/n)[y]" yn
+      if [ "$yn" = '' ]; then yn="y"; fi
+      case "$yn" in
+          [Yy]* ) return 0;;
+          [Nn]* ) return 1;;
+          * ) echo "Please answer y/n.";;
+      esac
+  done
+}
+
 pre="\E[00;33m"
 fail="\E[00;31m"
 post="\E[00;00m"
@@ -62,6 +76,9 @@ if [ $retval -ne 0 ]; then
       if [ "$cores" != "" ]; then
         echo -e "${pre}Core file generated: ${post}"
         echo $cores
+        if yesno "run 'gdb $test $cores' ?"; then
+          gdb $test $cores
+        fi
       fi
       exit -1
 fi

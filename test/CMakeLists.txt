@@ -3,19 +3,24 @@ add_definitions( ${CXX_FLAGS} )
 
 find_package(CxxTest)
 if(CXXTEST_FOUND)
-set(CXXTEST_USE_PERL TRUE)
-include_directories(${CXXTEST_INCLUDE_DIR} ../include)
-enable_testing()
-CXXTEST_ADD_TEST(test
-generated_main.cpp
+  set(CXXTEST_USE_PERL TRUE)
+#   set(CXXTEST_TESTGEN_ARGS "")
 
-test_Singelton.hpp
-test_Mutex.hpp
-test_ScopedLock.hpp
-test_ConditionalVariable.hpp
-test_Thread.hpp
-test_ThreadPool.hpp
-test_Semaphore.hpp
-)
-target_link_libraries(test CppUtils gcov)
+  include_directories(${CXXTEST_INCLUDE_DIR} ../include)
+  enable_testing()
+  CXXTEST_ADD_TEST(test
+  generated_main.cpp
+
+  test_Common.hpp
+
+  test_Singelton.hpp
+  test_Mutex.hpp
+  test_ScopedLock.hpp
+  test_ConditionalVariable.hpp
+  test_Thread.hpp
+  test_ThreadPool.hpp
+  test_Semaphore.hpp
+  test_TimerThread.hpp
+  )
+  target_link_libraries(test CppUtils gcov)
 endif()

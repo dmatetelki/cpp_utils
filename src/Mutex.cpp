@@ -1,12 +1,13 @@
 #include "Mutex.hpp"
 #include "Common.hpp"
 
+
 #include <time.h>
 
 
 Mutex::Mutex(int kind)
 {
-  TRACE(this);
+  TRACE;
   if ( kind == PTHREAD_MUTEX_DEFAULT ) {
     pthread_mutex_init( &m_mutex, 0 );
   } else {
@@ -20,34 +21,33 @@ Mutex::Mutex(int kind)
 
 Mutex::~Mutex()
 {
-  TRACE(this);
+  TRACE;
   pthread_mutex_destroy ( &m_mutex );
 }
 
 
 int Mutex::lock()
 {
-  TRACE(this);
+  TRACE;
   return pthread_mutex_lock( &m_mutex );
 }
 
 
 int Mutex::unlock()
 {
-  TRACE(this);
+  TRACE;
   return pthread_mutex_unlock ( &m_mutex );
 }
 
 
-bool Mutex::tryLock(const int interval)
+int Mutex::tryLock(const long int intervalSec)
 {
-  TRACE(this);
-  if ( interval == 0 ) {
-    int result = pthread_mutex_trylock ( &m_mutex );
-    return result == 0;
+  TRACE;
+  if ( intervalSec == 0 ) {
+    return pthread_mutex_trylock ( &m_mutex );
   } else {
-    timespec tspec = intIntervalTotimespec(interval);
-    return pthread_mutex_timedlock ( &m_mutex, &tspec ) == 0;
+    timespec tspec = addSecTotimespec( intervalSec );
+    return pthread_mutex_timedlock ( &m_mutex, &tspec );
   }
 }
 

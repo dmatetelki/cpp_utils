@@ -13,7 +13,7 @@ public:
 
   void start();
   void* join() const;
-  void stop();
+  virtual void stop();
   void sendSignal( const int nSignal ) const;
 
 private:

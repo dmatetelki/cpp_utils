@@ -7,28 +7,26 @@
 ConditionVariable::ConditionVariable(Mutex& mutex)
   : m_mutex(mutex)
 {
-  TRACE(this);
+  TRACE;
   pthread_cond_init( &m_condVar, 0 );
 }
 
 
 ConditionVariable::~ConditionVariable()
 {
-  TRACE(this);
+  TRACE;
   pthread_cond_destroy( &m_condVar );
 }
 
 
-int ConditionVariable::wait(const int interval)
+int ConditionVariable::wait(const long int intervalSec)
 {
-  TRACE(this);
-  if ( interval == 0 ) {
+  TRACE;
+  if ( intervalSec == 0 ) {
     return pthread_cond_wait( &m_condVar,
                                m_mutex.getPThreadMutex() );
   } else {
-    timespec tspec = intIntervalTotimespec(interval);
-
-    TRACE("interval: " << interval << " tspec.tv_sec: " << tspec.tv_sec << " tspec.tv_nsec: " << tspec.tv_nsec );
+    timespec tspec = addSecTotimespec(intervalSec);
     return pthread_cond_timedwait( &m_condVar,
                                     m_mutex.getPThreadMutex(),
                                    &tspec);
@@ -38,13 +36,13 @@ int ConditionVariable::wait(const int interval)
 
 int ConditionVariable::signal()
 {
-  TRACE(this);
+  TRACE;
   return pthread_cond_signal( &m_condVar );
 }
 
 
 int ConditionVariable::broadcast()
 {
-  TRACE(this);
+  TRACE;
   return pthread_cond_broadcast( &m_condVar );
 }

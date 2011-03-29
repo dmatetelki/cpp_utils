@@ -6,7 +6,7 @@
 #include "Thread.hpp"
 #include "ThreadPool.hpp"
 #include "Common.hpp"
-
+#include "test_Common.hpp"
 
 
 
@@ -18,20 +18,20 @@ class TestThreadPoolSuite : public CxxTest::TestSuite
 
   public:
 
-    DummyTask() { m_timeOut = 5; TRACE(this); }
+    DummyTask() { /*m_timeOut = 5*/; TRACE; }
 
     void run()
     {
-      TRACE(this);
-      m_startedToRun = time(NULL);
-      TRACE("I'm a task...");
-      m_startedToRun = 0;
+      TRACE;
+//       m_startedToRun = time(NULL);
+      LOG( Logger::FINEST, "I'm a task...");
+//       m_startedToRun = 0;
     }
 
     bool isItStucked () const
     {
-      TRACE(this);
-      return ( m_startedToRun + m_timeOut < time(NULL) );
+      TRACE;
+      return false;
     }
   };
 
@@ -43,14 +43,14 @@ class TestThreadPoolSuite : public CxxTest::TestSuite
     WorkerThread( ThreadPool& tp )
       : m_tp(tp)
     {
-      TRACE(this);
+      TRACE;
     }
 
     private:
 
       void* run()
       {
-        TRACE(this);
+        TRACE;
         while ( m_isRunning )
         {
           Task* task(0);
@@ -59,7 +59,7 @@ class TestThreadPoolSuite : public CxxTest::TestSuite
             task->run();
             delete task;
           } catch (CancelledException) {
-            TRACE("Now I die.");
+            LOG( Logger::FINEST, "Now I die.");
           }
         }
         return 0;
@@ -73,6 +73,7 @@ public:
 
   void testBasic()
   {
+    TEST_HEADER;
     ThreadPool* tp = new ThreadPool();
 
     Thread* wt1 = new WorkerThread(*tp);

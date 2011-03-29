@@ -3,13 +3,15 @@
 
 
 ThreadPool::ThreadPool()
+ : m_threads()
+ , m_tasks()
 {
-  TRACE(this);
+  TRACE;
 }
 
 ThreadPool::~ThreadPool()
 {
-  TRACE(this);
+  TRACE;
   std::vector<Thread*>::iterator it;
   for( it = m_threads.begin() ; it != m_threads.end(); it++ ) 
   {
@@ -20,28 +22,28 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::pushTask( Task* task )
 {
-  TRACE(this);
+  TRACE;
   m_tasks.push(task);
 }
 
 
 Task* ThreadPool::popTask()
 {
-  TRACE(this);
+  TRACE;
   return m_tasks.waitAndPop();
 }
 
 
 void ThreadPool::pushWorkerThread( Thread * thread)
 {
-  TRACE(this);
+  TRACE;
   m_threads.push_back( thread );
 }
 
 
 void ThreadPool::startWorkerThreads()
 {
-  TRACE(this);
+  TRACE;
   std::vector<Thread*>::iterator it;
   for( it = m_threads.begin() ; it != m_threads.end(); it++ )
   {
@@ -52,7 +54,7 @@ void ThreadPool::startWorkerThreads()
 
 void ThreadPool::stop()
 {
-  TRACE(this);
+  TRACE;
   std::vector<Thread*>::iterator it;
   for( it = m_threads.begin() ; it != m_threads.end(); it++ ) 
   {
@@ -65,7 +67,7 @@ void ThreadPool::stop()
 
 void ThreadPool::join() const
 {
-  TRACE(this);
+  TRACE;
   std::vector<Thread*>::const_iterator it;
   for( it = m_threads.begin() ; it != m_threads.end(); it++ ) 
   {

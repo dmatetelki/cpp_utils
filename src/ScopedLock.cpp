@@ -4,13 +4,13 @@
 
 ScopedLock::ScopedLock( Mutex& mutex) : m_mutex(mutex)
 {
-  TRACE(this);
+  TRACE;
   m_mutex.lock();
 }
 
 
 ScopedLock::~ScopedLock()
 {
-  TRACE(this);
+  TRACE;
   m_mutex.unlock();
 }

@@ -3,44 +3,45 @@
 #include "ScopedLock.hpp"
 #include "Common.hpp"
 
+
 Semaphore::Semaphore( int maxCount )
   : m_maxCount( maxCount )
   , m_count( maxCount )
   , m_mutex()
   , m_condVar(m_mutex)
 {
-  TRACE(this);
+  TRACE;
 }
 
 
 Semaphore::~Semaphore( void )
 {
-  TRACE(this);
+  TRACE;
 }
 
 
-bool Semaphore::lock( int interval )
+bool Semaphore::lock( const long int intervalSec )
 {
-  TRACE(this);
+  TRACE;
   ScopedLock sl(m_mutex);
   if ( m_count == 0 ) {
-    if ( m_condVar.wait(interval) != 0 ) {
+    if ( m_condVar.wait(intervalSec) != 0 ) {
       return false;
     }
   }
-  m_count -= 1;
+  m_count--;
   return true;
 }
 
 
 bool Semaphore::unLock( void )
 {
-  TRACE(this);
+  TRACE;
   ScopedLock sc(m_mutex);
   if ( m_count == m_maxCount ) {
     return false;
   }
-  m_count += 1;
+  m_count++;
   m_condVar.signal();
   return true;
 }
@@ -48,7 +49,7 @@ bool Semaphore::unLock( void )
 
 int Semaphore::getCount( void ) const
 {
-  TRACE(this);
+  TRACE;
   ScopedLock sc(m_mutex);
   return m_count;
 }
