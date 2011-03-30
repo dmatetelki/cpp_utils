@@ -15,4 +15,6 @@ test.out
 test/generated_main.cpp
 test/test
 leak.log
+leak.log.core.*
+gdb.out
 

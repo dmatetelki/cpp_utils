@@ -73,9 +73,10 @@ private:
        */
       sleep(665);
 
-      void* retVal = malloc(sizeof(int));
-      *((int*)retVal) = 15;
-      return retVal;
+//       void* retVal = malloc(sizeof(int));
+//       *((int*)retVal) = 15;
+//       return retVal;
+      return 0;
     }
 
     static void signal_handler(int sig)
@@ -105,7 +106,7 @@ public:
     TS_ASSERT(retVal);
     if (retVal != 0 ) {
       TS_ASSERT_EQUALS ( *((int*)retVal) , 16 );
-      free(retVal);
+      free((int*)retVal);
     }
     delete m2;
   }

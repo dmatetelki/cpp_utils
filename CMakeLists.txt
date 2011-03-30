@@ -30,7 +30,8 @@ COMMAND rm -rf test/cmake_install.cmake
 COMMAND rm -rf test/CMakeCache.txt
 COMMAND rm -rf test/CTestTestfile.cmake
 COMMAND rm -rf test/cov
-COMMAND rm -rf test/*core
+COMMAND rm -rf test/leak.log.core.*
+COMMAND rm -rf test/gdb.out
 COMMAND rm -rf test/*.gcno
 COMMAND rm -rf test/lcov*.info
 COMMAND rm -rf test/leak.log

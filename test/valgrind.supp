@@ -5,7 +5,7 @@
    fun:dl_main
    fun:_dl_sysdep_start
    fun:_dl_start
-   obj:/lib64/ld-2.13.so
+   obj:/lib64/ld-*.so
 }
 
 {
@@ -15,7 +15,7 @@
    fun:dl_main
    fun:_dl_sysdep_start
    fun:_dl_start
-   obj:/lib64/ld-2.13.so
+   obj:/lib64/ld-*.so
 }
 
 {
@@ -25,7 +25,7 @@
    fun:dl_main
    fun:_dl_sysdep_start
    fun:_dl_start
-   obj:/lib64/ld-2.13.so
+   obj:/lib64/ld-*.so
 }
 
 {
@@ -35,7 +35,7 @@
    fun:dl_main
    fun:_dl_sysdep_start
    fun:_dl_start
-   obj:/lib64/ld-2.13.so
+   obj:/lib64/ld-*.so
 }
 
 {
@@ -43,7 +43,8 @@
    Memcheck:Leak
    fun:calloc
    fun:_dl_allocate_tls
-   fun:pthread_create@@GLIBC_2.2.5
+   fun:pthread_create@@GLIBC_*
 }
+
 
 

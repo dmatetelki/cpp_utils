@@ -28,6 +28,7 @@ void TimerThread::addTimerUser(TimerUser* user,
 {
   TRACE;
   ScopedLock sl( m_mutex );
+  if ( not m_isRunning ) return;
   UserEntry userEntry = { periodTime, user };
   m_users.insert( std::pair<time_t, UserEntry>( expiration, userEntry ) );
   m_condVar.signal();
@@ -35,15 +36,19 @@ void TimerThread::addTimerUser(TimerUser* user,
 
 
 
-bool TimerThread::removeTimerUser ( UserEntry userEntry )
+bool TimerThread::removeTimerUser ( void* timerUser )
 {
   TRACE;
   ScopedLock sl( m_mutex );
-  std::multimap<time_t, UserEntry>::iterator it;
+  if ( not m_isRunning ) return false;
+  std::multimap<time_t, UserEntry>::iterator it, tmp;
   bool found(false);
-  for ( it = m_users.begin(); it != m_users.end(); it++ ) {
-    if ( it->second.user == userEntry.user ) {
-      m_users.erase(it);
+  for ( it = m_users.begin(); it != m_users.end(); ) {
+    tmp = it++;
+
+    /// @todo solveth e abstract pointer problem
+    if ( (void*)(it->second.user) == (void*)timerUser ) {
+      m_users.erase(tmp);
       m_condVar.signal();
       found = true;  // one usercan be registered multiple times
     }
@@ -73,25 +78,24 @@ void* TimerThread::run( void )
 
   while( m_isRunning ) {
 
+    m_mutex.lock();
     while ( m_users.empty() and m_isRunning ) {
       m_condVar.wait();
     }
+    m_mutex.unlock();
 
-    if ( not m_isRunning) {
-      LOG( Logger::FINEST, "return empty handed");
-      return 0;
-    }
-
+    if ( not m_isRunning) return 0;
     nextExpiration = m_users.begin()->first;
 
+    m_mutex.lock();
     // timer deleted / added, get nextExpiration again
     if ( m_condVar.wait( nextExpiration ) != ETIMEDOUT ) {
       continue;
     }
+    m_mutex.unlock();
 
     // notify & remove
-    /// @todo lock here?
-    //     m_mutex.lock();
+    m_mutex.lock();
     ret = m_users.equal_range( nextExpiration );
 
     /// @todo modify key values in multimap, must be a better way
@@ -103,12 +107,11 @@ void* TimerThread::run( void )
     }
     m_users.erase( nextExpiration );
     m_users.insert( tmp.begin(), tmp.end() );
-    //     m_mutex.unlock();
+    m_mutex.unlock();
 
   }
 
   if ( not m_users.empty() ) {
-    LOG( Logger::FINEST, "return full handed");
     for ( it = m_users.begin(); it != m_users.end(); it++ ) {
       it->second.user->timerDestroyed();
     }

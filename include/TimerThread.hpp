@@ -44,7 +44,7 @@ public:
                       const time_t expiration,
                       const time_t periodTime = 0 );
 
-    bool removeTimerUser ( UserEntry userEntry );
+    bool removeTimerUser ( void* timerUser );
 
     // override to signal as well
     void stop();

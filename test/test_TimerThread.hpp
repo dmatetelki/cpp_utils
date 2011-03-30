@@ -68,7 +68,7 @@ public:
     delete user;
   }
 
-    void testDestroyed( void )
+  void testDestroyed( void )
   {
     TEST_HEADER;
     TimerThread* tt = new TimerThread();
@@ -79,6 +79,29 @@ public:
     tt->addTimerUser( user, 10 );
 
     sleep(2);
+    tt->stop();
+    sleep(1);
+
+    TS_ASSERT_EQUALS( user->m_counter, 100 );
+
+    delete tt;
+    delete user;
+  }
+
+  void testRemoved( void )
+  {
+    TEST_HEADER;
+    TimerThread* tt = new TimerThread();
+    tt->start();
+    sleep(1);
+
+    DummyTimerUser *user = new DummyTimerUser();
+    tt->addTimerUser( user, 10 );
+
+    sleep(2);
+    tt->removeTimerUser( user );
+
+    sleep(1);
     tt->stop();
     sleep(1);
 
