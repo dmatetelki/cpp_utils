@@ -19,14 +19,14 @@ ConditionVariable::~ConditionVariable()
 }
 
 
-int ConditionVariable::wait(const long int intervalSec)
+int ConditionVariable::wait(const long int intervalSec, const long int intervalNSec)
 {
   TRACE;
-  if ( intervalSec == 0 ) {
+  if ( intervalSec == 0 and intervalNSec == 0 ) {
     return pthread_cond_wait( &m_condVar,
                                m_mutex.getPThreadMutex() );
   } else {
-    timespec tspec = addSecTotimespec(intervalSec);
+    timespec tspec = addTotimespec( intervalSec, intervalNSec );
     return pthread_cond_timedwait( &m_condVar,
                                     m_mutex.getPThreadMutex(),
                                    &tspec);

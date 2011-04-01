@@ -27,7 +27,7 @@ public:
    * If currently locked, the call shall return immediately.
    * @returns Zero if a lock acquired. Otherwise, an error number.
    */
-  int tryLock(const long int intervalSec = 0);
+  int tryLock(const long int intervalSec = 0, const long int intervalNSec = 0);
 
   pthread_mutex_t* getPThreadMutex();
 

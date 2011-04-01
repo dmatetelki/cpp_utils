@@ -17,4 +17,4 @@ test/test
 leak.log
 leak.log.core.*
 gdb.out
-
+html/*

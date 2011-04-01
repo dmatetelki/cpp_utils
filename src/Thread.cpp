@@ -3,12 +3,15 @@
 
 #include <signal.h>
 #include <iostream>
+#include <exception> // std::runtime_error
+
+#include <sched.h> // sched_param
 
 
-Thread::Thread()
+Thread::Thread(const bool softRealTime)
   : m_isRunning(false)
   , m_threadHandler( 0 )
-
+  , m_softRealTime(softRealTime)
 {
   TRACE;
 }
@@ -24,7 +27,24 @@ void Thread::start()
 {
   TRACE;
   m_isRunning = true;
-  pthread_create( &m_threadHandler, NULL, threadStarter, ( void* )this );
+
+  if ( m_softRealTime ) {
+    pthread_attr_t attr;
+    sched_param param;
+
+    pthread_attr_init(&attr);
+    if ( pthread_attr_setschedpolicy( &attr, SCHED_RR ) != 0 ) {
+      throw std::runtime_error( "Coudn't set thread scheduler." );
+    }
+    param.sched_priority = 50;
+    if ( pthread_attr_setschedparam( &attr, &param ) != 0 ) {
+      throw std::runtime_error( "Coudn't set thread priority.");
+    }
+
+    pthread_create( &m_threadHandler, &attr, threadStarter, ( void* )this );
+  } else {
+    pthread_create( &m_threadHandler, 0, threadStarter, ( void* )this );
+  }
 }
 
 

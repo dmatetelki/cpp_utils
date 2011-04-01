@@ -13,7 +13,7 @@ public:
   Semaphore( int maxCount = 1 );
   ~Semaphore( void );
 
-  bool lock( const long int intervalSec = 0 );
+  bool lock( const long int intervalSec = 0, const long int intervalNSec = 0 );
   bool unLock( void );
   int getCount( void ) const;
 

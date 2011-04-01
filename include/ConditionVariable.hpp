@@ -12,7 +12,7 @@ public:
   ConditionVariable(Mutex& mutex);
   ~ConditionVariable();
 
-  int wait(const long int intervalSec = 0);
+  int wait(const long int intervalSec = 0, const long int intervaNSec = 0);
   int signal();
   int broadcast();
 

@@ -4,11 +4,13 @@
 #include "ScopedLock.hpp"
 
 #include <errno.h> // ETIMEDOUT
+#include <pthread.h> // pthread_attr_t, sched_param
 
 
 
 TimerThread::TimerThread()
-  : m_mutex()
+  : Thread(true)
+  , m_mutex()
   , m_condVar(m_mutex)
   , m_users()
 {

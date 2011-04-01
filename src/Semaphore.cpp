@@ -20,12 +20,12 @@ Semaphore::~Semaphore( void )
 }
 
 
-bool Semaphore::lock( const long int intervalSec )
+bool Semaphore::lock( const long int intervalSec, const long int intervalNSec )
 {
   TRACE;
   ScopedLock sl(m_mutex);
   if ( m_count == 0 ) {
-    if ( m_condVar.wait(intervalSec) != 0 ) {
+    if ( m_condVar.wait( intervalSec, intervalNSec ) != 0 ) {
       return false;
     }
   }

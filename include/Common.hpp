@@ -13,11 +13,20 @@
 #include <stdexcept> // runtime_error
 #include <sstream> // ostringstream
 
-inline timespec addSecTotimespec(const long int & sec)
+inline timespec addTotimespec(const long int & sec, const long int & nsec)
 {
+  const int nano = 1000000000;  // 10^9
   timespec abs_time;
   clock_gettime ( CLOCK_REALTIME, &abs_time );
-  abs_time.tv_sec += sec;
+  long int nsecSum( abs_time.tv_nsec + nsec );
+
+  if ( nsecSum >= nano ) {
+    abs_time.tv_sec += sec + nsecSum / nano;
+    abs_time.tv_nsec = nsecSum % nano;
+  } else {
+    abs_time.tv_sec += sec;
+    abs_time.tv_nsec += nsec;
+  }
   return abs_time;
 }
 

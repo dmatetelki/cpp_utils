@@ -40,13 +40,13 @@ int Mutex::unlock()
 }
 
 
-int Mutex::tryLock(const long int intervalSec)
+int Mutex::tryLock(const long int intervalSec, const long int intervalNSec)
 {
   TRACE;
-  if ( intervalSec == 0 ) {
+  if ( intervalSec == 0 and intervalNSec == 0 ) {
     return pthread_mutex_trylock ( &m_mutex );
   } else {
-    timespec tspec = addSecTotimespec( intervalSec );
+    timespec tspec = addTotimespec( intervalSec, intervalSec );
     return pthread_mutex_timedlock ( &m_mutex, &tspec );
   }
 }
