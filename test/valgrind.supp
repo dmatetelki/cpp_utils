@@ -38,13 +38,44 @@
    obj:/lib64/ld-*.so
 }
 
+
 {
-   pthread create stuff
+   comparing void pointers
+   Memcheck:Addr4
+   fun:_ZN11TimerThread15removeTimerUserEPv
+}
+
+{
+   thread with signal
    Memcheck:Leak
-   fun:calloc
-   fun:_dl_allocate_tls
-   fun:pthread_create@@GLIBC_*
+   fun:malloc
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:dlerror_run
+   fun:__libc_dlopen_mode
+   fun:pthread_cancel_init
+   fun:_Unwind_ForcedUnwind
+   fun:__pthread_unwind
+   fun:pthread_exit
+   fun:_ZN10TestThread21ThreadClassWithSignal14signal_handlerEi
+   obj:/lib/libc-2.13.so
+   fun:_ZN10TestThread21ThreadClassWithSignal3runEv
+   fun:_ZN6Thread13threadStarterEPv
+   fun:start_thread
+   fun:clone
 }
 
 
-
+{
+   creating a mere thread...what is your problem, valgrind
+   Memcheck:Leak
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_2.1
+   fun:_ZN6Thread5startEv
+}
