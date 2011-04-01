@@ -31,11 +31,26 @@ void TimerThread::addTimerUser(TimerUser* user,
   TRACE;
   ScopedLock sl( m_mutex );
   if ( not m_isRunning ) return;
-  UserEntry userEntry = { periodTime, user };
-  m_users.insert( std::pair<time_t, UserEntry>( expiration, userEntry ) );
+  timespec expirationTS = { expiration, 0 };
+  timespec periodTimeTS = { periodTime, 0 };
+
+  UserEntry userEntry = { periodTimeTS, user };
+  m_users.insert( std::pair<timespec, UserEntry>( expirationTS, userEntry ) );
   m_condVar.signal();
 }
 
+
+void TimerThread::addTimerUser( TimerUser* user,
+                               const timespec expiration,
+                               const timespec periodTime )
+{
+  TRACE;
+  ScopedLock sl( m_mutex );
+  if ( not m_isRunning ) return;
+  UserEntry userEntry = { periodTime, user };
+  m_users.insert( std::pair<timespec, UserEntry>( expiration, userEntry ) );
+  m_condVar.signal();
+}
 
 
 bool TimerThread::removeTimerUser ( void* timerUser )
@@ -43,12 +58,12 @@ bool TimerThread::removeTimerUser ( void* timerUser )
   TRACE;
   ScopedLock sl( m_mutex );
   if ( not m_isRunning ) return false;
-  std::multimap<time_t, UserEntry>::iterator it, tmp;
+  std::multimap<timespec, UserEntry>::iterator it, tmp;
   bool found(false);
   for ( it = m_users.begin(); it != m_users.end(); ) {
     tmp = it++;
 
-    /// @todo solveth e abstract pointer problem
+    /// @todo solve the abstract pointer problem
     if ( (void*)(it->second.user) == (void*)timerUser ) {
       m_users.erase(tmp);
       m_condVar.signal();
@@ -71,12 +86,12 @@ void TimerThread::stop()
 void* TimerThread::run( void )
 {
   TRACE;
-  time_t nextExpiration;
+  timespec nextExpiration;
 
-  std::multimap<time_t, UserEntry> tmp;
-  std::multimap<time_t, UserEntry>::iterator it;
-  std::pair<std::multimap<time_t, UserEntry>::iterator,
-            std::multimap<time_t, UserEntry>::iterator> ret;
+  std::multimap<timespec, UserEntry, timespec_cmp> tmp;
+  std::multimap<timespec, UserEntry>::iterator it;
+  std::pair<std::multimap<timespec, UserEntry>::iterator,
+            std::multimap<timespec, UserEntry>::iterator> ret;
 
   while( m_isRunning ) {
 
@@ -91,7 +106,8 @@ void* TimerThread::run( void )
 
     m_mutex.lock();
     // timer deleted / added, get nextExpiration again
-    if ( m_condVar.wait( nextExpiration ) != ETIMEDOUT ) {
+    if ( m_condVar.wait( nextExpiration.tv_sec,
+                         nextExpiration.tv_nsec ) != ETIMEDOUT ) {
       continue;
     }
     m_mutex.unlock();
@@ -104,7 +120,8 @@ void* TimerThread::run( void )
     tmp.clear();
     for ( it = ret.first; it != ret.second; it++ ) {
       it->second.user->timerExpired();
-      if ( it->second.periodTime ) tmp.insert(std::pair<time_t, UserEntry>(
+      if ( it->second.periodTime.tv_sec != 0 or it->second.periodTime.tv_nsec != 0)
+        tmp.insert(std::pair<timespec, UserEntry>(
                   it->second.periodTime, it->second ) );
     }
     m_users.erase( nextExpiration );
