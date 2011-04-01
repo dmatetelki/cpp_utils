@@ -98,7 +98,7 @@ lcov -r lcov.info "g++-v*" -o lcov.info
 lcov -r lcov.info "/usr/include/cxxtest*" -o lcov.info
 lcov -r lcov.info "*cpp_utils/test*" -o lcov.info
 
-echo -e "${pre}Generating HTML${post}"
+echo -e "${pre}Generating coverage HTML${post}"
 rm -rf ./cov
 mkdir cov
 genhtml --frames --legend -o ./cov lcov.info

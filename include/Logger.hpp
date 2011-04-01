@@ -33,14 +33,12 @@ public:
   static void setLogLevel ( const LogLevel loglevel );
   inline static LogLevel getLoglevel() { return m_logLevel; }
 
-  static void log_pointer( const LogLevel loglevel,
-                           const void* msg,
+  static void log_pointer( const void* msg,
                            const char* file,
                            int line,
                            const char* function);
 
-  static void log_string( const LogLevel loglevel,
-                          const char* msg,
+  static void log_string( const char* msg,
                           const char* file,
                           int line,
                           const char* function);
@@ -69,7 +67,7 @@ private:
 if(MAX_LOFLEVEL >= Logger::FINEST && \
   Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
 Logger::getInstance()->log_pointer( \
-  Logger::FINEST, this, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+  this, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
 else (void)0
 
 
@@ -77,7 +75,7 @@ else (void)0
 if (MAX_LOFLEVEL >= level && \
   Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
 Logger::getInstance()->log_string( \
-  level, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+  msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
 else (void)0
 
 

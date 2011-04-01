@@ -16,11 +16,10 @@ void Logger::setLogLevel ( const LogLevel loglevel )
 
 
 
-void Logger::log_pointer( const LogLevel loglevel,
-                  const void* msg,
-                  const char* file,
-                  int line,
-                  const char* function)
+void Logger::log_pointer( const void* msg,
+                          const char* file,
+                          int line,
+                          const char* function)
 {
   *m_ostream  << getTime() << " "
               << extractFilename(file) << ":"
@@ -31,11 +30,10 @@ void Logger::log_pointer( const LogLevel loglevel,
 }
 
 
-void Logger::log_string( const LogLevel loglevel,
-                  const char* msg,
-                  const char* file,
-                  int line,
-                  const char* function)
+void Logger::log_string( const char* msg,
+                         const char* file,
+                         int line,
+                         const char* function)
 {
   *m_ostream  << getTime() << " "
               << extractFilename(file) << ":"
