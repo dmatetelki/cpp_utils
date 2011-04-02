@@ -154,20 +154,22 @@ public:
     tt->addTimerUser( user, 10 );
 
     sleep(2);
+    TS_ASSERT_EQUALS( tt->m_users.size(), 1);
+
+
     tt->removeTimerUser( user );
 
     sleep(1);
+    TS_ASSERT_EQUALS( tt->m_users.size(), 0);
+
     tt->stop();
     sleep(1);
-
-    TS_ASSERT_EQUALS( user->m_counter, 100 );
 
     delete tt;
     delete user;
   }
 
-  /// @bug this case does not work, investigate!
-  void bugtestRemovedMultiple( void )
+  void testRemovedMultiple( void )
   {
     TEST_HEADER;
     TimerThread* tt = new TimerThread();
@@ -176,17 +178,15 @@ public:
 
     DummyTimerUser *user = new DummyTimerUser();
     tt->addTimerUser( user, 10 );
-    DummyTimerUser *user2 = new DummyTimerUser();
-    tt->addTimerUser( user2, 12 );
-    DummyTimerUser *user3 = new DummyTimerUser();
-    tt->addTimerUser( user3, 13 );
-    DummyTimerUser *user4 = new DummyTimerUser();
-    tt->addTimerUser( user4, 14 );
+    tt->addTimerUser( user, 12 );
+    tt->addTimerUser( user, 13 );
+    tt->addTimerUser( user, 14 );
 
     TS_ASSERT_EQUALS( tt->m_users.size(), 4);
 
     sleep(2);
     tt->removeTimerUser( user );
+    sleep(2);
 
     TS_ASSERT_EQUALS( tt->m_users.size(), 0);
 
@@ -197,9 +197,6 @@ public:
 
     delete tt;
     delete user;
-    delete user2;
-    delete user3;
-    delete user4;
   }
 
 };

@@ -36,6 +36,11 @@ void TimerThread::addTimerUser(TimerUser* user,
 
   UserEntry userEntry = { periodTimeTS, user };
   m_users.insert( std::pair<timespec, UserEntry>( expirationTS, userEntry ) );
+
+  std::string s;
+  s = std::string("adding user: ") + stringify(user);
+  LOG(Logger::FINEST, s.c_str());
+
   m_condVar.signal();
 }
 
@@ -49,6 +54,11 @@ void TimerThread::addTimerUser( TimerUser* user,
   if ( not m_isRunning ) return;
   UserEntry userEntry = { periodTime, user };
   m_users.insert( std::pair<timespec, UserEntry>( expiration, userEntry ) );
+
+  std::string s;
+  s = std::string("adding user: ") + stringify(user);
+  LOG(Logger::FINEST, s.c_str());
+
   m_condVar.signal();
 }
 
@@ -61,10 +71,16 @@ bool TimerThread::removeTimerUser ( void* timerUser )
   std::multimap<timespec, UserEntry>::iterator it, tmp;
   bool found(false);
   for ( it = m_users.begin(); it != m_users.end(); ) {
-    tmp = it++;
+
+    std::string s;
+    s = stringify(it->second.user) + " = ? = " + stringify(timerUser);
+    LOG(Logger::FINEST, "Checking user to delete...does it match? ");
+    LOG(Logger::FINEST, s.c_str());
 
     /// @todo solve the abstract pointer problem
-    if ( (void*)(it->second.user) == (void*)timerUser ) {
+    if ( (it->second.user) == timerUser ) {
+      tmp = it++;
+      LOG(Logger::FINEST, "Removing a user.");
       m_users.erase(tmp);
       m_condVar.signal();
       found = true;  // one user can be registered multiple times
@@ -79,7 +95,7 @@ void TimerThread::stop()
   TRACE;
   ScopedLock sl( m_mutex );
   m_isRunning = false;
-  m_condVar.signal();
+  m_condVar.broadcast();
 }
 
 
@@ -97,6 +113,7 @@ void* TimerThread::run( void )
 
     m_mutex.lock();
     while ( m_users.empty() and m_isRunning ) {
+      LOG(Logger::FINEST, "Waiting for a user, since the map is empty.");
       m_condVar.wait();
     }
     m_mutex.unlock();
@@ -108,6 +125,8 @@ void* TimerThread::run( void )
     // timer deleted / added, get nextExpiration again
     if ( m_condVar.wait( nextExpiration.tv_sec,
                          nextExpiration.tv_nsec ) != ETIMEDOUT ) {
+      LOG(Logger::FINEST, "Abort sleep: user has been added/removed.");
+      m_mutex.unlock();
       continue;
     }
     m_mutex.unlock();
@@ -119,10 +138,13 @@ void* TimerThread::run( void )
     /// @todo modify key values in multimap, must be a better way
     tmp.clear();
     for ( it = ret.first; it != ret.second; it++ ) {
+      LOG(Logger::FINEST, "Notifying one user.");
       it->second.user->timerExpired();
-      if ( it->second.periodTime.tv_sec != 0 or it->second.periodTime.tv_nsec != 0)
+      if ( it->second.periodTime.tv_sec != 0 or it->second.periodTime.tv_nsec != 0) {
+        LOG(Logger::FINEST, "Periodic, re-adding.");
         tmp.insert(std::pair<timespec, UserEntry>(
                   it->second.periodTime, it->second ) );
+      }
     }
     m_users.erase( nextExpiration );
     m_users.insert( tmp.begin(), tmp.end() );
@@ -132,6 +154,7 @@ void* TimerThread::run( void )
 
   if ( not m_users.empty() ) {
     for ( it = m_users.begin(); it != m_users.end(); it++ ) {
+      LOG(Logger::FINEST, "Calling timerDestroyed on one user.");
       it->second.user->timerDestroyed();
     }
   }
