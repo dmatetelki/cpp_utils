@@ -33,13 +33,10 @@ void Thread::start()
     sched_param param;
 
     pthread_attr_init(&attr);
-    if ( pthread_attr_setschedpolicy( &attr, SCHED_RR ) != 0 ) {
-      throw std::runtime_error( "Coudn't set thread scheduler." );
-    }
+    pthread_attr_setschedpolicy( &attr, SCHED_RR );
+
     param.sched_priority = 50;
-    if ( pthread_attr_setschedparam( &attr, &param ) != 0 ) {
-      throw std::runtime_error( "Coudn't set thread priority.");
-    }
+    pthread_attr_setschedparam( &attr, &param );
 
     pthread_create( &m_threadHandler, &attr, threadStarter, ( void* )this );
   } else {
@@ -73,6 +70,6 @@ void Thread::sendSignal( const int nSignal ) const
 
 void* Thread::threadStarter( void* pData )
 {
-  LOG(Logger::FINEST, "static");
+  TRACE_STATIC;
   return static_cast<Thread *>(pData)->run();
 }

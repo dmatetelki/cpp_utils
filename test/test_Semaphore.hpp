@@ -3,7 +3,7 @@
 #include "Semaphore.hpp"
 #include "Thread.hpp"
 #include "Common.hpp"
-#include "test_Common.hpp"
+#include "Fixture.hpp"
 
 class TestSemaphore : public CxxTest::TestSuite
 {

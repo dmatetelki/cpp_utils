@@ -39,22 +39,11 @@ inline const char* extractFilename( const char *path )
 }
 
 
-class BadConversion : public std::runtime_error
-{
-
-public:
-
-  BadConversion(std::string const& s) : std::runtime_error(s) { }
-
-};
-
-
 template<typename T>
 inline std::string stringify(T const& x)
 {
   std::ostringstream o;
-  if (!(o << x))
-    throw BadConversion(std::string("stringify(") + typeid(x).name() + ")");
+  o << x;
   return o.str();
 }
 

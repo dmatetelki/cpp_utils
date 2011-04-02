@@ -3,7 +3,7 @@
 #define private public // need to reach Singleton's private m_instance
 
 #include "Common.hpp"
-#include "test_Common.hpp"
+#include "Fixture.hpp"
 #include "Singleton.hpp"
 
 

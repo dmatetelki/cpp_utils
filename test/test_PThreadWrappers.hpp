@@ -3,7 +3,7 @@
 #define private public // need to reach private variables
 
 #include "Common.hpp"
-#include "test_Common.hpp"
+#include "Fixture.hpp"
 #include "Mutex.hpp"
 
 class TestPThreadWrappers : public CxxTest::TestSuite

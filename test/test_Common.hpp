@@ -1,33 +1,23 @@
-#ifndef TEST_COMMON_HPP
-#define TEST_COMMON_HPP
-
 #include <cxxtest/TestSuite.h>
-#include <cxxtest/GlobalFixture.h>
 
+#include "Fixture.hpp"
 #include "Common.hpp"
-#include <iostream>
 
-class TestCommon : public CxxTest::GlobalFixture
+#include <time.h> // timespec
+
+class TestCommon : public CxxTest::TestSuite
 {
-  bool setUpWorld()
-  {
-    Logger::createInstance();
-    Logger::init(std::cout);
-    return true;
-  }
 
-  bool tearDownWorld()
+
+public:
+
+  void testCoverageIncrease( void )
   {
-    Logger::destroy();
-    return true;
+
+    // coverage increase of addTotimespec
+    long int sec = 0;
+    long int nsec = 1000000000 + 1;
+    timespec ts = addTotimespec(sec, nsec);
   }
 
 };
-
-static TestCommon testCommon;
-
-#define TEST_HEADER \
-  MSG( std::string("\n+++ ").append(__PRETTY_FUNCTION__).append(" +++\n").c_str());
-
-
-#endif // TEST_COMMON_HPP

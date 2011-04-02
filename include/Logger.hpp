@@ -70,6 +70,13 @@ Logger::getInstance()->log_pointer( \
   this, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
 else (void)0
 
+#define TRACE_STATIC \
+if(MAX_LOFLEVEL >= Logger::FINEST && \
+  Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
+Logger::getInstance()->log_pointer( \
+  0, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+else (void)0
+
 
 #define LOG(level, msg) \
 if (MAX_LOFLEVEL >= level && \

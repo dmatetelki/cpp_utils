@@ -10,8 +10,7 @@ if(CXXTEST_FOUND)
   enable_testing()
   CXXTEST_ADD_TEST(test
   generated_main.cpp
-
-  test_Common.hpp
+  Fixture.hpp
 
   test_Singelton.hpp
   test_Mutex.hpp
@@ -21,6 +20,7 @@ if(CXXTEST_FOUND)
   test_ThreadPool.hpp
   test_Semaphore.hpp
   test_TimerThread.hpp
+  test_Common.hpp
   )
   target_link_libraries(test CppUtils gcov)
 endif()

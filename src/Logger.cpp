@@ -1,6 +1,7 @@
 #include "Logger.hpp"
 
 #include <time.h> //time
+#include "Colors.hpp"
 
 
 void Logger::init(std::ostream& log_stream )
@@ -22,11 +23,12 @@ void Logger::log_pointer( const void* msg,
                           const char* function)
 {
   *m_ostream  << getTime() << " "
-              << extractFilename(file) << ":"
-              << line << " "
-              << function << " "
-              << "\"" << msg << "\""
-              << std::endl;
+              << COLOR( FG_GREEN ) << extractFilename(file)
+              << COLOR_RESET << ":"
+              << COLOR( FG_BROWN ) <<  line << COLOR_RESET << " "
+              << COLOR( FG_CYAN ) << function << COLOR_RESET << " "
+              << COLOR( FG_BLUE ) << "\"" << msg << "\""
+              << COLOR_RESET << std::endl;
 }
 
 
@@ -36,16 +38,17 @@ void Logger::log_string( const char* msg,
                          const char* function)
 {
   *m_ostream  << getTime() << " "
-              << extractFilename(file) << ":"
-              << line << " "
-              << function << " "
-              << "\"" << msg << "\""
-              << std::endl;
+              << COLOR( FG_GREEN ) << extractFilename(file)
+              << COLOR_RESET << ":"
+              << COLOR( FG_BROWN ) <<  line << COLOR_RESET << " "
+              << COLOR( FG_CYAN ) << function << COLOR_RESET << " "
+              << COLOR_F_FG( F_BOLD, FG_BROWN ) << "\"" << msg << "\""
+              << COLOR_RESET << std::endl;
 }
 
 void Logger::msg(const char* text)
 {
-  *m_ostream  << text << std::endl;
+  *m_ostream  << COLOR_F( F_BOLD) << text << COLOR_RESET << std::endl;
 }
 
 

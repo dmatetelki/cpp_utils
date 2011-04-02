@@ -1,7 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "ScopedLock.hpp"
-#include "test_Common.hpp"
+#include "Fixture.hpp"
 
 
 class TestScopedLock : public CxxTest::TestSuite
