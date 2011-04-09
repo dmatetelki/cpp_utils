@@ -3,13 +3,8 @@
 #include "Common.hpp"
 
 #include <signal.h> // sigset_t
-// #include <assert.h> // assert
 #include <time.h> // timer_t
-// #include <errno.h> // EINVAL, EAGAIN, EINTR
-// #include <set>
 #include <string.h> // strerror
-// #include <iostream>
-// #include <stdio.h>
 
 Timer::Timer(const int signal)
     : m_signal(signal)
@@ -38,7 +33,6 @@ void Timer::createTimer(const time_t interval_sec,
   sigev.sigev_signo = m_signal;
   sigev.sigev_value.sival_ptr = &m_timerId;
   if ( timer_create( CLOCK_MONOTONIC, &sigev, &m_timerId ) == -1 ) {
-//     std::cout << "Error from timer_create: " << strerror(errno) << std::endl;
     LOG ( Logger::FINEST, "Error from timer_create: " /*strerror(errno)*/ );
     return;
   }
@@ -53,7 +47,6 @@ void Timer::createTimer(const time_t interval_sec,
   if ( initExpr_sec != 0 or initExpr_nsec != 0 ) m_periodic = true;
 
   if ( timer_settime( m_timerId, 0, &its, 0 ) == -1 ) {
-//     std::cout << "Error from timer_settime: " << strerror(errno) << std::endl;
         LOG ( Logger::FINEST, "Error from timer_settime: " /*strerror(errno)*/ );
     return;
   }

@@ -2,14 +2,11 @@
 
 #include "Fixture.hpp"
 
-// #define private public // reach TimerThread's private multimap
 
 #include "Timer.hpp"
+#include "Thread.hpp"
 
-// #include <time.h>
-
-
-
+#include <signal.h>
 
 class TestTimer : public CxxTest::TestSuite
 {
@@ -75,5 +72,75 @@ public:
     TS_ASSERT_EQUALS( t.m_counter, 105 );
   }
 
+private:
+
+  class DummyTimerThread : public Timer, public Thread
+  {
+  public:
+
+    DummyTimerThread(int maxPeriodicCount = 5)
+      : m_counter(0)
+      , m_maxPeriodicCount(maxPeriodicCount)
+    {
+      TRACE;
+    }
+
+  private:
+
+    void* run()
+    {
+      TRACE;
+      createTimer(2);
+      wait();
+      return 0;
+    }
+
+  public:
+
+    void timerExpired()
+    {
+      TRACE;
+      m_counter += 100;
+    }
+
+    void periodicTimerExpired()
+    {
+      TRACE;
+      static int count = 0;
+      m_counter++;
+      count++;
+      if ( count >= m_maxPeriodicCount ) {
+        stopTimer();
+      }
+    }
+
+    int m_counter;
+
+  private:
+
+    int m_maxPeriodicCount;
+
+  };
+
+  public:
+
+  void testBasicTimerThread( void )
+  {
+    TEST_HEADER;
+
+    // the main thread shall ignore the SIGALRM
+    sigset_t set;
+    sigemptyset( &set );
+    sigaddset( &set, SIGALRM );
+    sigprocmask(SIG_BLOCK, &set, NULL);
+
+    DummyTimerThread t;
+
+    t.start();
+    sleep(4);
+    t.join();
+
+    TS_ASSERT_EQUALS( t.m_counter, 100 );
+  }
 
 };
