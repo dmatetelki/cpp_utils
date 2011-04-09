@@ -79,3 +79,10 @@ void Timer::stopTimer()
   timer_settime( m_timerId, 0, &its, 0 );
   m_running = false;
 }
+
+void Timer::gracefulStop()
+{
+  TRACE;
+
+  m_running = false;
+}

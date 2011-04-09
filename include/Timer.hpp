@@ -18,13 +18,15 @@ public:
 
 
   void createTimer(const time_t interval_sec,
-                      const long interval_nsec = 0,
-                      const time_t initExpr_sec = 0,
-                      const long initExpr_nsec = 0);
+                   const long interval_nsec = 0,
+                   const time_t initExpr_sec = 0,
+                   const long initExpr_nsec = 0);
 
   void wait();
 
   void stopTimer();
+
+  void gracefulStop();
 
 private:
 
