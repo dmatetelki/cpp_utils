@@ -57,33 +57,32 @@ private:
 
 
 #ifdef NO_TRACE
-  #define MAX_LOFLEVEL Logger::DEBUG
+
+  #define TRACE        (void)0
+  #define TRACE_STATIC (void)0
+  #define LOG          (void)0
+
 #else
-  #define MAX_LOFLEVEL Logger::FINEST
+
+  #define TRACE \
+    if ( Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
+    Logger::getInstance()->log_pointer( \
+      this, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+    else (void)0
+
+  #define TRACE_STATIC \
+    if ( Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
+    Logger::getInstance()->log_pointer( \
+      0, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+    else (void)0
+
+  #define LOG(level, msg) \
+  if ( Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
+  Logger::getInstance()->log_string( \
+    msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+  else (void)0
+
 #endif
-
-
-#define TRACE \
-if(MAX_LOFLEVEL >= Logger::FINEST && \
-  Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
-Logger::getInstance()->log_pointer( \
-  this, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-else (void)0
-
-#define TRACE_STATIC \
-if(MAX_LOFLEVEL >= Logger::FINEST && \
-  Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
-Logger::getInstance()->log_pointer( \
-  0, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-else (void)0
-
-
-#define LOG(level, msg) \
-if (MAX_LOFLEVEL >= level && \
-  Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
-Logger::getInstance()->log_string( \
-  msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-else (void)0
 
 
 /// @todo remove this

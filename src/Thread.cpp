@@ -8,10 +8,9 @@
 #include <sched.h> // sched_param
 
 
-Thread::Thread(const bool softRealTime)
+Thread::Thread()
   : m_isRunning(false)
   , m_threadHandler( 0 )
-  , m_softRealTime(softRealTime)
 {
   TRACE;
 }
@@ -27,21 +26,7 @@ void Thread::start()
 {
   TRACE;
   m_isRunning = true;
-
-  if ( m_softRealTime ) {
-    pthread_attr_t attr;
-    sched_param param;
-
-    pthread_attr_init(&attr);
-    pthread_attr_setschedpolicy( &attr, SCHED_RR );
-
-    param.sched_priority = 50;
-    pthread_attr_setschedparam( &attr, &param );
-
-    pthread_create( &m_threadHandler, &attr, threadStarter, ( void* )this );
-  } else {
-    pthread_create( &m_threadHandler, 0, threadStarter, ( void* )this );
-  }
+  pthread_create( &m_threadHandler, 0, threadStarter, ( void* )this );
 }
 
 

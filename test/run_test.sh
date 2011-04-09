@@ -61,6 +61,10 @@ valgrind \
       --suppressions=valgrind.supp \
       $test | tee $test.out; retval=$PIPESTATUS
 
+# NOTE to gen suppressions run:
+# valgrind --leak-check=full --show-reachable=yes --show-below-main=no --track-origins=yes --num-callers=30 --malloc-fill=0xaa --free-fill=0xdd --gen-suppressions=yes ./test
+
+
 # retval is 0 on success
 # or the number of failed cases
 # or 137 if segfault happens

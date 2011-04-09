@@ -84,6 +84,8 @@ bool TimerThread::removeTimerUser ( void* timerUser )
       m_users.erase(tmp);
       m_condVar.signal();
       found = true;  // one user can be registered multiple times
+    } else {
+      it++;
     }
   }
   return found;

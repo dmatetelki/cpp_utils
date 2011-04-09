@@ -8,7 +8,7 @@ class Thread
 {
 public:
 
-  Thread( const bool softRealTime = false );
+  Thread();
   virtual ~Thread();
 
   void start();
@@ -28,7 +28,7 @@ protected:
 private:
 
   pthread_t m_threadHandler;
-  bool m_softRealTime;
+
 };
 
 

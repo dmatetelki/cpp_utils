@@ -34,7 +34,7 @@ private:
 
 public:
 
-  void testBasic( void )
+  void nemtestBasic( void )
   {
     TEST_HEADER;
     TimerThread* tt = new TimerThread();
@@ -54,7 +54,7 @@ public:
     delete user;
   }
 
-  void testBasicTimeSpec( void )
+  void nemtestBasicTimeSpec( void )
   {
     TEST_HEADER;
     TimerThread* tt = new TimerThread();
@@ -75,7 +75,7 @@ public:
     delete user;
   }
 
-  void testPeriodic( void )
+  void nemtestPeriodic( void )
   {
     TEST_HEADER;
     TimerThread* tt = new TimerThread();
@@ -95,35 +95,39 @@ public:
     delete user;
   }
 
-    void testPeriodicTimeSpec( void )
+  void testPeriodicTimeSpec( void )
   {
     TEST_HEADER;
+
+//     Logger::getInstance()->setLogLevel(Logger::DEBUG);
+    
     TimerThread* tt = new TimerThread();
     tt->start();
     sleep(1);
 
     DummyTimerUser *user = new DummyTimerUser();
-    timespec ts = { 2, 3 };
-    timespec tsperiod = { 1, 2 };
+    timespec ts = { 2, 0 };
+    timespec tsperiod = { 1, 0 };
     tt->addTimerUser( user, ts, tsperiod );
 
     /// @bug What is wrong here?
-//     DummyTimerUser *user2 = new DummyTimerUser();
-//     timespec ts2 = { 0, 100000000 };
-//     tt->addTimerUser( user2, ts, ts2 );
+    DummyTimerUser *user2 = new DummyTimerUser();
+    int perMinute = 2000;
+    timespec ts2 = { 0, 1000000000 / perMinute };
+    tt->addTimerUser( user2, ts, ts2 );
 
     sleep(6);
     tt->stop();
     sleep(1);
 
-    TS_ASSERT_EQUALS( user->m_counter, 104 );
-//     TS_ASSERT_EQUALS( user2->m_counter, 110 );
+    TS_ASSERT_EQUALS( user->m_counter, 100 + 4 );  // 4 times
+    TS_ASSERT_EQUALS( user2->m_counter, 100 + perMinute*4 );
 
     delete tt;
     delete user;
   }
 
-  void testDestroyed( void )
+  void nemtestDestroyed( void )
   {
     TEST_HEADER;
     TimerThread* tt = new TimerThread();
@@ -143,7 +147,7 @@ public:
     delete user;
   }
 
-  void testRemoved( void )
+  void nemtestRemoved( void )
   {
     TEST_HEADER;
     TimerThread* tt = new TimerThread();
@@ -151,25 +155,42 @@ public:
     sleep(1);
 
     DummyTimerUser *user = new DummyTimerUser();
+    DummyTimerUser *user2 = new DummyTimerUser();
+    DummyTimerUser *user3 = new DummyTimerUser();
     tt->addTimerUser( user, 10 );
+    tt->addTimerUser( user2, 13 );
+    tt->addTimerUser( user3, 15 );
 
     sleep(2);
-    TS_ASSERT_EQUALS( tt->m_users.size(), 1);
+    TS_ASSERT_EQUALS( tt->m_users.size(), 3 );
 
+
+    tt->removeTimerUser( user2 );
+    sleep(1);
+    TS_ASSERT_EQUALS( tt->m_users.size(), 2 );
+
+    tt->removeTimerUser( user3 );
+    sleep(1);
+    TS_ASSERT_EQUALS( tt->m_users.size(), 1 );
+
+    tt->removeTimerUser( user2 );
+    sleep(1);
+    TS_ASSERT_EQUALS( tt->m_users.size(), 1 );
 
     tt->removeTimerUser( user );
-
     sleep(1);
-    TS_ASSERT_EQUALS( tt->m_users.size(), 0);
+    TS_ASSERT_EQUALS( tt->m_users.size(), 0 );
 
     tt->stop();
     sleep(1);
 
     delete tt;
     delete user;
+    delete user2;
+    delete user3;
   }
 
-  void testRemovedMultiple( void )
+  void nemtestRemovedMultiple( void )
   {
     TEST_HEADER;
     TimerThread* tt = new TimerThread();
