@@ -48,7 +48,7 @@ public:
                        const timespec expiration,
                        const timespec periodTime = timespec_ctor() );
 
-    bool removeTimerUser ( void* timerUser );
+    bool removeTimerUser( TimerUser* timerUser );
 
     // override to signal as well
     void stop();
@@ -56,9 +56,11 @@ public:
 
 private:
 
+  void notifyAndRemove( const timespec t );
+
   void* run( void );
 
-  // facory function
+  // ctor function
   inline static timespec timespec_ctor() {
     timespec tmp = { 0, 0 };
     return tmp;
