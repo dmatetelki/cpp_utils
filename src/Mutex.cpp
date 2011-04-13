@@ -4,13 +4,18 @@
 
 #include <time.h>
 
+pthread_mutex_t& MutexCtor(pthread_mutex_t& mutex)
+{
+  pthread_mutex_init( &mutex, 0 );
+  return mutex;
+}
+
 
 Mutex::Mutex(int kind)
+  : m_mutex(MutexCtor(m_mutex))
 {
   TRACE;
-  if ( kind == PTHREAD_MUTEX_DEFAULT ) {
-    pthread_mutex_init( &m_mutex, 0 );
-  } else {
+  if ( kind != PTHREAD_MUTEX_DEFAULT ) {
     pthread_mutexattr_t attr;
     pthread_mutexattr_init( &attr );
     pthread_mutexattr_settype( &attr, kind );

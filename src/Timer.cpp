@@ -6,17 +6,25 @@
 #include <time.h> // timer_t
 #include <string.h> // strerror
 
-Timer::Timer(const int signal)
-    : m_signal(signal)
+
+struct sigaction& sigActionCtor(struct sigaction &sigAct, const int signal)
+{
+  sigAct.sa_flags = SA_SIGINFO;
+  sigemptyset(&sigAct.sa_mask);
+  sigaddset( &sigAct.sa_mask, signal );
+  sigaction( signal, &sigAct, 0 );
+  return sigAct;
+}
+
+
+Timer::Timer(const Timer& timer)
+    : m_signal(timer.m_signal)
+    , m_sigAction(sigActionCtor( m_sigAction , m_signal ) )
+    , m_timerId(0)
     , m_periodic(false)
     , m_running(true)
 {
   TRACE;
-
-  m_sigAction.sa_flags = SA_SIGINFO;
-  sigemptyset(&m_sigAction.sa_mask);
-  sigaddset( &m_sigAction.sa_mask, m_signal );
-  sigaction( m_signal, &m_sigAction, 0 );
 }
 
 
@@ -80,9 +88,21 @@ void Timer::stopTimer()
   m_running = false;
 }
 
+
 void Timer::gracefulStop()
 {
   TRACE;
 
   m_running = false;
+}
+
+
+Timer::Timer(const int signal)
+    : m_signal(signal)
+    , m_sigAction(sigActionCtor( m_sigAction , m_signal ) )
+    , m_timerId(0)
+    , m_periodic(false)
+    , m_running(true)
+{
+  TRACE;
 }

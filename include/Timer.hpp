@@ -12,7 +12,6 @@ public:
   Timer(const int signal = SIGALRM );
   virtual ~Timer() {}
 
-
   virtual void timerExpired()  {}
 
   virtual void periodicTimerExpired() {}
@@ -30,6 +29,12 @@ public:
   void gracefulStop();
 
 private:
+
+  // after turning on all warnings, gcc reports that the class has pointer
+  // data members (time_t, which is an int by the way) so copy ctor and
+  // assign op shall be inmplemented
+  Timer(const Timer& timer);
+  Timer& operator=(const Timer&) { return *this; }
 
   int m_signal;
   struct sigaction m_sigAction;

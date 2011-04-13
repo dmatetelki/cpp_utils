@@ -3,9 +3,16 @@
 
 #include <time.h>
 
+pthread_cond_t& CondVarCtor(pthread_cond_t& condVar)
+{
+  pthread_cond_init( &condVar, 0 );
+  return condVar;
+}
+
 
 ConditionVariable::ConditionVariable(Mutex& mutex)
   : m_mutex(mutex)
+  , m_condVar(CondVarCtor(m_condVar))
 {
   TRACE;
   pthread_cond_init( &m_condVar, 0 );
