@@ -58,9 +58,9 @@ private:
 
 #ifdef NO_TRACE
 
-  #define TRACE        (void)0
-  #define TRACE_STATIC (void)0
-  #define LOG          (void)0
+  #define TRACE           (void)0
+  #define TRACE_STATIC    (void)0
+  #define LOG(level, msg) (void)0
 
 #else
 

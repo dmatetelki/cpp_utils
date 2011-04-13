@@ -13,21 +13,55 @@
 #include <stdexcept> // runtime_error
 #include <sstream> // ostringstream
 
-inline timespec addTotimespec(const long int & sec, const long int & nsec)
+const long NANO = 1000000000L;  // 10^9
+
+
+inline timespec addTotimespec( const long int & sec, const long int & nsec)
 {
-  const int nano = 1000000000;  // 10^9
+
   timespec abs_time;
   clock_gettime ( CLOCK_REALTIME, &abs_time );
   long int nsecSum( abs_time.tv_nsec + nsec );
 
-  if ( nsecSum >= nano ) {
-    abs_time.tv_sec += sec + nsecSum / nano;
-    abs_time.tv_nsec = nsecSum % nano;
+  if ( nsecSum >= NANO ) {
+    abs_time.tv_sec += sec + nsecSum / NANO;
+    abs_time.tv_nsec = nsecSum % NANO;
   } else {
     abs_time.tv_sec += sec;
     abs_time.tv_nsec += nsec;
   }
   return abs_time;
+}
+
+
+inline timespec timespecAdd( timespec& t1, const timespec& t2 )
+{
+  timespec  result;
+  result.tv_sec = t1.tv_sec + t2.tv_sec ;
+  result.tv_nsec = t1.tv_nsec + t2.tv_nsec ;
+  if (result.tv_nsec >= NANO ) {
+    result.tv_sec++ ;
+    result.tv_nsec = result.tv_nsec - NANO;
+  }
+  return result;
+}
+
+inline timespec timespecSubstract( timespec& t1, const timespec& t2 )
+{
+  timespec  result;
+  if ((t1.tv_sec < t2.tv_sec) ||
+      ((t1.tv_sec == t2.tv_sec) && (t1.tv_nsec <= t2.tv_nsec))) {
+    result.tv_sec = result.tv_nsec = 0 ;
+  } else {
+    result.tv_sec = t1.tv_sec - t2.tv_sec ;
+    if (t1.tv_nsec < t2.tv_nsec) {
+      result.tv_nsec = t1.tv_nsec + NANO - t2.tv_nsec ;
+      result.tv_sec-- ;
+    } else {
+      result.tv_nsec = t1.tv_nsec - t2.tv_nsec ;
+    }
+  }
+  return result;
 }
 
 

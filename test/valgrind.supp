@@ -71,22 +71,15 @@
 
 
 {
-   creating a mere thread...what is your problem, valgrind
+   create thread
    Memcheck:Leak
    fun:calloc
-   fun:allocate_dtv
    fun:_dl_allocate_tls
    fun:pthread_create@@GLIBC_*.*.*
-   fun:_ZN6Thread5startEv
    ...
-   fun:_ZN7CxxTest19RealTestDescription3runEv
-   fun:_ZN7CxxTest10TestRunner7runTestERNS_15TestDescriptionE
-   fun:_ZN7CxxTest10TestRunner8runSuiteERNS_16SuiteDescriptionE
-   fun:_ZN7CxxTest10TestRunner8runWorldEv
-   fun:_ZN7CxxTest10TestRunner11runAllTestsERNS_12TestListenerE
-   fun:_ZN7CxxTest14ErrorFormatter3runEv
    fun:main
 }
+
 
 {
    sigaction handling

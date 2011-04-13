@@ -10,6 +10,7 @@ class Timer
 public:
 
   Timer(const int signal = SIGALRM );
+  virtual ~Timer() {}
 
 
   virtual void timerExpired()  {}
