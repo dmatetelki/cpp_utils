@@ -1,18 +1,19 @@
 #include "Mutex.hpp"
-#include "Common.hpp"
 
+#include "Common.hpp"
 
 #include <time.h>
 
-pthread_mutex_t& MutexCtor(pthread_mutex_t& mutex)
+
+pthread_mutex_t& MutexCtor( pthread_mutex_t& mutex )
 {
   pthread_mutex_init( &mutex, 0 );
   return mutex;
 }
 
 
-Mutex::Mutex(int kind)
-  : m_mutex(MutexCtor(m_mutex))
+Mutex::Mutex( int kind )
+  : m_mutex( MutexCtor( m_mutex ) )
 {
   TRACE;
   if ( kind != PTHREAD_MUTEX_DEFAULT ) {
@@ -45,14 +46,14 @@ int Mutex::unlock()
 }
 
 
-int Mutex::tryLock(const long int intervalSec, const long int intervalNSec)
+int Mutex::tryLock( const long int intervalSec, const long int intervalNSec )
 {
   TRACE;
   if ( intervalSec == 0 and intervalNSec == 0 ) {
-    return pthread_mutex_trylock ( &m_mutex );
+    return pthread_mutex_trylock( &m_mutex );
   } else {
     timespec tspec = addTotimespec( intervalSec, intervalSec );
-    return pthread_mutex_timedlock ( &m_mutex, &tspec );
+    return pthread_mutex_timedlock( &m_mutex, &tspec );
   }
 }
 

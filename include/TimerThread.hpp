@@ -14,8 +14,8 @@ class TimerUser
 
 public:
 
-  virtual void timerExpired( void ) = 0;
-  virtual void timerDestroyed( void ) = 0;
+  virtual void timerExpired() = 0;
+  virtual void timerDestroyed() = 0;
 
   virtual ~TimerUser() {}
 
@@ -46,7 +46,7 @@ public:
 
     void addTimerUser( TimerUser* user,
                        const timespec expiration,
-                       const timespec periodTime = timespec_ctor() );
+                       const timespec periodTime = timespec_init() );
 
     bool removeTimerUser( TimerUser* timerUser );
 
@@ -58,10 +58,10 @@ private:
 
   void notifyAndRemove( const timespec t );
 
-  void* run( void );
+  void* run();
 
-  // ctor function
-  inline static timespec timespec_ctor() {
+  // init function
+  inline static timespec timespec_init() {
     timespec tmp = { 0, 0 };
     return tmp;
   };
@@ -69,7 +69,7 @@ private:
   // compare class for the multimap
   class timespec_cmp {
     public :
-      bool operator()(const timespec& a, const timespec& b) const {
+      bool operator()( const timespec& a, const timespec& b ) const {
         if ( a.tv_sec < b.tv_sec ) return true;
         if ( a.tv_sec > b.tv_sec ) return false;
         return a.tv_nsec < b.tv_nsec;

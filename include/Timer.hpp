@@ -9,18 +9,16 @@ class Timer
 
 public:
 
-  Timer(const int signal = SIGALRM );
+  Timer( const int signal = SIGALRM );
+
   virtual ~Timer() {}
-
-  virtual void timerExpired()  {}
-
+  virtual void timerExpired() {}
   virtual void periodicTimerExpired() {}
 
-
-  void createTimer(const time_t interval_sec,
-                   const long interval_nsec = 0,
-                   const time_t initExpr_sec = 0,
-                   const long initExpr_nsec = 0);
+  void createTimer( const time_t interval_sec,
+                    const long interval_nsec = 0,
+                    const time_t initExpr_sec = 0,
+                    const long initExpr_nsec = 0 );
 
   void wait();
 
@@ -33,8 +31,8 @@ private:
   // after turning on all warnings, gcc reports that the class has pointer
   // data members (time_t, which is an int by the way) so copy ctor and
   // assign op shall be inmplemented
-  Timer(const Timer& timer);
-  Timer& operator=(const Timer&) { return *this; }
+  Timer( const Timer& timer );
+  Timer& operator=( const Timer& );
 
   int m_signal;
   struct sigaction m_sigAction;

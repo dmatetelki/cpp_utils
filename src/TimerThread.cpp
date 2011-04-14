@@ -10,7 +10,7 @@
 TimerThread::TimerThread()
   : Thread()
   , m_mutex()
-  , m_condVar(m_mutex)
+  , m_condVar( m_mutex )
   , m_users()
 {
   TRACE;
@@ -23,9 +23,9 @@ TimerThread::~TimerThread()
 }
 
 
-void TimerThread::addTimerUser(TimerUser* user,
-                               const time_t expiration,
-                               const time_t periodTime)
+void TimerThread::addTimerUser( TimerUser* user,
+                                const time_t expiration,
+                                const time_t periodTime )
 {
   TRACE;
 
@@ -37,8 +37,8 @@ void TimerThread::addTimerUser(TimerUser* user,
 
 
 void TimerThread::addTimerUser( TimerUser* user,
-                               const timespec expiration,
-                               const timespec periodTime )
+                                const timespec expiration,
+                                const timespec periodTime )
 {
   TRACE;
   ScopedLock sl( m_mutex );
@@ -46,7 +46,7 @@ void TimerThread::addTimerUser( TimerUser* user,
 
   timespec ts;
   clock_gettime( CLOCK_REALTIME, &ts );
-  ts = timespecAdd ( ts, expiration );
+  ts = timespecAdd( ts, expiration );
 
   UserEntry userEntry = { periodTime, user };
   m_users.insert( std::pair<timespec, UserEntry>( ts, userEntry ) );
@@ -62,12 +62,12 @@ bool TimerThread::removeTimerUser( TimerUser* timerUser )
   if ( not m_isRunning ) return false;
 
   std::multimap<timespec, UserEntry>::iterator it, tmp;
-  bool found(false);
+  bool found( false );
   for ( it = m_users.begin(); it != m_users.end(); ) {
 
-    if ( (it->second.user) == timerUser ) {
+    if ( it->second.user == timerUser ) {
       tmp = it++;
-      m_users.erase(tmp);
+      m_users.erase( tmp );
       m_condVar.signal();
       found = true;  // one user can be registered multiple times
     } else {
@@ -133,7 +133,7 @@ void* TimerThread::run( void )
     }
     m_mutex.unlock();
 
-    if ( not m_isRunning) return 0;
+    if ( not m_isRunning ) return 0;
 
     nextExpiration = m_users.begin()->first;
     clock_gettime( CLOCK_REALTIME, &ts );
