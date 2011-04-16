@@ -1,15 +1,51 @@
 #!/usr/bin/perl
 
+use strict;
+use warnings;
+
 use Term::ANSIColor qw(:constants);
 $Term::ANSIColor::AUTORESET = 1;
+
+my $line = "";
+my $left;
 
 
 while ( <> ) {
 
-  if (/^(Thread \d+)/) {
-     print "\n" . BOLD BLUE . $1 . RESET . " $'"
+
+
+  if (/Segmentation fault/) {
+    print "\n" . YELLOW . "Segmentation fault." . RESET . "\n";
+    $left = 3;
+    next;
   }
-  elsif ( /^(#\d+)\s+(\S+)\s+in\s+(.+)( \(.*)(at.*\/)(\S+):(\d+)/ )
+
+  if (/^(Thread \d+)/) {
+    print "\n" . BOLD BLUE . $1 . RESET . " $'";
+    next;
+  }
+
+  if ($left) {
+    if ( $left == 3 ) {
+      $line = $_;
+      chomp($line);
+      $left--;
+      next;
+    }
+    elsif ( $left == 2 ) {
+      $line .=  $_;
+      $left--;
+    }
+    elsif ( $left == 1 ) {
+      print BOLD YELLOW . $_ . RESET . "\n";
+      $left--;
+      next;
+    }
+  } else {
+    $line = $_;
+  }
+
+  if ( $line =~ /^(#\d+)\s+(\S+)\s+in\s+(.+)( \(.*)(at.*\/)(\S+):(\d+)/ )
   {
       print "\n" .
             BOLD . $1 .          # no
@@ -21,7 +57,7 @@ while ( <> ) {
             YELLOW . $7 .        # line
             RESET . "\n";
   }
-  elsif ( /^(#\d+)\s+(\S+)\s+in\s+(.+)( \(.*)(from.*\/)(\S+)/ )
+  elsif ( $line =~ /^(#\d+)\s+(\S+)\s+in\s+(.+)( \(.*)(from.*\/)(\S+)/ )
   {
       print "\n" .
             BOLD . $1 .          # no
