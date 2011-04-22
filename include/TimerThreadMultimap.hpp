@@ -1,5 +1,5 @@
-#ifndef TIMERTHREAD_HPP
-#define TIMERTHREAD_HPP
+#ifndef TIMERTHREAD_MULTIMAP_HPP
+#define TIMERTHREAD_MULTIMAP_HPP
 
 
 #include "Thread.hpp"
@@ -23,7 +23,7 @@ public:
 
 
 
-class TimerThread : public Thread
+class TimerThreadMultimap : public Thread
 {
 
 private:
@@ -36,9 +36,9 @@ private:
 
 public:
 
-    TimerThread();
+    TimerThreadMultimap();
 
-    virtual ~TimerThread();
+    virtual ~TimerThreadMultimap();
 
     void addTimerUser( TimerUser* user,
                        const time_t expiration,
@@ -81,7 +81,7 @@ private:
   ConditionVariable m_condVar;
   std::multimap< timespec, UserEntry, timespec_cmp> m_users;
 
-}; // class TimerThread
+}; // class TimerThreadMultimap
 
 
-#endif // TIMERTHREAD_HPP
+#endif // TIMERTHREAD_MULTIMAP_HPP

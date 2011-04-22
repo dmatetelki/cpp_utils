@@ -25,7 +25,7 @@ if(CXXTEST_FOUND)
   test_Semaphore.hpp
   test_Timer.hpp
   test_Common.hpp
-  test_TimerThread.hpp
+  test_TimerThreadMultimap.hpp
   )
   target_link_libraries(test CppUtils gcov)
 endif()

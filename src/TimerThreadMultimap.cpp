@@ -1,4 +1,4 @@
-#include "TimerThread.hpp"
+#include "TimerThreadMultimap.hpp"
 
 #include "Common.hpp"
 #include "ScopedLock.hpp"
@@ -7,7 +7,7 @@
 
 
 
-TimerThread::TimerThread()
+TimerThreadMultimap::TimerThreadMultimap()
   : Thread()
   , m_mutex()
   , m_condVar( m_mutex )
@@ -17,13 +17,13 @@ TimerThread::TimerThread()
 }
 
 
-TimerThread::~TimerThread()
+TimerThreadMultimap::~TimerThreadMultimap()
 {
   TRACE;
 }
 
 
-void TimerThread::addTimerUser( TimerUser* user,
+void TimerThreadMultimap::addTimerUser( TimerUser* user,
                                 const time_t expiration,
                                 const time_t periodTime )
 {
@@ -36,7 +36,7 @@ void TimerThread::addTimerUser( TimerUser* user,
 }
 
 
-void TimerThread::addTimerUser( TimerUser* user,
+void TimerThreadMultimap::addTimerUser( TimerUser* user,
                                 const timespec expiration,
                                 const timespec periodTime )
 {
@@ -55,7 +55,7 @@ void TimerThread::addTimerUser( TimerUser* user,
 }
 
 
-bool TimerThread::removeTimerUser( TimerUser* timerUser )
+bool TimerThreadMultimap::removeTimerUser( TimerUser* timerUser )
 {
   TRACE;
   ScopedLock sl( m_mutex );
@@ -78,7 +78,7 @@ bool TimerThread::removeTimerUser( TimerUser* timerUser )
 }
 
 
-void TimerThread::stop()
+void TimerThreadMultimap::stop()
 {
   TRACE;
   ScopedLock sl( m_mutex );
@@ -87,7 +87,7 @@ void TimerThread::stop()
 }
 
 
-void TimerThread::notifyAndRemove( const timespec t )
+void TimerThreadMultimap::notifyAndRemove( const timespec t )
 {
   TRACE;
   ScopedLock sl( m_mutex );
@@ -119,7 +119,7 @@ void TimerThread::notifyAndRemove( const timespec t )
 }
 
 
-void* TimerThread::run( void )
+void* TimerThreadMultimap::run( void )
 {
   TRACE;
   timespec nextExpiration;

@@ -40,12 +40,6 @@
 
 
 {
-   comparing void pointers
-   Memcheck:Addr4
-   fun:_ZN11TimerThread15removeTimerUserEPv
-}
-
-{
    thread with signal
    Memcheck:Leak
    fun:malloc
@@ -102,3 +96,23 @@
    fun:timer_create@@GLIBC_2.3.3
 }
 
+
+{
+   disarm timer
+   Memcheck:Param
+   timer_settime(value)
+   fun:timer_settime@@GLIBC_2.3.3
+   fun:_ZN5TimerD1Ev
+   ...
+   fun:main
+}
+
+{
+   disarm timer 2
+   Memcheck:Param
+   timer_settime(value)
+   fun:timer_settime@@GLIBC_2.3.3
+   fun:_ZN5Timer9stopTimerEv
+   ...
+   fun:main
+}

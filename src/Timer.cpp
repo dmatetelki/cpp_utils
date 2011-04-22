@@ -7,30 +7,21 @@
 #include <string.h> // strerror
 
 
-/// @note not used now
+/// @note not used now, all signals are caught by sigwaitinfo
 // static void sigHandler(int sig, siginfo_t *si, void *uc)
 // {
-//     TRACE_STATIC;
-//
+//   TRACE_STATIC;
 // }
 
 
 struct sigaction& sigActionInit( struct sigaction &sigAct, const int signal )
 {
   sigAct.sa_flags = SA_SIGINFO;
-  //   sigAct.sa_sigaction = sigHandler;
+//   sigAct.sa_sigaction = sigHandler;
   sigemptyset( &sigAct.sa_mask );
   sigaddset( &sigAct.sa_mask, signal );
-  sigaction( signal, &sigAct, 0 );
+//   sigaction( signal, &sigAct, 0 );
   return sigAct;
-}
-
-sigset_t& sigSetInit( sigset_t &sigSet, const int signal )
-{
-  sigemptyset( &sigSet );
-  sigaddset(&sigSet, signal );
-  sigprocmask(SIG_SETMASK, &sigSet, NULL);
-  return sigSet;
 }
 
 
@@ -40,7 +31,6 @@ Timer::Timer( const int signal )
     , m_timerId( 0 )
     , m_periodic( false )
     , m_running( true )
-    , m_mask( sigSetInit( m_mask, m_signal ) )
 {
   TRACE;
 }
@@ -49,7 +39,12 @@ Timer::~Timer()
 {
   TRACE;
 
-  sigprocmask(SIG_UNBLOCK, &m_mask, NULL);
+  struct itimerspec its;
+  its.it_value.tv_sec = 0;
+  its.it_value.tv_nsec = 0;
+  timer_settime( m_timerId, 0, &its, 0 );
+
+//   pthread_sigmask( SIG_UNBLOCK, &m_mask, 0 );
 }
 
 
@@ -92,9 +87,12 @@ void Timer::wait()
 
 
   sigwaitinfo( &(m_sigAction.sa_mask), &sigInfo);
+  if ( not m_running ) return;
   tidp = (long*)sigInfo.si_value.sival_ptr;
-//   LOG( Logger::FINEST, ( std::string( "Timer expired with ID: " ) +
-//                          stringify( (timer_t)*tidp ) ).c_str() );
+
+//   LOG( Logger::FINEST, ( std::string( "got signal: " ) +
+//                          stringify( sigInfo.si_signo ) +
+//                          " from: " + stringify( (timer_t)*tidp ) ).c_str() );
 
   timerExpired();
 
@@ -102,9 +100,12 @@ void Timer::wait()
     while ( m_running ) {
 
       sigwaitinfo( &(m_sigAction.sa_mask), &sigInfo);
+      if ( not m_running ) return;
       tidp = (long*)sigInfo.si_value.sival_ptr;
-//       LOG( Logger::FINEST, ( std::string( "Timer expired with ID:" ) +
-//                             stringify( (timer_t)*tidp ) ).c_str() );
+
+//   LOG( Logger::FINEST, ( std::string( "got periodic signal: " ) +
+//                          stringify( sigInfo.si_signo ) +
+//                          " from: " + stringify( (timer_t)*tidp ) ).c_str() );
 
       periodicTimerExpired();
     }
@@ -117,11 +118,14 @@ void Timer::stopTimer()
 {
   TRACE;
 
+  // disarm timer
   struct itimerspec its;
   its.it_value.tv_sec = 0;
   its.it_value.tv_nsec = 0;
   timer_settime( m_timerId, 0, &its, 0 );
+
   m_running = false;
+  /// @note sigwaitinfo waiting state, don't forget to send a last signal
 }
 
 
@@ -129,5 +133,7 @@ void Timer::gracefulStop()
 {
   TRACE;
 
+  // if it's periodic, use stopTimer
   m_running = false;
+  /// @note sigwaitinfo waiting state, don't forget to send a last signal
 }

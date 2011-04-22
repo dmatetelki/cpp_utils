@@ -14,68 +14,6 @@ class TestTimer : public CxxTest::TestSuite
 
 private:
 
-  class DummyTimer : public Timer
-  {
-  public:
-
-    DummyTimer(int maxPeriodicCount = 5, const int signal = SIGALRM)
-      : Timer(signal)
-      , m_counter(0)
-      , m_maxPeriodicCount(maxPeriodicCount)
-    {
-      TRACE;
-    }
-
-    void timerExpired()
-    {
-      TRACE;
-      m_counter += 100;
-    }
-
-    void periodicTimerExpired()
-    {
-      TRACE;
-      static int count = 0;
-      m_counter++;
-      count++;
-      if ( count >= m_maxPeriodicCount ) {
-        stopTimer();
-      }
-    }
-
-    int m_counter;
-
-  private:
-
-    int m_maxPeriodicCount;
-
-  };
-
-
-public:
-
-  void testBasic( void )
-  {
-    TEST_HEADER;
-
-    DummyTimer t;
-    t.createTimer(2);
-    t.wait();
-    TS_ASSERT_EQUALS( t.m_counter, 100 );
-  }
-
-  void testBasicPeriodic( void )
-  {
-    TEST_HEADER;
-
-    DummyTimer t;
-    t.createTimer(2,0,1);
-    t.wait();
-    TS_ASSERT_EQUALS( t.m_counter, 105 );
-  }
-
-private:
-
   class DummyTimerThread : public Timer, public Thread
   {
   public:
@@ -86,13 +24,26 @@ private:
                       const long interval_nsec = 0,
                       const time_t initExpr_sec = 0,
                       const long initExpr_nsec = 0 )
-      : Timer(signal)
-      , m_counter(0)
-      , m_maxPeriodicCount(maxPeriodicCount)
-      , m_interval_sec(interval_sec)
-      , m_interval_nsec(interval_nsec)
-      , m_initExpr_sec(initExpr_sec)
-      , m_initExpr_nsec(initExpr_nsec)
+      : Timer( signal )
+      , m_counter( 0 )
+      , m_maxPeriodicCount( maxPeriodicCount )
+      , m_signal ( signal )
+      , m_interval_sec( interval_sec )
+      , m_interval_nsec( interval_nsec )
+      , m_initExpr_sec( initExpr_sec )
+      , m_initExpr_nsec( initExpr_nsec )
+    {
+      TRACE;
+      LOG( Logger::FINEST, ( std::string( "params: " ) +
+                             stringify( maxPeriodicCount ) + " " +
+                             stringify( signal ) + " " +
+                             stringify( interval_sec ) + " " +
+                             stringify( interval_nsec ) + " " +
+                             stringify( initExpr_sec ) + " " +
+                             stringify( initExpr_nsec ) ).c_str() );
+    }
+
+    ~DummyTimerThread()
     {
       TRACE;
     }
@@ -105,7 +56,7 @@ private:
       createTimer( m_interval_sec,
                    m_interval_nsec,
                    m_initExpr_sec,
-                   m_initExpr_nsec);
+                   m_initExpr_nsec );
       wait();
       return 0;
     }
@@ -130,11 +81,18 @@ private:
       }
     }
 
+    void stop()
+    {
+      stopTimer();
+      sendSignal( m_signal );
+    }
+
     int m_counter;
 
   private:
 
     int m_maxPeriodicCount;
+    int m_signal;
     time_t m_interval_sec;
     long m_interval_nsec;
     time_t m_initExpr_sec;
@@ -152,7 +110,7 @@ private:
     sigset_t set;
     sigemptyset( &set );
     sigaddset( &set, SIGALRM );
-    sigprocmask(SIG_BLOCK, &set, NULL);
+    pthread_sigmask( SIG_BLOCK, &set, 0 );
 
     DummyTimerThread t(5);
 
@@ -161,6 +119,56 @@ private:
     t.join();
 
     TS_ASSERT_EQUALS( t.m_counter, 100 );
+
+    pthread_sigmask( SIG_UNBLOCK, &set, 0 );
+  }
+
+  void testStopTimerThread( void )
+  {
+    TEST_HEADER;
+
+    // the main thread shall ignore the SIGALRM
+    sigset_t set;
+    sigemptyset( &set );
+    sigaddset( &set, SIGALRM );
+    pthread_sigmask( SIG_BLOCK, &set, 0 );
+
+    DummyTimerThread t(5, SIGALRM, 10);
+
+    t.start();
+    sleep(1);
+    t.stop();
+    t.join();
+
+    TS_ASSERT_EQUALS( t.m_counter, 0 );
+
+    pthread_sigmask( SIG_UNBLOCK, &set, 0 );
+  }
+
+  void testPeriodicTimerThread( void )
+  {
+    TEST_HEADER;
+
+    // the main thread shall ignore the SIGALRM
+    sigset_t set;
+    sigemptyset( &set );
+    sigaddset( &set, SIGALRM );
+    pthread_sigmask( SIG_BLOCK, &set, 0 );
+
+    DummyTimerThread t( 1000,
+                        SIGALRM,
+                        1, 0,
+                        1, 0 );
+
+    t.start();
+    sleep(4);
+    t.stop();
+    sleep(2);
+    t.join();
+
+    TS_ASSERT_EQUALS( t.m_counter, 102 );
+
+    pthread_sigmask( SIG_UNBLOCK, &set, 0 );
   }
 
   void testCustomSignal( void )
@@ -173,20 +181,17 @@ private:
     sigset_t set;
     sigemptyset( &set );
     sigaddset( &set, customSignal );
-    sigprocmask( SIG_BLOCK, &set, NULL);
-
+    pthread_sigmask( SIG_BLOCK, &set, 0 );
 
     DummyTimerThread t( 5, customSignal );
 
     t.start();
-//     timespec ts = { 4, 0 };
-//     nanosleep( &ts , 0 );
     sleep(4);
     t.join();
 
     TS_ASSERT_EQUALS( t.m_counter, 100 );
 
-    sigprocmask( SIG_UNBLOCK, &set, NULL );
+    pthread_sigmask( SIG_UNBLOCK, &set, 0 );
   }
 
   void testTimerThreadHighFreq( void )
@@ -197,26 +202,29 @@ private:
     sigset_t set;
     sigemptyset( &set );
     sigaddset( &set, SIGALRM );
-    sigprocmask(SIG_BLOCK, &set, NULL);
+    pthread_sigmask( SIG_BLOCK, &set, 0 );
 
     int nano = 1000000000; // 10^9
-    int freq = 80000;
-    DummyTimerThread t(INT_MAX - 1,
-                       SIGALRM,
-                       1, 0,
-                       0, nano / freq );
+    int freq = 200;
+    DummyTimerThread t( INT_MAX - 1,
+                        SIGALRM,
+                        1, 0,
+                        0, nano / freq );
 
     t.start();
-    int circle = 10;
+    int circle = 4;
     sleep( 1 + circle );
-    t.gracefulStop();
+    t.stop();
     t.join();
 
     // expected 800000 + 100 got 795510
     // accurcy: ~ > 99.5%
     TS_ASSERT_DELTA ( t.m_counter, 100 + freq * circle,  (100 + freq * circle) * 0.995);
 
-    sigprocmask( SIG_UNBLOCK, &set, NULL );
+    LOG( Logger::FINEST, ( std::string( "got: " ) + stringify( t.m_counter ) + " "
+                         + "expected: " + stringify( 100 + freq * circle ) ).c_str() );
+
+    pthread_sigmask( SIG_UNBLOCK, &set, 0 );
   }
 
 };

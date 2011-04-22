@@ -37,7 +37,7 @@ if [ ! -e $test ]; then
   exit 1
 fi
 
-echo -e "${pre}Reset & remove files${post}"
+echo -e "${pre}Reset & remove lcov, $test.out and core files${post}"
 # coverage
 lcov --directory . -z
 rm -f ./lcov.info
@@ -73,6 +73,7 @@ if [ $retval -ne 0 ]; then
 
       if [ $retval -ne 137 ]; then
         echo -e "${pre}Failed checks:${post}"
+        # TODO print the previous line too
         cat $test.out | grep "Error:" | awk -F"/test/" '{ print $2  }'
       fi
 
@@ -85,6 +86,7 @@ if [ $retval -ne 0 ]; then
         gdb $test $cores -ex "set width 1000" -ex "thread apply all bt" -ex q > gdb.out
         ./gdb_out_parser.pl gdb.out
 
+        echo ""
         if yesno "run 'gdb $test $cores' ?"; then
           gdb $test $cores
         fi
@@ -114,3 +116,8 @@ echo -e "${pre}Checking the coverage results${post}"
 
 echo -e "${pre}Checking leak results${post}"
 ./leak_check.pl leak.log
+if [ $? == 1 ]; then
+  if yesno "run 'vim leak.log' ?"; then
+    vim leak.log
+  fi
+fi

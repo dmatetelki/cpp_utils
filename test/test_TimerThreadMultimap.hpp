@@ -2,16 +2,16 @@
 
 #include "Fixture.hpp"
 
-#define private public // reach TimerThread's private multimap
+#define private public // reach TimerThreadMultimap's private multimap
 
-#include "TimerThread.hpp"
+#include "TimerThreadMultimap.hpp"
 
 #include <time.h>
 
 
 
 
-class TestTimerThread : public CxxTest::TestSuite
+class TestTimerThreadMultimap : public CxxTest::TestSuite
 {
 
 private:
@@ -37,7 +37,7 @@ public:
   void testBasic( void )
   {
     TEST_HEADER;
-    TimerThread* tt = new TimerThread();
+    TimerThreadMultimap* tt = new TimerThreadMultimap();
     tt->start();
     sleep(1);
 
@@ -57,7 +57,7 @@ public:
   void testBasicTimeSpec( void )
   {
     TEST_HEADER;
-    TimerThread* tt = new TimerThread();
+    TimerThreadMultimap* tt = new TimerThreadMultimap();
     tt->start();
     sleep(1);
 
@@ -78,7 +78,7 @@ public:
   void testPeriodic( void )
   {
     TEST_HEADER;
-    TimerThread* tt = new TimerThread();
+    TimerThreadMultimap* tt = new TimerThreadMultimap();
     tt->start();
     sleep(1);
 
@@ -100,8 +100,8 @@ public:
     TEST_HEADER;
 
 //     Logger::getInstance()->setLogLevel(Logger::DEBUG);
-    
-    TimerThread* tt = new TimerThread();
+
+    TimerThreadMultimap* tt = new TimerThreadMultimap();
     tt->start();
     sleep(1);
 
@@ -120,7 +120,7 @@ public:
     tt->stop();
     sleep(1);
 
-    TS_ASSERT_EQUALS( user->m_counter, 4 );  // 4 times
+    TS_ASSERT_EQUALS( user->m_counter, 104 );  // 4 times
 //     TS_ASSERT_EQUALS( user2->m_counter, perMinute*4 );
 
     delete tt;
@@ -131,7 +131,7 @@ public:
   void testDestroyed( void )
   {
     TEST_HEADER;
-    TimerThread* tt = new TimerThread();
+    TimerThreadMultimap* tt = new TimerThreadMultimap();
     tt->start();
     sleep(1);
 
@@ -151,7 +151,7 @@ public:
   void testRemoved( void )
   {
     TEST_HEADER;
-    TimerThread* tt = new TimerThread();
+    TimerThreadMultimap* tt = new TimerThreadMultimap();
     tt->start();
     sleep(1);
 
@@ -194,7 +194,7 @@ public:
   void testRemovedMultiple( void )
   {
     TEST_HEADER;
-    TimerThread* tt = new TimerThread();
+    TimerThreadMultimap* tt = new TimerThreadMultimap();
     tt->start();
     sleep(1);
 
