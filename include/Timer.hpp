@@ -41,7 +41,6 @@ private:
   Timer& operator=( const Timer& );
 
   int m_signal;
-  struct sigaction m_sigAction;
   timer_t m_timerId;
   bool m_periodic;
   bool m_running;

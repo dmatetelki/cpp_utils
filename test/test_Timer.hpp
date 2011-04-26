@@ -77,7 +77,7 @@ private:
       m_counter++;
       count++;
       if ( count >= m_maxPeriodicCount ) {
-        stopTimer();
+        stop();
       }
     }
 
