@@ -116,3 +116,14 @@
    ...
    fun:main
 }
+
+{
+   disarm timer time_t mess
+   Memcheck:Param
+   timer_settime(value)
+   fun:timer_settime@@GLIBC_2.3.3
+   fun:_ZN5Timer9stopTimerEPv
+   ...
+   fun:main
+}
+

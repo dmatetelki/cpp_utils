@@ -118,7 +118,7 @@ public:
 
     sleep(6);
     tt->stop();
-    sleep(1);
+    sleep(2);
 
     TS_ASSERT_EQUALS( user->m_counter, 104 );  // 4 times
 //     TS_ASSERT_EQUALS( user2->m_counter, perMinute*4 );

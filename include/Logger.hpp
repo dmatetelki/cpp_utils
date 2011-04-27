@@ -35,12 +35,13 @@ public:
 
   static void log_pointer( const void* msg,
                            const char* file,
-                           int line,
+                           const int line,
                            const char* function);
 
-  static void log_string( const char* msg,
+  static void log_string( const int level,
+                          const char* msg,
                           const char* file,
-                          int line,
+                          const int line,
                           const char* function);
 
   static void msg (const char* text);
@@ -79,7 +80,7 @@ private:
   #define LOG(level, msg) \
   if ( Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
   Logger::getInstance()->log_string( \
-    msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+    level, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
   else (void)0
 
 #endif

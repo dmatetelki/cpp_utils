@@ -19,7 +19,7 @@ void Logger::setLogLevel ( const LogLevel loglevel )
 
 void Logger::log_pointer( const void* msg,
                           const char* file,
-                          int line,
+                          const int line,
                           const char* function)
 {
   *m_ostream  << getTime() << " "
@@ -32,17 +32,23 @@ void Logger::log_pointer( const void* msg,
 }
 
 
-void Logger::log_string( const char* msg,
+void Logger::log_string( const int level,
+                         const char* msg,
                          const char* file,
-                         int line,
+                         const int line,
                          const char* function)
 {
+  const char *color;
+  if ( level <= WARNING ) { color = COLOR_F_FG( F_BOLD, FG_RED ); }
+  else if ( level <= INFO ) { color = COLOR_F_FG( F_BOLD, FG_WHITE); }
+  else { color = COLOR_F_FG( F_BOLD, FG_BROWN); }
+
   *m_ostream  << getTime() << " "
               << COLOR( FG_GREEN ) << extractFilename(file)
               << COLOR_RESET << ":"
               << COLOR( FG_BROWN ) <<  line << COLOR_RESET << " "
               << COLOR( FG_CYAN ) << function << COLOR_RESET << " "
-              << COLOR_F_FG( F_BOLD, FG_BROWN ) << "\"" << msg << "\""
+              << color << "\"" << msg << "\""
               << COLOR_RESET << std::endl;
 }
 

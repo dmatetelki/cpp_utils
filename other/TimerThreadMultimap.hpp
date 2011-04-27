@@ -9,17 +9,19 @@
 #include <map>
 #include <time.h> // timespec
 
-class TimerUser
-{
+#include "Timer.hpp" // TimerUser
 
-public:
-
-  virtual void timerExpired() = 0;
-  virtual void timerDestroyed() = 0;
-
-  virtual ~TimerUser() {}
-
-}; // class TimerUser
+// class TimerUser
+// {
+// 
+// public:
+// 
+//   virtual void timerExpired() = 0;
+//   virtual void timerDestroyed() = 0;
+// 
+//   virtual ~TimerUser() {}
+// 
+// }; // class TimerUser
 
 
 

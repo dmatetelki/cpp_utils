@@ -3,13 +3,18 @@
 #include "Common.hpp"
 
 #include <signal.h> // sigset_t
+#include <time.h>
+#include <errno.h>
+
+void notifyFunction(union sigval sigVal)
+{
+  TRACE_STATIC;
+
+  ((TimerUser *)(sigVal.sival_ptr))->timerExpired();
+}
 
 
-Timer::Timer( const int signal )
-    : m_signal( signal )
-    , m_timerId( 0 )
-    , m_periodic( false )
-    , m_running( true )
+Timer::Timer() : m_timerUsers()
 {
   TRACE;
 }
@@ -21,11 +26,18 @@ Timer::~Timer()
   struct itimerspec its;
   its.it_value.tv_sec = 0;
   its.it_value.tv_nsec = 0;
-  timer_settime( m_timerId, 0, &its, 0 );
+
+  std::map< timer_t, TimerUser* >::iterator it;
+  for ( it = m_timerUsers.begin(); it != m_timerUsers.end(); it++ ) {
+    timer_settime( it->first , 0, &its, 0 );
+    it->second->timerDestroyed();
+  }
+  m_timerUsers.clear();
 }
 
 
-void Timer::createTimer( const time_t interval_sec,
+timer_t Timer::createTimer( TimerUser *timerUser,
+                         const time_t interval_sec,
                          const long interval_nsec,
                          const time_t initExpr_sec,
                          const long initExpr_nsec )
@@ -34,13 +46,15 @@ void Timer::createTimer( const time_t interval_sec,
 
   // create timer
   struct sigevent sigev;
-  sigev.sigev_notify = SIGEV_SIGNAL;
-  sigev.sigev_signo = m_signal;
-  sigev.sigev_value.sival_ptr = &m_timerId;
-  timer_create( CLOCK_REALTIME, &sigev, &m_timerId );
+  timer_t timerId;
 
-  LOG( Logger::FINEST, ( std::string( "Timer created with ID: " ) +
-                         stringify( m_timerId ) ).c_str() );
+  sigev.sigev_notify = SIGEV_THREAD;
+  sigev.sigev_value.sival_ptr = timerUser;
+  sigev.sigev_notify_function = notifyFunction;
+  sigev.sigev_notify_attributes = 0;
+
+  /// @bug passing address of local variable
+  timer_create( CLOCK_REALTIME, &sigev, &timerId );
 
   // arm it
   struct itimerspec its;
@@ -49,71 +63,28 @@ void Timer::createTimer( const time_t interval_sec,
   its.it_interval.tv_sec = initExpr_sec;
   its.it_interval.tv_nsec = initExpr_nsec;
 
-  if ( initExpr_sec != 0 or initExpr_nsec != 0 ) m_periodic = true;
-  timer_settime( m_timerId, 0, &its, 0 );
+  timer_settime( timerId, 0, &its, 0 );
+  m_timerUsers.insert( std::make_pair( timerId, timerUser ) );
+
+  return timerId;
 }
 
 
-void Timer::wait()
+void Timer::stopTimer( timer_t timerId )
 {
   TRACE;
 
-  /// @note timerID is acquired from the siginfo after all
-  long* tidp;
-  siginfo_t sigInfo;
-
-  sigset_t sigSet;
-  sigemptyset( &sigSet );
-  sigaddset( &sigSet, m_signal );
-
-  sigwaitinfo( &sigSet, &sigInfo);
-  if ( not m_running ) return;
-  tidp = (long*)sigInfo.si_value.sival_ptr;
-
-//   LOG( Logger::FINEST, ( std::string( "got signal: " ) +
-//                          stringify( sigInfo.si_signo ) +
-//                          " from: " + stringify( (timer_t)*tidp ) ).c_str() );
-
-  timerExpired();
-
-  if ( m_periodic ) {
-    while ( m_running ) {
-
-      sigwaitinfo( &sigSet, &sigInfo);
-      if ( not m_running ) return;
-      tidp = (long*)sigInfo.si_value.sival_ptr;
-
-//   LOG( Logger::FINEST, ( std::string( "got periodic signal: " ) +
-//                          stringify( sigInfo.si_signo ) +
-//                          " from: " + stringify( (timer_t)*tidp ) ).c_str() );
-
-      periodicTimerExpired();
-    }
-  }
-
-}
-
-
-void Timer::stopTimer()
-{
-  TRACE;
+  /// @bug why is this needed?
+  timer_t tmp = timerId;
 
   // disarm timer
   struct itimerspec its;
   its.it_value.tv_sec = 0;
   its.it_value.tv_nsec = 0;
-  timer_settime( m_timerId, 0, &its, 0 );
+  if ( timer_settime( tmp, 0, &its, 0 ) == -1 ) {
+    LOG( Logger::ERR, strerror( errno ) );
+  }
 
-  m_running = false;
-  /// @note sigwaitinfo waiting state, don't forget to send a last signal
-}
-
-
-void Timer::gracefulStop()
-{
-  TRACE;
-
-  // if it's periodic, use stopTimer
-  m_running = false;
-  /// @note sigwaitinfo waiting state, don't forget to send a last signal
+  m_timerUsers[ tmp ]->timerDestroyed();
+  m_timerUsers.erase( tmp );
 }

@@ -17,6 +17,7 @@ Mutex::Mutex( int kind )
 {
   TRACE;
   if ( kind != PTHREAD_MUTEX_DEFAULT ) {
+    /// @bug passing local variables address
     pthread_mutexattr_t attr;
     pthread_mutexattr_init( &attr );
     pthread_mutexattr_settype( &attr, kind );
