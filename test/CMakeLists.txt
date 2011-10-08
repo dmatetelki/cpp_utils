@@ -16,9 +16,10 @@ if(CXXTEST_FOUND)
   generated_main.cpp
   Fixture.hpp
 
-   test_Singleton.hpp
-   test_Singleton_meyers.hpp
-   test_Singleton_DCLP.hpp
+  test_Multiton.hpp
+#    test_Singleton.hpp
+#    test_Singleton_meyers.hpp
+#    test_Singleton_DCLP.hpp
 #   test_Mutex.hpp
 #   test_ScopedLock.hpp
 #   test_ConditionalVariable.hpp
