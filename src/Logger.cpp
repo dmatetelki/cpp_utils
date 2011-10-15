@@ -3,6 +3,8 @@
 #include <time.h> //time
 #include "Colors.hpp"
 
+#include "Common.hpp"
+
 
 void Logger::init(std::ostream& log_stream )
 {

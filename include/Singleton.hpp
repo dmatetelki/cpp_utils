@@ -1,9 +1,6 @@
 #ifndef SINGLETON_HPP
 #define SINGLETON_HPP
 
-#include "Common.hpp"
-#include "Logger.hpp"
-
 
 template<typename T>
 class Singleton

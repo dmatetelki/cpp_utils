@@ -46,6 +46,9 @@ rm -f ./leak.log.core.*
 # cxxtest output
 rm -f $test.out
 
+#rm $(find .. -name *.gcda)
+find .. -name *.gcda -exec rm -rf {} \;
+
 
 echo -e "${pre}Run tests${post}"
 
