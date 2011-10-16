@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 #include <map>
-#include <stdexcept>
+#include <set>
 
 // Aims for the functionality of Python argparse
 // http://docs.python.org/library/argparse.html#module-argparse
@@ -14,11 +14,11 @@ class ArgParse
 public:
 
   enum ValueType {
-    TYPE_NONE,
-    TYPE_STRING,
-    TYPE_INT,
-    TYPE_DOUBLE,
-    TYPE_BOOL
+    NONE,
+    STRING,
+    INT,
+    DOUBLE,
+    BOOL
   };
 
   enum ValueRequired {
@@ -32,16 +32,15 @@ public:
 
   void addArgument(const std::string name,  // "-f,--foo"
                    const std::string help,
-                   const enum ValueType type = TYPE_NONE,
+                   const enum ValueType type = NONE,
                    const enum ValueRequired valueRequired = REQUIRED,
                    const std::string valueName = std::string(""),
-                   const std::string choices = std::string("")); // "yes,no" or range: [1..100]
+                   const std::string choices = std::string("")); // {"yes,no"} or range: {1..100}
 
-
+  // throw(std::runtime_error)
   bool parseArgs(const int argc,
-                 const char* argv[]) throw(std::runtime_error);
-
-  bool parseArgs(const std::list<std::string> argList) throw(std::runtime_error);
+                 const char* argv[]);
+  bool parseArgs(const std::list<std::string> argList);
 
   // is this arg in the map of understood arguments?
   bool isArg(const std::string arg) const;
@@ -73,30 +72,32 @@ private:
     bool m_valueHasBeenSet;
 
     Argument (const std::string help,
-              const enum ValueType type = TYPE_NONE,
+              const enum ValueType type = NONE,
               const enum ValueRequired valueRequired = REQUIRED,
               const std::string valueName = std::string(""),
               const std::string choices = std::string(""),
-              const std::string value = std::string(""))
-    : m_help(help)
-    , m_type(type)
-    , m_valueRequired(valueRequired)
-    , m_valueName(valueName)
-    , m_choices(choices)
-    , m_value(value)
-    , m_found(false)
-    , m_valueHasBeenSet(false) {};
+              const std::string value = std::string(""));
+    };
+
+  class argCompare {
+   public:
+     // short and long arg shall be compared with same amount of dashes
+      bool operator()(const std::string a,const std::string b) const;
   };
 
+  typedef std::map<std::string, Argument, argCompare> ArgMap;
+
   // arg is just the shor or long form: "-h" or "--help"
-  std::map<std::string, Argument>::iterator findElement(const std::string param);
+  ArgMap::iterator findElement(const std::string param);
+  std::set<std::string> parseCommaSepStringToSet(const std::string s) const;
+  std::string typeToString(const ValueType type, const std::string valueName) const;
 
 
   std::string m_description;
   std::string m_epilog;
   std::string m_programName;
 
-  std::map<std::string, Argument> m_params;
+  ArgMap m_params;
 
 
 }; // class ArgParse
