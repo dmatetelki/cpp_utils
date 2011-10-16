@@ -16,13 +16,13 @@
 
 ArgParse::ArgParse(const std::string description,
                    const std::string epilog,
-                   const bool add_Help)
+                   const bool addHelp)
   : m_description(description)
   , m_epilog(epilog)
   , m_programName()
   , m_params()
 {
-  if (add_Help)
+  if (addHelp)
     addArgument("-h,--help", "Prints this help message");
 }
 
@@ -51,7 +51,7 @@ bool ArgParse::parseArgs(const int argc,
 }
 
 
-bool ArgParse::parseArgs(const std::list<std::string> argList)
+void ArgParse::parseArgs(const std::list<std::string> argList)
 {
   m_programName = argList.front();
 
@@ -180,15 +180,13 @@ bool ArgParse::parseArgs(const std::list<std::string> argList)
     (*it2).second.m_valueHasBeenSet = true;
     ++it;
   }
-
-  return true;
 }
 
 
-bool ArgParse::isArg(const std::string arg) const
+void ArgParse::isArg(const std::string arg) const
 {
   ArgMap::const_iterator it = m_params.find(arg);
-  return it != m_params.end();
+  it != m_params.end();
 }
 
 
@@ -388,7 +386,8 @@ ArgParse::parseCommaSepStringToSet(const std::string s) const
   return stringSet;
 }
 
-std::string ArgParse::typeToString(const ValueType type, std::string valueName) const
+std::string
+ArgParse::typeToString(const ValueType type, std::string valueName) const
 {
   if ( type != NONE && valueName.empty() ) {
     switch ( type ) {

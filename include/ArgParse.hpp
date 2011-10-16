@@ -6,8 +6,10 @@
 #include <map>
 #include <set>
 
-// Aims for the functionality of Python argparse
-// http://docs.python.org/library/argparse.html#module-argparse
+/** @brief Aim to achieve the functionality of Python argparse
+ *
+ * http://docs.python.org/library/argparse.html#module-argparse
+ */
 class ArgParse
 {
 
@@ -26,21 +28,46 @@ public:
     REQUIRED
   };
 
+  /** @param description Exmplanation, before the usage lines.
+   *  @param epilog Lines after the usage and options. Usually contact e-mail.
+   *  @param addHelp Add a "-h,--help" option.
+   */
   ArgParse(const std::string description,
            const std::string epilog = std::string(""),
-           const bool add_Help = true);
+           const bool addHelp = true);
 
-  void addArgument(const std::string name,  // "-f,--foo"
+  /** @brief Adds an argument which the object will accept.
+   *
+   * @param name short and/or long form: "-f,--foo"
+   * @param help Description of the argument, printed when --help is given.
+   * @param type Type of the paramterer, required by the argument.
+   * @param valueRequired Parameter requiered/optional after the argument.
+   * @param valueName Default is the type. But some short text can be better.
+   * @param choices Comma separeted list of strings: "yes,no,maybe"
+   * or a range accepted numbers: NUM..NUM
+   */
+  void addArgument(const std::string name,
                    const std::string help,
                    const enum ValueType type = NONE,
                    const enum ValueRequired valueRequired = REQUIRED,
                    const std::string valueName = std::string(""),
-                   const std::string choices = std::string("")); // {"yes,no"} or range: {1..100}
+                   const std::string choices = std::string(""));
 
-  // throw(std::runtime_error)
-  bool parseArgs(const int argc,
+  /** @brief Parse command line arguments according to the accepted arguments.
+   *
+   * Wrapper around the other version of parseArgs.
+   *
+   * @param argc Argumetn counter of the main function.
+   * @param argv Argument vector of the main function.
+   * @throw std::runtime_error When the command line args are bad.
+   * Shall be cought be the client code!
+   * @throw std::logic_error If the addArgument was bad.
+   * @todo addArgument shall handle this!
+   */
+  void parseArgs(const int argc,
                  const char* argv[]);
-  bool parseArgs(const std::list<std::string> argList);
+
+  void parseArgs(const std::list<std::string> argList);
 
   // is this arg in the map of understood arguments?
   bool isArg(const std::string arg) const;
@@ -80,8 +107,8 @@ private:
     };
 
   class argCompare {
-   public:
-     // short and long arg shall be compared with same amount of dashes
+    public:
+      // short and long arg shall be compared with same amount of dashes
       bool operator()(const std::string a,const std::string b) const;
   };
 
