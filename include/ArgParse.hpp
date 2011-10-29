@@ -19,7 +19,7 @@ public:
     NONE,
     STRING,
     INT,
-    DOUBLE,
+    FLOAT,
     BOOL
   };
 
@@ -28,7 +28,8 @@ public:
     REQUIRED
   };
 
-  /** @param description Exmplanation, before the usage lines.
+  /** @param description Exmplanation of the purpose of the program,
+   *  before the usage lines.
    *  @param epilog Lines after the usage and options. Usually contact e-mail.
    *  @param addHelp Add a "-h,--help" option.
    */
@@ -39,6 +40,7 @@ public:
   /** @brief Adds an argument which the object will accept.
    *
    * @param name short and/or long form: "-f,--foo"
+   * The value can be retreived with this string passed to the argAs... functions.
    * @param help Description of the argument, printed when --help is given.
    * @param type Type of the paramterer, required by the argument.
    * @param valueRequired Parameter requiered/optional after the argument.
@@ -55,14 +57,13 @@ public:
 
   /** @brief Parse command line arguments according to the accepted arguments.
    *
-   * Wrapper around the other version of parseArgs.
+   * Wrapper around the list<string> version of parseArgs.
    *
    * @param argc Argumetn counter of the main function.
    * @param argv Argument vector of the main function.
    * @throw std::runtime_error When the command line args are bad.
    * Shall be cought be the client code!
    * @throw std::logic_error If the addArgument was bad.
-   * @todo addArgument shall handle this!
    */
   void parseArgs(const int argc,
                  const char* argv[]);
@@ -80,7 +81,7 @@ public:
   // arg need to be the same string as in addArgument ( "-h,--help" )
   bool argAsString(const std::string arg, std::string &value) const;
   bool argAsInt(const std::string arg, int &value) const;
-  bool argAsDouble(const std::string arg, double &value) const;
+  bool argAsFloat(const std::string arg, float &value) const;
   bool argAsBool(const std::string arg, bool &value) const;
 
   std::string usage() const;
@@ -109,14 +110,16 @@ private:
   class argCompare {
     public:
       // short and long arg shall be compared with same amount of dashes
+      // this is needed at the usage, so the order of the params is ok,
+      // even when a param has short/long/booth name
       bool operator()(const std::string a,const std::string b) const;
   };
 
   typedef std::map<std::string, Argument, argCompare> ArgMap;
 
   // arg is just the shor or long form: "-h" or "--help"
-  ArgMap::iterator findElement(const std::string param);
-  std::set<std::string> parseCommaSepStringToSet(const std::string s) const;
+  ArgMap::iterator findKeyinArgMap(const std::string param);
+  std::set<std::string> choicesStringToSet(const std::string s) const;
   std::string typeToString(const ValueType type, const std::string valueName) const;
 
 

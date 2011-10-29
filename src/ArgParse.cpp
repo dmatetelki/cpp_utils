@@ -1,4 +1,4 @@
-#include "../include/ArgParse.hpp"
+#include "ArgParse.hpp"
 
 
 #include <iostream>
@@ -10,8 +10,8 @@
 
 #include <stdexcept>
 
-#include <stdio.h>
-
+#include <stdio.h> // sscan
+#include <cctype>
 
 
 ArgParse::ArgParse(const std::string description,
@@ -34,20 +34,33 @@ void ArgParse::addArgument(const std::string arg,
                            const std::string valueName,
                            const std::string choices)
 {
+  if ( arg.at(0) != '-' )
+    throw std::logic_error(std::string(arg).
+                               append(" shall start with a dash."));
 
-  Argument argument(help, type, valueRequired, typeToString(type, valueName), choices, "");
+  if ( findKeyinArgMap(arg) != m_params.end() )
+    throw std::logic_error(std::string(arg).
+                               append(" has been given before."));
+
+
+  Argument argument(help,
+                    type,
+                    valueRequired,
+                    typeToString(type, valueName),
+                    choices,
+                    "");
   m_params.insert(std::pair<std::string, Argument>(arg, argument));
 }
 
 
-bool ArgParse::parseArgs(const int argc,
+void ArgParse::parseArgs(const int argc,
                          const char* argv[])
 {
   std::list<std::string> argList;
   for (int i = 0; i < argc; ++i )
     argList.push_back(argv[i]);
 
-  return parseArgs(argList);
+  parseArgs(argList);
 }
 
 
@@ -55,22 +68,14 @@ void ArgParse::parseArgs(const std::list<std::string> argList)
 {
   m_programName = argList.front();
 
-  // the wrok.
   std::list<std::string>::const_iterator it = argList.begin();
   for (++it; it != argList.end(); ++it ) {
 
-    if ( (*it).at(0) != '-' )
-      throw std::runtime_error(std::string(*it).
-                               append(" shall start with a dash."));
-
     // inspect each arument
-    ArgMap::iterator it2 = findElement(*it);
+    ArgMap::iterator it2 = findKeyinArgMap(*it);
     if ( it2 == m_params.end() )
       throw std::runtime_error(std::string(*it).append(" is not known."));
 
-    if ( (*it2).second.m_found )
-      throw std::runtime_error(std::string(*it).
-                               append(" has been given before."));
 
     (*it2).second.m_found = true;
 
@@ -90,7 +95,7 @@ void ArgParse::parseArgs(const std::list<std::string> argList)
     }
 
     if ( (*it2).second.m_valueRequired == OPTIONAL &&
-          findElement( *next ) != m_params.end() )
+          findKeyinArgMap( *next ) != m_params.end() )
       continue;
 
       switch ( (*it2).second.m_type ) {
@@ -118,15 +123,15 @@ void ArgParse::parseArgs(const std::list<std::string> argList)
 
           break;
         }
-        case DOUBLE : {
-          double temp;
+        case FLOAT : {
+          float temp;
           if ( sscanf( next->c_str(), "%f", &temp ) == 0 )
             throw std::runtime_error(std::string( *next ).
-                    append(" is not a double, required by ").append(*it));
+                    append(" is not a float, required by ").append(*it));
 
           if ( !(*it2).second.m_choices.empty() ) {
-            double lowerBound;
-            double upperBound;
+            float lowerBound;
+            float upperBound;
             if ( sscanf( (*it2).second.m_choices.c_str(),
                  "%f..%f", &lowerBound, &upperBound ) != 2 )
               throw std::logic_error(std::string( *it ).
@@ -135,7 +140,7 @@ void ArgParse::parseArgs(const std::list<std::string> argList)
 
             if ( temp < lowerBound || temp > upperBound )
               throw std::runtime_error(std::string( *it ).
-                             append( " expects a double in the range of [" ).
+                             append( " expects a float in the range of [" ).
                              append( (*it2).second.m_choices).
                              append("}") );
           }
@@ -159,7 +164,7 @@ void ArgParse::parseArgs(const std::list<std::string> argList)
           if ( !(*it2).second.m_choices.empty() ) {
 
             std::set<std::string> choices =
-                          parseCommaSepStringToSet( (*it2).second.m_choices );
+                          choicesStringToSet( (*it2).second.m_choices );
 
             if ( choices.find( *next ) == choices.end() )
               throw std::runtime_error(std::string( *next ).
@@ -183,10 +188,10 @@ void ArgParse::parseArgs(const std::list<std::string> argList)
 }
 
 
-void ArgParse::isArg(const std::string arg) const
+bool ArgParse::isArg(const std::string arg) const
 {
   ArgMap::const_iterator it = m_params.find(arg);
-  it != m_params.end();
+  return it != m_params.end();
 }
 
 
@@ -227,7 +232,7 @@ bool ArgParse::argAsInt(const std::string arg, int &value) const
 }
 
 
-bool ArgParse::argAsDouble(const std::string arg, double &value) const
+bool ArgParse::argAsFloat(const std::string arg, float &value) const
 {
   if ( !argHasValue(arg) )
     return false;
@@ -335,7 +340,7 @@ ArgParse::argCompare::operator()(const std::string a,const std::string b) const
 
 
 std::map<std::string, ArgParse::Argument>::iterator
-ArgParse::findElement(const std::string param)
+ArgParse::findKeyinArgMap(const std::string param)
 {
   ArgMap::iterator it;
   for( it = m_params.begin(); it != m_params.end(); ++it) {
@@ -355,7 +360,7 @@ ArgParse::findElement(const std::string param)
 }
 
 std::set<std::string>
-ArgParse::parseCommaSepStringToSet(const std::string s) const
+ArgParse::choicesStringToSet(const std::string s) const
 {
   std::string tmp(s);
   std::set<std::string> stringSet;
@@ -393,7 +398,7 @@ ArgParse::typeToString(const ValueType type, std::string valueName) const
     switch ( type ) {
       case INT :
         return "INT";
-      case DOUBLE :
+      case FLOAT :
         return "DOUBLE";
         break;
       case BOOL :
