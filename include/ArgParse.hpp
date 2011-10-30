@@ -45,8 +45,9 @@ public:
    * @param type Type of the paramterer, required by the argument.
    * @param valueRequired Parameter requiered/optional after the argument.
    * @param valueName Default is the type. But some short text can be better.
-   * @param choices Comma separeted list of strings: "yes,no,maybe"
-   * or a range accepted numbers: NUM..NUM
+   * @param choices Comma separeted list of strings without whitespaces:
+   * "yes,no,maybe"
+   * or a range accepted numbers: "INT..INT", "DOUBLE..DOUBLE"
    */
   void addArgument(const std::string name,
                    const std::string help,
@@ -89,6 +90,26 @@ public:
 
 private:
 
+  void validateValue(const ArgParse::ValueType type,
+                     const std::string name,
+                     const std::string choices,
+                     const std::string value) const;
+
+  void validateString( const std::string name,
+                       const std::string choices,
+                       const std::string value) const;
+  void validateInt( const std::string name,
+                    const std::string choices,
+                    const std::string value) const;
+  void validateFloat( const std::string name,
+                      const std::string choices,
+                      const std::string value) const;
+  void validateBool( const std::string name,
+                     const std::string choices,
+                     const std::string value) const;
+
+
+
   struct Argument {
     const std::string m_help;
     const enum ValueType m_type;
@@ -120,7 +141,11 @@ private:
   // arg is just the shor or long form: "-h" or "--help"
   ArgMap::iterator findKeyinArgMap(const std::string param);
   std::set<std::string> choicesStringToSet(const std::string s) const;
-  std::string typeToString(const ValueType type, const std::string valueName) const;
+
+  /** @return with valueName if specified,
+  or the string version of the type enum otherwise */
+  std::string typeToString(const ValueType type,
+                           const std::string valueName) const;
 
 
   std::string m_description;

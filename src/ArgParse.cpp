@@ -10,7 +10,7 @@
 
 #include <stdexcept>
 
-#include <stdio.h> // sscan
+#include <cstdio> // sscan
 #include <cctype>
 
 
@@ -42,6 +42,21 @@ void ArgParse::addArgument(const std::string arg,
     throw std::logic_error(std::string(arg).
                                append(" has been given before."));
 
+  int i;
+  if ( type == INT &&
+       !choices.empty() &&
+       sscanf( choices.c_str(), "%d..%d", &i, &i ) != 2 )
+           throw std::logic_error(std::string( arg ).
+                           append(" has syntax error. ").
+                           append("Range expected in a INT..INT format" ));
+
+  float f;
+  if ( type == FLOAT &&
+       !choices.empty() &&
+       sscanf( choices.c_str(), "%f..%f", &f, &f ) != 2 )
+           throw std::logic_error(std::string( arg ).
+                           append(" has syntax error. ").
+                           append("Range expected in a FLOAT..FLOAT format" ));
 
   Argument argument(help,
                     type,
@@ -71,120 +86,144 @@ void ArgParse::parseArgs(const std::list<std::string> argList)
   std::list<std::string>::const_iterator it = argList.begin();
   for (++it; it != argList.end(); ++it ) {
 
-    // inspect each arument
-    ArgMap::iterator it2 = findKeyinArgMap(*it);
-    if ( it2 == m_params.end() )
+    ArgMap::iterator argMapIt = findKeyinArgMap(*it);
+    if ( argMapIt == m_params.end() )
       throw std::runtime_error(std::string(*it).append(" is not known."));
 
+    (*argMapIt).second.m_found = true;
 
-    (*it2).second.m_found = true;
-
-    if ( (*it2).second.m_type == NONE )
+    if ( (*argMapIt).second.m_type == NONE )
       continue;
 
     std::list<std::string>::const_iterator next = it;
     next++;
 
     if ( next == argList.end() ) {
-      if ( (*it2).second.m_valueRequired == REQUIRED )
+      if ( (*argMapIt).second.m_valueRequired == REQUIRED )
         throw std::runtime_error(std::string(*it).
                                  append(" requires a parameter."));
 
-      if ( (*it2).second.m_valueRequired == OPTIONAL )
+      if ( (*argMapIt).second.m_valueRequired == OPTIONAL )
         continue;
     }
 
-    if ( (*it2).second.m_valueRequired == OPTIONAL &&
+    if ( (*argMapIt).second.m_valueRequired == OPTIONAL &&
           findKeyinArgMap( *next ) != m_params.end() )
       continue;
 
-      switch ( (*it2).second.m_type ) {
-        case INT : {
-          int temp;
-          if ( sscanf( next->c_str(), "%d", &temp ) == 0 )
-            throw std::runtime_error(std::string( *next ).
-                    append(" is not an integer, required by ").append( *it ));
+    validateValue( (*argMapIt).second.m_type,
+                   (*argMapIt).first,
+                   (*argMapIt).second.m_choices,
+                   *next );
 
-          if ( !(*it2).second.m_choices.empty() ) {
-            int lowerBound;
-            int upperBound;
-            if ( sscanf( (*it2).second.m_choices.c_str(),
-                 "%d..%d", &lowerBound, &upperBound ) != 2 )
-              throw std::logic_error(std::string( *it ).
-                              append(" has syntax error. ").
-                              append("Range expected in a INT..INT format" ));
-
-            if ( temp < lowerBound || temp > upperBound )
-              throw std::runtime_error(std::string( *it ).
-                            append( " expects an integer in the range of {" ).
-                            append( (*it2).second.m_choices).
-                            append("}") );
-          }
-
-          break;
-        }
-        case FLOAT : {
-          float temp;
-          if ( sscanf( next->c_str(), "%f", &temp ) == 0 )
-            throw std::runtime_error(std::string( *next ).
-                    append(" is not a float, required by ").append(*it));
-
-          if ( !(*it2).second.m_choices.empty() ) {
-            float lowerBound;
-            float upperBound;
-            if ( sscanf( (*it2).second.m_choices.c_str(),
-                 "%f..%f", &lowerBound, &upperBound ) != 2 )
-              throw std::logic_error(std::string( *it ).
-                      append(" has syntax error. ").
-                      append("Range expected in a DOUBLE..DOUBLE format" ));
-
-            if ( temp < lowerBound || temp > upperBound )
-              throw std::runtime_error(std::string( *it ).
-                             append( " expects a float in the range of [" ).
-                             append( (*it2).second.m_choices).
-                             append("}") );
-          }
-
-          break;
-        }
-        case BOOL : {
-          std::string temp = *next;
-          std::transform(temp.begin(), temp.end(),temp.begin(), ::toupper);
-          if ( temp != "TRUE" && temp != "FALSE" )
-            throw std::runtime_error(std::string( *next ).
-                    append(" is not a boolean, required by ").append(*it));
-
-          if ( !(*it2).second.m_choices.empty() )
-            throw std::logic_error(std::string( *next ).
-                    append(" expects a boolean not choices."));
-
-          break;
-        }
-        case STRING : {
-          if ( !(*it2).second.m_choices.empty() ) {
-
-            std::set<std::string> choices =
-                          choicesStringToSet( (*it2).second.m_choices );
-
-            if ( choices.find( *next ) == choices.end() )
-              throw std::runtime_error(std::string( *next ).
-                    append(" is not in the expected list of choices: {").
-                    append( (*it2).second.m_choices ).
-                    append("}"));
-          }
-
-          break;
-        }
-
-        default:
-          break;
-      }
-
-
-    (*it2).second.m_value = *next;
-    (*it2).second.m_valueHasBeenSet = true;
+    (*argMapIt).second.m_value = *next;
+    (*argMapIt).second.m_valueHasBeenSet = true;
     ++it;
   }
+}
+
+
+void ArgParse::validateValue(const ArgParse::ValueType type,
+                             const std::string name,
+                             const std::string choices,
+                             const std::string value) const
+{
+  switch ( type ) {
+     case INT :
+       validateInt(name, choices, value);
+       break;
+     case FLOAT :
+       validateFloat(name, choices, value);
+       break;
+     case BOOL :
+       validateBool(name, choices, value);
+       break;
+     case STRING :
+       validateString(name, choices, value);
+       break;
+     default:
+       break;
+   }
+}
+
+
+void ArgParse::validateString( const std::string name,
+                               const std::string choices,
+                               const std::string value) const
+{
+  if ( !choices.empty() ) {
+
+    std::set<std::string> choicesSet = choicesStringToSet( choices );
+
+    if ( choicesSet.find( value ) == choicesSet.end() )
+      throw std::runtime_error(std::string( value ).
+            append(" is not in the expected list of choices: {").
+            append( choices ).
+            append("}, required by ").
+            append( name ));
+  }
+}
+
+
+void ArgParse::validateInt( const std::string name,
+                            const std::string choices,
+                            const std::string value) const
+{
+  int temp;
+  if ( sscanf( value.c_str(), "%d", &temp ) == 0 )
+    throw std::runtime_error(std::string( value ).
+            append(" is not an integer, required by ").append( name ));
+
+  if ( !choices.empty() ) {
+    int lowerBound;
+    int upperBound;
+    sscanf( choices.c_str(), "%d..%d", &lowerBound, &upperBound );
+
+    if ( temp < lowerBound || temp > upperBound )
+      throw std::runtime_error(std::string( name ).
+                    append( " expects an integer in the range of {" ).
+                    append( choices).
+                    append("}") );
+  }
+}
+
+
+void ArgParse::validateFloat( const std::string name,
+                              const std::string choices,
+                              const std::string value) const
+{
+  float temp;
+  if ( sscanf( value.c_str(), "%f", &temp ) == 0 )
+    throw std::runtime_error(std::string( value ).
+            append(" is not a float, required by ").append( name ));
+
+  if ( !choices.empty() ) {
+    float lowerBound;
+    float upperBound;
+    sscanf( choices.c_str(), "%f..%f", &lowerBound, &upperBound );
+
+    if ( temp < lowerBound || temp > upperBound )
+      throw std::runtime_error(std::string( name ).
+                     append( " expects a float in the range of [" ).
+                     append( choices).
+                     append("}") );
+  }
+}
+
+
+void ArgParse::validateBool( const std::string name,
+                             const std::string choices,
+                             const std::string value) const
+{
+  std::string temp = value;
+  std::transform(temp.begin(), temp.end(),temp.begin(), ::toupper);
+  if ( temp != "TRUE" && temp != "FALSE" )
+    throw std::runtime_error(std::string( value ).
+            append(" is not a boolean, required by ").append( name ));
+
+  if ( !choices.empty() )
+    throw std::logic_error(std::string( value ).
+            append(" expects a boolean not choices."));
 }
 
 
@@ -391,22 +430,25 @@ ArgParse::choicesStringToSet(const std::string s) const
   return stringSet;
 }
 
+
 std::string
 ArgParse::typeToString(const ValueType type, std::string valueName) const
 {
-  if ( type != NONE && valueName.empty() ) {
-    switch ( type ) {
-      case INT :
-        return "INT";
-      case FLOAT :
-        return "DOUBLE";
-        break;
-      case BOOL :
-         return "BOOL";
-        break;
-      default:
-        return "";
-    }
+  if ( !valueName.empty() )
+    return valueName;
+
+  switch ( type ) {
+    case NONE :
+      return "NONE";
+    case STRING :
+      return "STRING";
+    case INT :
+      return "INT";
+    case FLOAT :
+      return "DOUBLE";
+    case BOOL :
+       return "BOOL";
+    default:
+      return "";
   }
-  return valueName;
 }
