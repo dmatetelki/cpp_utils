@@ -112,5 +112,4 @@ inline void StrToT( T &t, const std::string s )
   ss >> t;
 }
 
-
 #endif // COMMON_HPP

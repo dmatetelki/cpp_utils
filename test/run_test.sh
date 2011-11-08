@@ -23,14 +23,14 @@ post="\E[00;00m"
 
 ulimit -c unlimited
 
-# test=$1
-test=./test
+if [ $# -ne 1 ]
+then
+  echo "Usage: `basename $0` <TEST_BINARY>"
+  exit 1
+fi
 
-# if [ $# -ne 1 ]
-# then
-#   echo "Usage: `basename $0` <TEST_BINARY>"
-#   exit 1
-# fi
+test=$1
+# test=./test
 
 if [ ! -e $test ]; then
   echo -e "The parameter binary: $test does not exists"

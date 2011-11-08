@@ -1,5 +1,6 @@
 #include "ArgParse.hpp"
 
+#include "Common.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -381,17 +382,23 @@ ArgParse::argCompare::operator()(const std::string a,const std::string b) const
 std::map<std::string, ArgParse::Argument>::iterator
 ArgParse::findKeyinArgMap(const std::string param)
 {
-  ArgMap::iterator it;
-  for( it = m_params.begin(); it != m_params.end(); ++it) {
+  for( ArgMap::iterator it = m_params.begin(); it != m_params.end(); ++it) {
 
-    // if it's the short param at the beginning
-    if ( (*it).first.find(param) == 0 )
-      return it;
+    std::string first;
+    std::string second;
 
-    // or is it the long after the comma?
     size_t commaPos = (*it).first.find(",");
-    if ( commaPos != std::string::npos &&
-         (*it).first.find( param, commaPos+1 ) != std::string::npos )
+    if ( commaPos == std::string::npos ) {
+      first = (*it).first;
+    } else {
+      first = (*it).first.substr(0, commaPos);
+      second = (*it).first.substr(commaPos+1);
+    }
+
+    first.erase(std::remove_if(first.begin(), first.end(), isspace), first.end());
+    second.erase(std::remove_if(second.begin(), second.end(), isspace), second.end());
+
+    if ( param == first || param == second )
       return it;
   }
 

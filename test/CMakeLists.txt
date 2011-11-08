@@ -1,3 +1,6 @@
+
+set(CMAKE_CXX_COMPILER "/usr/lib/colorgcc/bin/g++")
+
 set (CXX_FLAGS "-Wall -Wextra -pedantic -Weffc++ -Wshadow "
                "-ggdb -fprofile-arcs -ftest-coverage --std=c++0x " )
 
@@ -15,10 +18,11 @@ if(CXXTEST_FOUND)
   generated_main.cpp
   Fixture.hpp
 
-  test_Singelton_call_once.hpp
-#    test_Singleton.hpp
-#    test_Singleton_meyers.hpp
-#    test_Singleton_DCLP.hpp
+  test_ArgParse.hpp
+#   test_Singelton_call_once.hpp
+#   test_Singleton.hpp
+#   test_Singleton_meyers.hpp
+#   test_Singleton_DCLP.hpp
 #   test_Mutex.hpp
 #   test_ScopedLock.hpp
 #   test_ConditionalVariable.hpp
