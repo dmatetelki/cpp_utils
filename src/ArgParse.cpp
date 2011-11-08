@@ -23,7 +23,7 @@ ArgParse::ArgParse(const std::string description,
   , m_params()
 {
   if (addHelp)
-    addArgument("-h,--help", "Prints this help message");
+    addArgument("-h, --help", "Prints this help message");
 }
 
 
@@ -68,8 +68,8 @@ void ArgParse::addArgument(const std::string arg,
 }
 
 
-void ArgParse::parseArgs(const int argc,
-                         const char* argv[])
+void ArgParse::parseArgs(int argc,
+                         char* argv[])
 {
   std::list<std::string> argList;
   for (int i = 0; i < argc; ++i )

@@ -13,6 +13,7 @@
 #include <stdexcept> // runtime_error
 #include <sstream> // ostringstream
 
+
 const long NANO = 1000000000L;  // 10^9
 
 
@@ -93,5 +94,23 @@ inline std::string getTime( void )
 
   return ret;
 }
+
+
+template <class T>
+inline std::string TToStr(const T t)
+{
+  std::ostringstream oss;
+  oss << t;
+  return oss.str();
+}
+
+
+template <class T>
+inline void StrToT( T &t, const std::string s )
+{
+  std::stringstream ss(s);
+  ss >> t;
+}
+
 
 #endif // COMMON_HPP

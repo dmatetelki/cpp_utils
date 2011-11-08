@@ -66,8 +66,8 @@ public:
    * Shall be cought be the client code!
    * @throw std::logic_error If the addArgument was bad.
    */
-  void parseArgs(const int argc,
-                 const char* argv[]);
+  void parseArgs(int argc,
+                 char* argv[]);
 
   void parseArgs(const std::list<std::string> argList);
 
