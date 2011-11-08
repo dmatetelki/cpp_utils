@@ -23,10 +23,10 @@ public:
 
     TS_ASSERT_EQUALS( argParse.usage(), std::string(
       "intro\n\n"
-      "usage:  [OPTION]\n\n"
+      "usage:  [OPTIONS]\n\n"
       "Options:\n"
       "-h, --help                    Prints this help message\n\n"
-      "outro\n") );
+      "outro") );
   }
 
   void testfindKeyinArgMap ( void )
@@ -66,8 +66,8 @@ public:
 
     argParse.parseArgs(argc, argv);
 
-    TS_ASSERT_EQUALS( argParse.isArg("-s, --unix-socket"), false );
-    TS_ASSERT_EQUALS( argParse.isArg("-u, --user"), true );
+    TS_ASSERT_EQUALS( argParse.foundArg("-s, --unix-socket"), false );
+    TS_ASSERT_EQUALS( argParse.foundArg("-u, --user"), true );
   }
 
 };

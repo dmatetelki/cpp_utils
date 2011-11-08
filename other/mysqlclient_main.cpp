@@ -20,13 +20,16 @@ void setUpArgs(ArgParse &argParse)
                        ArgParse::STRING );
   argParse.addArgument("-u, --user",
                        "Username",
-                       ArgParse::STRING );
+                       ArgParse::STRING,
+                       ArgParse::REQUIRED );
   argParse.addArgument("-db, --database",
                        "Database",
-                       ArgParse::STRING );
+                       ArgParse::STRING,
+                       ArgParse::REQUIRED );
   argParse.addArgument("-p, --password",
                        "Password",
-                       ArgParse::STRING );
+                       ArgParse::STRING,
+                       ArgParse::REQUIRED );
   argParse.addArgument("-port",
                        "Port",
                        ArgParse::INT );
@@ -39,7 +42,7 @@ void setUpArgs(ArgParse &argParse)
 }
 
 
-bool getArgs( int argc, char* argv[],
+void getArgs( int argc, char* argv[],
               ArgParse &argParse,
               std::string &host,
               std::string &user,
@@ -49,12 +52,7 @@ bool getArgs( int argc, char* argv[],
               int &port,
               int &clientflags )
 {
-  try {
-    argParse.parseArgs(argc, argv);
-  } catch (std::runtime_error e) {
-    std::cerr << e.what() << std::endl << std::endl;
-    return false;
-  }
+  argParse.parseArgs(argc, argv);
 
   argParse.argAsString("--host", host);
   argParse.argAsString("-u, --user", user);
@@ -63,8 +61,6 @@ bool getArgs( int argc, char* argv[],
   argParse.argAsInt("-port", port);
   argParse.argAsString("-s, --unix-socket", unixsocket);
   argParse.argAsInt("-f, --client-flags", clientflags);
-
-  return true;
 }
 
 
@@ -94,12 +90,24 @@ int main(int argc, char* argv[] )
 
   std::string host, user, db, pass, unixsocket;
   int port, clientflags;
-  if ( !getArgs(argc, argv,
-                argParse,
-                host, user, db, pass, unixsocket,
-                port, clientflags ) ||
-       argParse.foundArg("-h, --help") )
-  {
+
+  try {
+    getArgs( argc, argv,
+             argParse,
+             host, user, db, pass, unixsocket,
+             port, clientflags );
+  } catch (std::runtime_error e) {
+    if ( argParse.foundArg("-h, --help") ) {
+      std::cout << argParse.usage() << std::endl;
+      return 1;
+    }
+    std::cerr << e.what() << std::endl
+              << "Check usage: " << argv[0] << " --help" << std::endl;
+    return 1;
+  }
+
+
+  if ( argParse.foundArg("-h, --help") ) {
     std::cout << argParse.usage() << std::endl;
     return 1;
   }

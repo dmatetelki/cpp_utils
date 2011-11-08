@@ -30,8 +30,9 @@ ArgParse::ArgParse(const std::string description,
 
 void ArgParse::addArgument(const std::string arg,
                            const std::string help,
-                           const ValueType type,
-                           const ValueRequired valueRequired,
+                           const ValueType valueType,
+                           const Required argRequired,
+                           const Required valueRequired,
                            const std::string valueName,
                            const std::string choices)
 {
@@ -44,7 +45,7 @@ void ArgParse::addArgument(const std::string arg,
                                append(" has been given before."));
 
   int i;
-  if ( type == INT &&
+  if ( valueType == INT &&
        !choices.empty() &&
        sscanf( choices.c_str(), "%d..%d", &i, &i ) != 2 )
            throw std::logic_error(std::string( arg ).
@@ -52,7 +53,7 @@ void ArgParse::addArgument(const std::string arg,
                            append("Range expected in a INT..INT format" ));
 
   float f;
-  if ( type == FLOAT &&
+  if ( valueType == FLOAT &&
        !choices.empty() &&
        sscanf( choices.c_str(), "%f..%f", &f, &f ) != 2 )
            throw std::logic_error(std::string( arg ).
@@ -60,9 +61,10 @@ void ArgParse::addArgument(const std::string arg,
                            append("Range expected in a FLOAT..FLOAT format" ));
 
   Argument argument(help,
-                    type,
+                    valueType,
+                    argRequired,
                     valueRequired,
-                    typeToString(type, valueName),
+                    typeToString(valueType, valueName),
                     choices,
                     "");
   m_params.insert(std::pair<std::string, Argument>(arg, argument));
@@ -121,6 +123,182 @@ void ArgParse::parseArgs(const std::list<std::string> argList)
     (*argMapIt).second.m_valueHasBeenSet = true;
     ++it;
   }
+
+  checkRequiredArgsFound();
+}
+
+
+bool ArgParse::foundArg(const std::string arg) const
+{
+  ArgMap::const_iterator it = m_params.find(arg);
+  return it != m_params.end() && (*it).second.m_found == true;
+}
+
+
+bool ArgParse::argHasValue(const std::string arg) const
+{
+  ArgMap::const_iterator it = m_params.find(arg);
+  return it != m_params.end() &&
+         (*it).second.m_found == true &&
+         (*it).second.m_valueHasBeenSet;
+}
+
+
+bool ArgParse::argAsString(const std::string arg, std::string &value) const
+{
+  if ( !argHasValue(arg) )
+    return false;
+
+  ArgMap::const_iterator it = m_params.find(arg);
+  value = (*it).second.m_value;
+  return true;
+}
+
+
+bool ArgParse::argAsInt(const std::string arg, int &value) const
+{
+  if ( !argHasValue(arg) )
+    return false;
+
+  ArgMap::const_iterator it = m_params.find(arg);
+  value = atoi((*it).second.m_value.c_str());
+  return true;
+}
+
+
+bool ArgParse::argAsFloat(const std::string arg, float &value) const
+{
+  if ( !argHasValue(arg) )
+    return false;
+
+  ArgMap::const_iterator it = m_params.find(arg);
+  value = atof((*it).second.m_value.c_str());
+  return true;
+}
+
+
+bool ArgParse::argAsBool(const std::string arg, bool &value) const
+{
+  if ( !argHasValue(arg) )
+    return false;
+
+  ArgMap::const_iterator it = m_params.find(arg);
+
+  std::string temp = (*it).second.m_value;
+  std::transform(temp.begin(), temp.end(),temp.begin(), ::toupper);
+
+  value = temp == "TRUE";
+  return true;
+}
+
+
+std::string ArgParse::usage() const
+{
+  std::stringstream ss;
+
+  ss << m_description << std::endl << std::endl;
+
+  bool oprionals = thereAreOptionalArgs();
+  bool required = thereAreRequiredArgs();
+  ss << "usage: " << m_programName
+     << (required ? " <ARGS>" : "")
+     << (oprionals ? " [OPTIONS]" : "")
+     << std::endl;
+
+  if ( required ) {
+    ss << std::endl << "Required arguments:" << std::endl;
+    ss << printArgs(REQUIRED);
+  }
+  if ( oprionals ) {
+    ss << std::endl << "Options:" << std::endl;
+    ss << printArgs(OPTIONAL);
+  }
+
+  ss << std::endl;
+  ss << m_epilog;
+
+  return ss.str();;
+}
+
+
+bool ArgParse::thereAreOptionalArgs() const
+{
+  for (ArgMap::const_iterator it = m_params.begin(); it != m_params.end(); ++it )
+    if ( (*it).second.m_argRequired == OPTIONAL )
+      return true;
+
+  return false;
+}
+
+
+bool ArgParse::thereAreRequiredArgs() const
+{
+  for (ArgMap::const_iterator it = m_params.begin(); it != m_params.end(); ++it )
+    if ( (*it).second.m_argRequired == REQUIRED )
+      return true;
+
+  return false;
+}
+
+
+std::string
+ArgParse::printArgs(const Required argRequired) const
+{
+  int length;
+  std::string ret("");
+
+  ArgMap::const_iterator it;
+  for ( it = m_params.begin(); it != m_params.end(); it++ ) {
+    if ( (*it).second.m_argRequired != argRequired )
+      continue;
+
+    ret.append( (*it).first );
+    length = (*it).first.length();
+    if ( (*it).second.m_type != NONE ) {
+
+      ret.append( " " );
+      length++;
+
+      if ( (*it).second.m_valueRequired == OPTIONAL ) {
+        ret.append( "[" );
+        length ++;
+      }
+
+      if ( !(*it).second.m_choices.empty() ) {
+        ret.append( "{" ).append( (*it).second.m_choices).append( "}" );
+        length += (*it).second.m_choices.length() + 2;
+      } else {
+        ret.append( (*it).second.m_valueName );
+        length += (*it).second.m_valueName.length();
+      }
+
+      if ( (*it).second.m_valueRequired == OPTIONAL ) {
+        ret.append( "]" );
+        length++;
+      }
+    }
+
+    ret.append( std::string(30-length, ' ') );
+    ret.append( (*it).second.m_help );
+    ret.append("\n");
+  }
+
+    return ret;
+}
+
+
+void ArgParse::checkRequiredArgsFound() const
+{
+  ArgMap::const_iterator it;
+
+  std::string missed;
+  for ( it = m_params.begin(); it != m_params.end(); ++it )
+    if ( (*it).second.m_argRequired && !(*it).second.m_found )
+      missed.append((*it).first).append("\n");
+
+  if ( !missed.empty() )
+    throw std::runtime_error(
+      std::string("Required argument(s) missing: \n").append(missed));
 }
 
 
@@ -228,133 +406,16 @@ void ArgParse::validateBool( const std::string name,
 }
 
 
-bool ArgParse::isArg(const std::string arg) const
-{
-  ArgMap::const_iterator it = m_params.find(arg);
-  return it != m_params.end();
-}
-
-
-bool ArgParse::foundArg(const std::string arg) const
-{
-  ArgMap::const_iterator it = m_params.find(arg);
-  return it != m_params.end() && (*it).second.m_found == true;
-}
-
-bool ArgParse::argHasValue(const std::string arg) const
-{
-  ArgMap::const_iterator it = m_params.find(arg);
-  return it != m_params.end() &&
-         (*it).second.m_found == true &&
-         (*it).second.m_valueHasBeenSet;
-}
-
-
-bool ArgParse::argAsString(const std::string arg, std::string &value) const
-{
-  if ( !argHasValue(arg) )
-    return false;
-
-  ArgMap::const_iterator it = m_params.find(arg);
-  value = (*it).second.m_value;
-  return true;
-}
-
-
-bool ArgParse::argAsInt(const std::string arg, int &value) const
-{
-  if ( !argHasValue(arg) )
-    return false;
-
-  ArgMap::const_iterator it = m_params.find(arg);
-  value = atoi((*it).second.m_value.c_str());
-  return true;
-}
-
-
-bool ArgParse::argAsFloat(const std::string arg, float &value) const
-{
-  if ( !argHasValue(arg) )
-    return false;
-
-  ArgMap::const_iterator it = m_params.find(arg);
-  value = atof((*it).second.m_value.c_str());
-  return true;
-}
-
-
-bool ArgParse::argAsBool(const std::string arg, bool &value) const
-{
-  if ( !argHasValue(arg) )
-    return false;
-
-  ArgMap::const_iterator it = m_params.find(arg);
-
-  std::string temp = (*it).second.m_value;
-  std::transform(temp.begin(), temp.end(),temp.begin(), ::toupper);
-
-  value = temp == "TRUE";
-  return true;
-}
-
-
-std::string ArgParse::usage() const
-{
-  std::stringstream ss;
-
-  ss << m_description << std::endl << std::endl;
-
-  ss << "usage: " << m_programName;
-  if (!m_params.empty()) {
-    ss << " [OPTION]" << std::endl << std::endl;
-    ss << "Options:" << std::endl;
-    int length;
-    ArgMap::const_iterator it;
-    for ( it = m_params.begin(); it != m_params.end(); it++ ) {
-      ss << (*it).first;
-      length = (*it).first.length();
-      if ( (*it).second.m_type != NONE ) {
-
-        ss << " ";
-        length++;
-
-        if ( (*it).second.m_valueRequired == OPTIONAL ) {
-          ss << "[";
-          length ++;
-        }
-
-        if ( !(*it).second.m_choices.empty() ) {
-          ss << "{" << (*it).second.m_choices << "}";
-          length += (*it).second.m_choices.length() + 2;
-        } else {
-          ss << (*it).second.m_valueName;
-          length += (*it).second.m_valueName.length();
-        }
-
-        if ( (*it).second.m_valueRequired == OPTIONAL ) {
-          ss << "]";
-          length++;
-        }
-      }
-      ss << std::string(30-length, ' ');
-      ss << (*it).second.m_help << std::endl;
-    }
-  }
-  ss << std::endl;
-  ss << m_epilog << std::endl;
-
-  return ss.str();;
-}
-
-
 ArgParse::Argument::Argument (const std::string help,
-                              const enum ValueType type,
-                              const enum ValueRequired valueRequired,
+                              const ValueType type,
+                              const Required argRequired,
+                              const Required valueRequired,
                               const std::string valueName,
                               const std::string choices,
                               const std::string value)
   : m_help(help)
   , m_type(type)
+  , m_argRequired(argRequired)
   , m_valueRequired(valueRequired)
   , m_valueName(valueName)
   , m_choices(choices)
