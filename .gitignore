@@ -21,3 +21,5 @@ gdb.out
 html/*
 test/testCppUtils
 test/testCppUtils.out
+*.kate-swp
+

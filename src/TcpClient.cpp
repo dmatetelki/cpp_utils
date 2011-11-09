@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h> // inet_ntop
 
+#include <poll.h>
+
 
 TcpClient::TcpClient( const std::string host,
                       const std::string port )
@@ -14,8 +16,11 @@ TcpClient::TcpClient( const std::string host,
   , m_host(host)
   , m_port(port)
   , m_connected(false)
+  , m_watcher(*this)
 {
   TRACE;
+
+  m_watcher.start();
 }
 
 TcpClient::~TcpClient()
@@ -23,6 +28,9 @@ TcpClient::~TcpClient()
   TRACE;
 
   disconnect();
+
+  m_watcher.stop();
+  m_watcher.join();
 }
 
 
@@ -61,22 +69,6 @@ bool TcpClient::send(const std::string msg)
     LOG( Logger::ERR, errnoToString("ERROR writing to socket. ").c_str() );
     return false;
   }
-
-  return true;
-}
-
-
-bool TcpClient::receive(std::string &reply)
-{
-  TRACE;
-
-  char buffer[256];
-  ssize_t n = read(m_socket, buffer, 255);
-  if (n == -1) {
-    LOG( Logger::ERR, errnoToString("ERROR reading from socket. ").c_str() );
-    return false;
-  }
-  reply = std::string(buffer, n);
 
   return true;
 }
@@ -136,7 +128,7 @@ bool TcpClient::connectToHost()
 }
 
 
-bool TcpClient::getHostInfo(struct addrinfo **servinfo)
+bool TcpClient::getHostInfo(struct addrinfo **servinfo) const
 {
   TRACE;
 
@@ -166,7 +158,7 @@ bool TcpClient::getHostInfo(struct addrinfo **servinfo)
 }
 
 
-void TcpClient::printHostDetails(struct addrinfo *servinfo)
+void TcpClient::printHostDetails(struct addrinfo *servinfo) const
 {
   TRACE;
 
@@ -196,7 +188,7 @@ void TcpClient::printHostDetails(struct addrinfo *servinfo)
 }
 
 
-bool TcpClient::connectToFirstAddress(struct addrinfo *servinfo)
+bool TcpClient::connectToFirstAddress(struct addrinfo *servinfo) const
 {
   TRACE;
 
@@ -223,4 +215,69 @@ bool TcpClient::connectToFirstAddress(struct addrinfo *servinfo)
   LOG( Logger::ERR, std::string("Could not connect to host,"
                                 " connection refused.").c_str() );
   return false;
+}
+
+
+TcpClient::WatcherThread::WatcherThread( TcpClient &data )
+  : m_tcpClient(data)
+{
+  TRACE;
+}
+
+
+void* TcpClient::WatcherThread::run()
+{
+  TRACE;
+
+  while ( m_isRunning ) {
+
+    struct timespec tm = {0,1000};
+    nanosleep(&tm, &tm) ;
+    if ( m_tcpClient.m_connected ) {
+
+      pollfd fds[1] ;
+      fds[0].fd       = m_tcpClient.m_socket ;
+      fds[0].events   = POLLIN | POLLPRI ;
+      fds[0].revents  = 0 ;
+
+      int ret = poll( fds , 1, 1000) ;
+      if ( ret == -1 ) {
+        LOG( Logger::ERR, errnoToString("ERROR at polling. ").c_str() );
+        m_tcpClient.m_connected = false;
+        m_tcpClient.onDisconnect();
+      }
+
+      if ( ret != 0 && !receive() ) {
+          m_tcpClient.m_connected = false;
+          m_tcpClient.onDisconnect();
+        }
+
+    }
+  }
+
+  return 0;
+}
+
+
+bool TcpClient::WatcherThread::receive()
+{
+  TRACE;
+
+  char buffer[256];
+  int len = recv( m_tcpClient.m_socket, buffer , 256, 0) ;
+
+  if (len == -1) {
+    LOG( Logger::ERR, errnoToString("ERROR reading from socket. ").c_str() );
+    return false;
+  }
+
+  if (len == 0) {
+    LOG( Logger::DEBUG, "Connection closed by peer." );
+    return false;
+  }
+
+  std::string msg(buffer, len);
+  m_tcpClient.msgArrived(msg);
+
+  return true;
 }
