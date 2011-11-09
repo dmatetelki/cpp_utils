@@ -69,7 +69,7 @@ bool SocketClient::connect(void)
   return connectToPeer();
 }
 
-std::string SocketClient::errnoToString(const char *s)
+std::string SocketClient::errnoToString(const char *s) const
 {
   return std::string(s).append(strerror(errno));
 }

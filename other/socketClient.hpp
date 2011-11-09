@@ -24,7 +24,7 @@ protected:
 
   bool connect(void);
   virtual bool connectToPeer(void) = 0;
-  std::string errorToString(const char *s) const;
+  std::string errnoToString(const char *s) const;
 
   bool m_connected;
   int m_addrDomain;

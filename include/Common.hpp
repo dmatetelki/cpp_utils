@@ -13,6 +13,9 @@
 #include <stdexcept> // runtime_error
 #include <sstream> // ostringstream
 
+#include <errno.h> // errno
+#include <string.h> // strerror
+
 
 const long NANO = 1000000000L;  // 10^9
 
@@ -110,6 +113,12 @@ inline void StrToT( T &t, const std::string s )
 {
   std::stringstream ss(s);
   ss >> t;
+}
+
+
+inline std::string errnoToString(const char *s)
+{
+  return std::string(s).append(strerror(errno));
 }
 
 #endif // COMMON_HPP
