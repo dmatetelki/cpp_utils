@@ -1,16 +1,13 @@
 #ifndef TCP_CLIENT_HPP
 #define TCP_CLIENT_HPP
 
+#include "Socket.hpp"
 #include "Thread.hpp"
 
 #include <string>
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
-
-class TcpClient
+class TcpClient : public Socket
 {
 
 public:
@@ -21,7 +18,7 @@ public:
   virtual ~TcpClient();
 
   bool connect();
-  bool disconnect();
+  void disconnect();
 
   bool send(const std::string msg);
 
@@ -43,15 +40,6 @@ private:
     TcpClient &m_tcpClient;
   };
 
-  bool openSocket();
-  bool closeSocket();
-
-  bool connectToHost();
-  bool getHostInfo(struct addrinfo **servinfo) const;
-  void printHostDetails(struct addrinfo *servinfo) const;
-  bool connectToFirstAddress(struct addrinfo *servinfo) const;
-
-  int           m_socket;
   std::string   m_host;
   std::string   m_port;
   bool          m_connected;
