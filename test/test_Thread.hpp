@@ -111,4 +111,31 @@ public:
     delete m2;
   }
 
+
+private:
+
+  class EmptyThreadClass : public Thread
+  {
+
+  private:
+
+    void* run( void ) {
+      TRACE;
+      return 0;
+    }
+  };
+
+public:
+
+  void testEmpty( void )
+  {
+    TEST_HEADER;
+
+    EmptyThreadClass e;
+    e.start();
+
+    e.stop();
+    void *retVal = e.join();
+    TS_ASSERT_EQUALS ( retVal , (void *)0 );
+  }
 };

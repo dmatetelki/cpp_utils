@@ -53,6 +53,12 @@ void Thread::sendSignal( const int nSignal ) const
 }
 
 
+bool Thread::isRunning() const
+{
+  return m_isRunning;
+}
+
+
 void* Thread::threadStarter( void* pData )
 {
   TRACE_STATIC;

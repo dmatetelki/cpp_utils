@@ -18,7 +18,7 @@ if(CXXTEST_FOUND)
   generated_main.cpp
   Fixture.hpp
 
-  test_ArgParse.hpp
+#   test_ArgParse.hpp
 #   test_Singelton_call_once.hpp
 #   test_Singleton.hpp
 #   test_Singleton_meyers.hpp
@@ -26,7 +26,7 @@ if(CXXTEST_FOUND)
 #   test_Mutex.hpp
 #   test_ScopedLock.hpp
 #   test_ConditionalVariable.hpp
-#   test_Thread.hpp
+  test_Thread.hpp
 #   test_ThreadPool.hpp
 #   test_Semaphore.hpp
 #   test_Timer.hpp

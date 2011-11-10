@@ -15,6 +15,7 @@ public:
   void* join() const;
   virtual void stop();
   void sendSignal( const int nSignal ) const;
+  bool isRunning() const;
 
 private:
 

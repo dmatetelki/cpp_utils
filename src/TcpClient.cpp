@@ -8,7 +8,7 @@
 #include <arpa/inet.h> // inet_ntop
 
 #include <poll.h>
-
+#include <time.h>
 
 TcpClient::TcpClient( const std::string host,
                       const std::string port )
@@ -55,14 +55,19 @@ void TcpClient::disconnect()
   closeSocket();
   m_connected = false;
 
-  m_watcher.stop();
-  m_watcher.join();
+  if ( m_watcher.isRunning() ) {
+    m_watcher.stop();
+    m_watcher.join();
+  }
 }
 
 
 bool TcpClient::send(const std::string msg)
 {
   TRACE;
+
+  if ( !m_connected )
+    return false;
 
   ssize_t n = write(m_socket, msg.c_str(), msg.length());
   if (n == -1) {
@@ -85,20 +90,20 @@ void* TcpClient::WatcherThread::run()
 {
   TRACE;
 
+  struct timespec tm = {0,1000};
   while ( m_isRunning ) {
 
-    struct timespec tm = {0,1000};
     nanosleep(&tm, &tm) ;
     if ( m_tcpClient.m_connected ) {
 
-      pollfd fds[1] ;
+      pollfd fds[1];
       fds[0].fd       = m_tcpClient.m_socket ;
       fds[0].events   = POLLIN | POLLPRI ;
       fds[0].revents  = 0 ;
 
       int ret = poll( fds , 1, 1000) ;
       if ( ret == -1 ) {
-        LOG( Logger::ERR, errnoToString("ERROR at polling. ").c_str() );
+        LOG( Logger::ERR, errnoToString("ERROR polling. ").c_str() );
         m_tcpClient.m_connected = false;
         m_tcpClient.onDisconnect();
       }

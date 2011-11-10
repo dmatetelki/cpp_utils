@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h> // inet_ntop
 
+
 Socket::Socket(const int domain,
                const int type,
                const int protocol)
@@ -14,6 +15,8 @@ Socket::Socket(const int domain,
   , m_domain(domain)
   , m_type(type)
   , m_protocol(protocol)
+  , m_addr()
+  , m_addrLen(0)
 {
   TRACE;
 
@@ -51,16 +54,16 @@ void Socket::closeSocket()
 }
 
 
-bool Socket::connectToHost(const std::string host,
-                           const std::string port )
+bool Socket::connectToHost( const std::string host,
+                            const std::string port )
 {
   TRACE;
 
   struct addrinfo *results(0);
-  if ( !getHostInfo(host, port, &results) )
+  if ( !Socket::getHostInfo(host, port, &results) )
     return false;
 
-  printHostDetails(results);
+  Socket::printHostDetails(results);
 
   if ( !connectToFirstAddress(results) )
     return false;
@@ -70,11 +73,74 @@ bool Socket::connectToHost(const std::string host,
 }
 
 
-bool Socket::getHostInfo( const std::string host,
-                          const std::string port,
-                          struct addrinfo **servinfo) const
+bool Socket::bindToHost( const std::string host,
+                         const std::string port )
 {
   TRACE;
+
+  struct addrinfo *results(0);
+  if ( !Socket::getHostInfo(host, port, &results) )
+    return false;
+
+  Socket::printHostDetails(results);
+
+  if ( !bindToFirstAddress(results) )
+    return false;
+
+  freeaddrinfo(results);
+  return true;
+}
+
+
+bool Socket::connectToFirstAddress(struct addrinfo *servinfo)
+{
+  TRACE;
+
+  for ( struct addrinfo *it = servinfo; it != 0; it = it->ai_next)
+    if (::connect(m_socket, it->ai_addr, it->ai_addrlen) != -1) {
+      std::string address, service;
+      if ( convertNameInfo( it->ai_addr, it->ai_addrlen, address, service) ) {
+        LOG( Logger::DEBUG, std::string("Connected to ").
+                              append(address).append(":").
+                              append(service).c_str() );
+      }
+      return true;
+    }
+
+  LOG( Logger::ERR, "Could not connect to host, connection refused." );
+  return false;
+}
+
+
+bool Socket::bindToFirstAddress(struct addrinfo *servinfo )
+{
+  TRACE;
+
+  for ( struct addrinfo *it = servinfo; it != 0; it = it->ai_next)
+    if (bind(m_socket, it->ai_addr, it->ai_addrlen) == 0) {
+      memcpy(&m_addr, it->ai_addr, it->ai_addrlen);
+      m_addrLen = it->ai_addrlen;
+
+      std::string address, service;
+      if ( Socket::convertNameInfo( &m_addr, m_addrLen, address, service) ) {
+        LOG( Logger::DEBUG, std::string("Binded to ").
+                              append(address).append(":").
+                              append(service).c_str() );
+      }
+      return true;
+    }
+
+  LOG( Logger::ERR, "Could not bind to host. Address already in use." );
+
+  return false;
+}
+
+
+bool Socket::getHostInfo( const std::string host,
+                          const std::string port,
+                          struct addrinfo **servinfo)
+{
+  TRACE_STATIC;
 
   struct addrinfo hints;
 
@@ -102,9 +168,9 @@ bool Socket::getHostInfo( const std::string host,
 }
 
 
-void Socket::printHostDetails(struct addrinfo *servinfo) const
+void Socket::printHostDetails(struct addrinfo *servinfo)
 {
-  TRACE;
+  TRACE_STATIC;
 
   int counter(0);
   for ( struct addrinfo *it = servinfo; it != 0; it = it->ai_next) {
@@ -132,31 +198,28 @@ void Socket::printHostDetails(struct addrinfo *servinfo) const
 }
 
 
-bool Socket::connectToFirstAddress(struct addrinfo *servinfo) const
+bool Socket::convertNameInfo(sockaddr* addr,
+                             socklen_t addrLen,
+                             std::string &retAddr,
+                             std::string &retService)
 {
-  TRACE;
+  TRACE_STATIC;
 
-  for ( struct addrinfo *it = servinfo; it != 0; it = it->ai_next)
-    if (::connect(m_socket, it->ai_addr, it->ai_addrlen) != -1) {
-      char hostBuffer[256];
-      char serviceBuffer[256];
-      int status = getnameinfo( it->ai_addr, it->ai_addrlen,
-                                hostBuffer, sizeof(hostBuffer),
-                                serviceBuffer, sizeof(serviceBuffer),
-                                NI_NAMEREQD );
+  char hostBuffer[256];
+  char serviceBuffer[256];
 
-      if ( status != 0 ) {
-        LOG( Logger::WARNING, std::string("Could not resolve hostname. ").
-                                append(gai_strerror(status)).c_str() );
-      } else {
-        LOG( Logger::DEBUG, std::string("Connected to ").
-                              append(hostBuffer).append(":").
-                              append(serviceBuffer).c_str() );
-      }
-      return true;
-    }
+  int status = getnameinfo( addr, addrLen,
+                            hostBuffer, sizeof(hostBuffer),
+                            serviceBuffer, sizeof(serviceBuffer),
+                            NI_NAMEREQD );
 
-  LOG( Logger::ERR, std::string("Could not connect to host,"
-                                " connection refused.").c_str() );
-  return false;
+  if ( status != 0 ) {
+    LOG( Logger::WARNING, std::string("Could not resolve hostname. ").
+                            append(gai_strerror(status)).c_str() );
+    return false;
+  }
+
+  retAddr.assign(hostBuffer);
+  retService.assign(serviceBuffer);
+  return true;
 }

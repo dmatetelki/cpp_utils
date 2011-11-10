@@ -21,19 +21,35 @@ public:
 
   bool connectToHost(const std::string host,
                      const std::string port);
-  bool getHostInfo(const std::string host,
-                   const std::string port,
-                   struct addrinfo **servinfo) const;
-  void printHostDetails(struct addrinfo *servinfo) const;
-  bool connectToFirstAddress(struct addrinfo *servinfo) const;
+  bool bindToHost(const std::string host,
+                  const std::string port );
+
 
 protected:
 
-  int m_socket;
+  int       m_socket;
 
-  int m_domain;
-  int m_type;
-  int m_protocol;
+  int       m_domain;
+  int       m_type;
+  int       m_protocol;
+
+  sockaddr  m_addr;
+  socklen_t m_addrLen;
+
+  static bool convertNameInfo( sockaddr* addr,
+                               socklen_t addrLen,
+                               std::string &retAddr,
+                               std::string &retService);
+
+private:
+
+  bool connectToFirstAddress(struct addrinfo *servinfo);
+  bool bindToFirstAddress(struct addrinfo *servinfo);
+
+  static bool getHostInfo(const std::string host,
+                          const std::string port,
+                          struct addrinfo **servinfo);
+  static void printHostDetails(struct addrinfo *servinfo);
 
 };
 
