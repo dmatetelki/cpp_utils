@@ -24,6 +24,10 @@ public:
   bool bindToHost(const std::string host,
                   const std::string port );
 
+  static bool convertNameInfo( sockaddr* addr,
+                               socklen_t addrLen,
+                               std::string &retAddr,
+                               std::string &retService);
 
 protected:
 
@@ -36,10 +40,6 @@ protected:
   sockaddr  m_addr;
   socklen_t m_addrLen;
 
-  static bool convertNameInfo( sockaddr* addr,
-                               socklen_t addrLen,
-                               std::string &retAddr,
-                               std::string &retService);
 
 private:
 

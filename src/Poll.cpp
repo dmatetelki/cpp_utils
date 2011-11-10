@@ -11,12 +11,12 @@
 
 #include <stdlib.h>
 
-Poll::Poll ( const int socket, const nfds_t maxClient )
-  : m_socket(socket)
-  , m_maxclients()
+Poll::Poll ( int &socket, const nfds_t maxClient )
+  : m_polling(false)
+  , m_pollSocket(socket)
+  , m_maxclients(maxClient)
   , m_fds(0)
   , m_num_of_fds(0)
-  , m_polling(false)
 {
   TRACE;
 
@@ -36,6 +36,7 @@ void Poll::startPolling()
 {
   TRACE;
 
+  m_polling = true;
   struct timespec tm = {0,1000};
 
   while ( m_polling ) {
@@ -45,24 +46,21 @@ void Poll::startPolling()
 
     if ( ret == -1 ) {
         LOG( Logger::ERR, errnoToString("ERROR polling. ").c_str() );
-        return false;
+        /// @todo shall we handle this?
+        return;
     }
 
     if ( ret == 0 )  // timeout
       continue;
 
-    for ( nfds_t i = 0; i < m_num_of_fds; ++i ) {
-      if ( m_fds[i].revents != 0 ) {
+    for ( nfds_t i = 0; i < m_num_of_fds; ++i )
+      if ( m_fds[i].revents != 0 )
+        m_fds[i].fd == m_pollSocket ?
+            acceptClient() :
+            handleClient(m_fds[i].fd);
 
-        if ( m_fds[i].fd == m_socket ) {
-            acceptClient(m_fds[i].fd);
-        }
-        else {
-          handleClient(m_fds[i].fd);
-        }
-      }
-    }
-  }
+
+  } // while
 }
 
 
@@ -74,13 +72,13 @@ void Poll::stopPolling()
 }
 
 
-bool Poll::acceptClient()
+void Poll::acceptClient()
 {
   TRACE;
 
   sockaddr clientAddr;
   socklen_t clientAddrLen;
-  int client_socket = accept( m_socket, &clientAddr, &clientAddrLen ) ;
+  int client_socket = accept( m_pollSocket, &clientAddr, &clientAddrLen ) ;
 
   if ( client_socket == -1 ) {
     LOG( Logger::ERR, errnoToString("ERROR accepting. ").c_str() );
@@ -106,13 +104,6 @@ void Poll::handleClient( const int fd )
   if ( !receive( fd ) ) {
     removeFd( fd );
   }
-}
-
-
-bool Poll::receive( const int fd)
-{
-  TRACE;
-
 }
 
 

@@ -7,26 +7,34 @@ class Poll
 {
 public:
 
-  Poll( const int socket, const nfds_t maxClient );
+  Poll( int &socket, const nfds_t maxClient );
   virtual ~Poll();
 
   void startPolling();
   void stopPolling();
 
-  virtual bool acceptClient();
-  virtual bool handleClient( const int fd );
-  bool receive( const int fd );
+  virtual void acceptClient();
+  virtual void handleClient( const int fd );
+  virtual bool receive( const int fd ) = 0;
 
   bool addFd( const int fd, const short events );
   bool removeFd( const int fd );
 
+
+protected:
+
+  bool m_polling;
+
+
 private:
 
-  int     m_socket;
+  Poll(const Poll&);
+  Poll& operator=(const Poll&);
+
+  int    &m_pollSocket;
   nfds_t  m_maxclients;
   pollfd *m_fds;
   nfds_t  m_num_of_fds;
-  bool    m_polling;
 
 };
 
