@@ -22,4 +22,5 @@ html/*
 test/testCppUtils
 test/testCppUtils.out
 *.kate-swp
-
+other/client
+other/server

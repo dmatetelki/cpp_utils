@@ -5,10 +5,9 @@
 #include "Poll.hpp"
 
 #include <string>
-#include <poll.h>
 
-class TcpServer : public Socket,
-                  public Poll
+class TcpServer : public Socket
+                , public Poll
 {
 public:
 

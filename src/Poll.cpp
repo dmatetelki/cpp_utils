@@ -5,11 +5,8 @@
 
 #include "Socket.hpp"
 
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <stdlib.h> // malloc, free
 
-
-#include <stdlib.h>
 
 Poll::Poll ( int &socket, const nfds_t maxClient )
   : m_polling(false)
@@ -32,12 +29,20 @@ Poll::~Poll()
 }
 
 
+void Poll::setOwnSocket ( const int socket )
+{
+  TRACE;
+
+  addFd(socket, POLLIN | POLLPRI);
+}
+
+
 void Poll::startPolling()
 {
   TRACE;
 
   m_polling = true;
-  struct timespec tm = {0,1000};
+  struct timespec tm = {0,10000};
 
   while ( m_polling ) {
 
@@ -84,7 +89,7 @@ void Poll::acceptClient()
     LOG( Logger::ERR, errnoToString("ERROR accepting. ").c_str() );
   } else {
 
-    /// @bug always "bas family" errors
+    /// @bug does not works every time
     std::string clientAddress, clientService;
     if ( Socket::convertNameInfo(&clientAddr, clientAddrLen,
                                  clientAddress, clientService ) ) {
@@ -97,24 +102,26 @@ void Poll::acceptClient()
 }
 
 
-void Poll::handleClient( const int fd )
+void Poll::handleClient( const int socket )
 {
   TRACE;
 
-  if ( !receive( fd ) ) {
-    removeFd( fd );
+  if ( !receive( socket ) ) {
+    removeFd( socket );
   }
 }
 
 
-bool Poll::addFd( const int fd, short events )
+bool Poll::addFd( const int socket, short events )
 {
   TRACE;
+  LOG( Logger::DEBUG, std::string("Adding socket: ").
+                        append(TToStr(socket)).c_str() );
 
   if (m_num_of_fds >= m_maxclients )
     return false;
 
-  m_fds[m_num_of_fds].fd = fd;
+  m_fds[m_num_of_fds].fd = socket;
   m_fds[m_num_of_fds].events = events;
   m_fds[m_num_of_fds].revents = 0;
   m_num_of_fds++;
@@ -123,12 +130,14 @@ bool Poll::addFd( const int fd, short events )
 }
 
 
-bool Poll::removeFd( const int fd )
+bool Poll::removeFd( const int socket )
 {
   TRACE;
+  LOG( Logger::DEBUG, std::string("Removing socket: ").
+                        append(TToStr(socket)).c_str() );
 
   unsigned int i = 0 ;
-  while (i < m_maxclients && m_fds[i].fd != fd )
+  while (i < m_maxclients && m_fds[i].fd != socket )
     i++;
 
   if ( i == m_maxclients )

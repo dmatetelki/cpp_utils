@@ -3,6 +3,7 @@
 
 #include "Socket.hpp"
 #include "Thread.hpp"
+#include "Poll.hpp"
 
 #include <string>
 
@@ -29,20 +30,24 @@ private:
   virtual void onDisconnect() = 0;
 
   class WatcherThread : public Thread
+                      , public Poll
   {
   public:
     WatcherThread( TcpClient &data );
 
+    // overringind Poll's accept behaviour
+    void acceptClient();
+    void handleClient( const int fd );
+    bool receive( const int fd );
+
   private:
     void* run();
-    bool receive();
 
     TcpClient &m_tcpClient;
   };
 
   std::string   m_host;
   std::string   m_port;
-  bool          m_connected;
   WatcherThread m_watcher;
 
 };

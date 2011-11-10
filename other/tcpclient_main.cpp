@@ -47,6 +47,8 @@ int main( int argc, char * argv[] )
   sleep(2);
   tcpclient.send("madao");
   sleep(2);
+  tcpclient.send("this message is long. Cannot fit into one buffer");
+  sleep(2);
 
 //   std::string reply;
 //   tcpclient.receive(reply);

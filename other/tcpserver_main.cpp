@@ -3,6 +3,7 @@
 #include "TcpServer.hpp"
 
 #include "Logger.hpp"
+#include "Common.hpp"
 
 #include <iostream>
 #include <string>
@@ -25,6 +26,14 @@ public:
     TRACE;
 
     LOG( Logger::DEBUG, std::string("Got msg: ").append(msg).c_str() );
+
+    std::string reply("Got your msg, buddy: \"");
+    reply.append(msg).append("\" see you!");
+
+    ssize_t n = write(clientSocket, reply.c_str(), reply.length());
+    if (n == -1) {
+      LOG( Logger::ERR, errnoToString("ERROR writing to socket. ").c_str() );
+    }
   }
 
 };

@@ -3,8 +3,6 @@
 #include "Logger.hpp"
 #include "Common.hpp"
 
-#include <poll.h>
-#include <stdlib.h>
 
 TcpServer::TcpServer( const std::string host,
                       const std::string port,
@@ -39,7 +37,7 @@ bool TcpServer::start()
     return false;
   }
 
-  addFd( m_socket, POLLIN | POLLPRI ) ;
+  setOwnSocket(m_socket);
   startPolling();
 
   return true;
@@ -59,8 +57,8 @@ bool TcpServer::receive(const int clientSocket)
 {
   TRACE;
 
-  char buffer[256];
-  int len = recv( clientSocket, buffer , 256, 0) ;
+  char buffer[10];
+  int len = recv( clientSocket, buffer , 10, 0) ;
 
   if (len == -1) {
     LOG( Logger::ERR, errnoToString("ERROR reading from socket. ").c_str() );
