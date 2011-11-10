@@ -59,6 +59,7 @@ bool TcpClient::send(const std::string msg)
   ssize_t n = write(m_socket, msg.c_str(), msg.length());
   if (n == -1) {
     LOG( Logger::ERR, errnoToString("ERROR writing to socket. ").c_str() );
+    m_watcher.stopPolling();
     return false;
   }
 
@@ -88,6 +89,7 @@ void TcpClient::WatcherThread::handleClient( const int fd )
   TRACE;
 
   LOG( Logger::DEBUG, "Server closed the connection." );
+  stopPolling();
 }
 
 
@@ -105,6 +107,7 @@ bool TcpClient::WatcherThread::receive( const int fd)
 
   if (len == 0) {
     LOG( Logger::DEBUG, "Connection closed by peer." );
+    stopPolling();
     return false;
   }
 

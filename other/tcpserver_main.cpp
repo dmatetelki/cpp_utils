@@ -49,7 +49,8 @@ int main( int argc, char * argv[] )
 
   tcpServer.start();
 
-  sleep(10);
+  // never reached
+  sleep(1);
 
   tcpServer.stop();
 
