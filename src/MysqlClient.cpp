@@ -10,9 +10,11 @@ MysqlClient::MysqlClient( const char *host,
                           const char *user,
                           const char *passwd,
                           const char *db,
-                          unsigned int port,
+                          const unsigned int port,
                           const char *unix_socket,
-                          unsigned long clientflag )
+                          const unsigned long clientflag,
+                          const int maxRetry
+                        )
   : m_host(host)
   , m_user(user)
   , m_passwd(passwd)
@@ -20,6 +22,7 @@ MysqlClient::MysqlClient( const char *host,
   , m_port(port)
   , m_unix_socket(unix_socket)
   , m_clientflag(clientflag)
+  , m_maxRetry(maxRetry)
   , m_connected(false)
   , m_connection(0)
 {
@@ -60,10 +63,10 @@ MysqlClient::connect()
     return false;
   }
 
-  LOG ( Logger::DEBUG,
-        std::string("MySQL client connected to ").append(m_host ? m_host : "NULL")
-          .append(", on port: ").append(TToStr(m_port))
-          .append(", as user: ").append(m_user ? m_user : "NULL")
+  LOG ( Logger::INFO,
+        std::string("MySQL client connected to ").append(m_host ? m_host : "localhost")
+          .append(", on port: ").append(m_port ? TToStr(m_port) : "TCP/IP")
+          .append(", as user: ").append(m_user ? m_user : "CURRENT_USER")
           .append(", with passwd: ").append(m_passwd ? m_passwd : "NULL")
           .append(", to DB: ").append(m_db ? m_db : "NULL")
           .append(", with unix_socket: ").append(m_unix_socket ? m_unix_socket : "NULL")
@@ -76,17 +79,21 @@ MysqlClient::connect()
 
 
 bool
-MysqlClient::querty(const std::string queryLine,
-                    std::list<std::string> &result)
+MysqlClient::querty(const char* queryMsg,
+                    const int queryMsgLen,
+                    MYSQL_RES **result)
 {
   TRACE;
 
-  if ( !m_connected && !connect() )
+  if ( !m_connected ) {
+    LOG( Logger::ERR, "Not connected to MySQL server." );
     return false;
+  }
 
-  if ( mysql_query(m_connection,queryLine.c_str()) != 0 ) {
+  if ( mysql_real_query(m_connection, queryMsg, queryMsgLen) != 0 ) {
     LOG ( Logger::ERR, std::string("MySQL query failed! ").
                         append(mysql_error(m_connection)).c_str());
+
     return false;
   }
 
@@ -99,24 +106,48 @@ MysqlClient::querty(const std::string queryLine,
     return false;
   }
 
-  queryResultToStringList( res_set, result);
-
-  mysql_free_result( res_set );
+  *result = res_set;
   return true;
 }
 
+
+bool
+MysqlClient::reconnect()
+{
+  TRACE;
+
+  for (int i = 0; i < m_maxRetry; ++i ) {
+
+    LOG( Logger::INFO, std::string("Reconnecting to MySQL server, ").
+                        append(TToStr(i+1)).
+                        append(" try of maximum: ").
+                        append(TToStr(m_maxRetry)).c_str() );
+
+    if ( connect() )
+      return true;
+
+    sleep(1);
+  }
+
+  LOG( Logger::ERR, "Maximum number of retries reached, giving up." );
+  return false;
+}
+
+
 void
-MysqlClient::queryResultToStringList(MYSQL_RES *res_set,
+MysqlClient::queryResultToStringList(const MYSQL_RES *res_set,
                                      std::list<std::string> &result)
 {
-  unsigned int numrows = mysql_num_rows(res_set);
-  LOG( Logger::DEBUG, std::string("MySQL query returned number of rows: ").
-                        append(TToStr(numrows)).c_str());
+  TRACE_STATIC;
 
-  unsigned int num_fields = mysql_num_fields(res_set);
+//   unsigned int numrows = mysql_num_rows(res_set);
+//   LOG( Logger::DEBUG, std::string("MySQL query returned number of rows: ").
+//                         append(TToStr(numrows)).c_str());
+
+  unsigned int num_fields = mysql_num_fields(const_cast<MYSQL_RES *>(res_set));
   MYSQL_ROW row;
 
-  while ((row = mysql_fetch_row(res_set)) != NULL) {
+  while ((row = mysql_fetch_row(const_cast<MYSQL_RES *>(res_set))) != NULL) {
     std::string rowString;
     for( unsigned int i = 0; i < num_fields; ++i ) {
       rowString.append(row[i] ? row[i] : "NULL");

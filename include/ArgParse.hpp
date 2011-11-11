@@ -42,11 +42,11 @@ public:
    * @param name short and/or long form: "-f,--foo"
    * The value can be retreived with this string passed to the argAs... functions.
    * @param help Description of the argument, printed when --help is given.
+   * @param valueType Type of the paramterer, required by the argument.
+   * @param valueRequired Parameter requiered/optional after the argument.
    * @param argRequired Argument is required or optional.
    * It's a bad practice to have a required argument,
    * "options", shall be optional.
-   * @param valueType Type of the paramterer, required by the argument.
-   * @param valueRequired Parameter requiered/optional after the argument.
    * @param valueName Default is the type. But some short text can be better.
    * @param choices Comma separeted list of strings without whitespaces:
    * "yes,no,maybe"
@@ -55,8 +55,8 @@ public:
   void addArgument(const std::string name,
                    const std::string help,
                    const ValueType valueType = NONE,
-                   const Required argRequired = OPTIONAL,
                    const Required valueRequired = REQUIRED,
+                   const Required argRequired = OPTIONAL,
                    const std::string valueName = std::string(""),
                    const std::string choices = std::string(""));
 
@@ -121,8 +121,8 @@ private:
   struct Argument {
     const std::string m_help;
     const ValueType m_type;
-    const Required m_argRequired;
     const Required m_valueRequired;
+    const Required m_argRequired;
     const std::string m_valueName;
     const std::string m_choices;
     std::string m_value;
@@ -131,8 +131,8 @@ private:
 
     Argument (const std::string help,
               const ValueType type = NONE,
-              const Required argRequired = OPTIONAL,
               const Required valueRequired = REQUIRED,
+              const Required argRequired = OPTIONAL,
               const std::string valueName = std::string(""),
               const std::string choices = std::string(""),
               const std::string value = std::string(""));

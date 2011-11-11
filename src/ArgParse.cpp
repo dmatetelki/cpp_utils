@@ -31,8 +31,8 @@ ArgParse::ArgParse(const std::string description,
 void ArgParse::addArgument(const std::string arg,
                            const std::string help,
                            const ValueType valueType,
-                           const Required argRequired,
                            const Required valueRequired,
+                           const Required argRequired,
                            const std::string valueName,
                            const std::string choices)
 {
@@ -62,8 +62,8 @@ void ArgParse::addArgument(const std::string arg,
 
   Argument argument(help,
                     valueType,
-                    argRequired,
                     valueRequired,
+                    argRequired,
                     typeToString(valueType, valueName),
                     choices,
                     "");
@@ -408,15 +408,15 @@ void ArgParse::validateBool( const std::string name,
 
 ArgParse::Argument::Argument (const std::string help,
                               const ValueType type,
-                              const Required argRequired,
                               const Required valueRequired,
+                              const Required argRequired,
                               const std::string valueName,
                               const std::string choices,
                               const std::string value)
   : m_help(help)
   , m_type(type)
-  , m_argRequired(argRequired)
   , m_valueRequired(valueRequired)
+  , m_argRequired(argRequired)
   , m_valueName(valueName)
   , m_choices(choices)
   , m_value(value)
