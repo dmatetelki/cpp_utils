@@ -34,12 +34,12 @@ class ConcurrentQueue {
     }
 
 
-    void push(const T task)
+    void push(const T value)
     {
       TRACE;
       ScopedLock sl(m_mutex);
       if (m_cancelled) throw CancelledException();
-      m_queue.push( task );
+      m_queue.push( value );
       m_condVar.signal();
     }
 
