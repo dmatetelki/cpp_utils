@@ -34,6 +34,7 @@ private:
     {
       TRACE;
     }
+
     ~ThreadClassWithSemaphore() {
       TRACE;
     }
@@ -94,6 +95,8 @@ public:
 
     TS_ASSERT_EQUALS( t2->release(), true );
     TS_ASSERT_EQUALS( semaphore.getCount(), 1 );
+
+    // t2 releases instead of the using t1
     TS_ASSERT_EQUALS( t2->release(), true );
     TS_ASSERT_EQUALS( semaphore.getCount(), 2 );
     TS_ASSERT_EQUALS( t2->release(), false );
@@ -102,6 +105,8 @@ public:
     t2->stop();
     t1->join();
     t2->join();
+
+    sleep(1);
     delete t1;
     delete t2;
   }

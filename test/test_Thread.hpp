@@ -34,18 +34,14 @@ public:
   void testBasic( void )
   {
     TEST_HEADER;
-    ThreadClass *m = new ThreadClass;
-    m->start();
+    ThreadClass m;
+    m.start();
 
-    void *retVal = m->join();
+    void *retVal = m.join();
     TS_ASSERT_EQUALS ( *((int*)retVal) , 14 );
     free(retVal);
-    delete m;
   }
 
-/**
- * @note send a signal to a thread
- */
 
 private:
 
@@ -62,7 +58,6 @@ private:
       TRACE;
     }
 
-
   private:
 
     void* run( void ) {
@@ -73,10 +68,9 @@ private:
        */
       sleep(665);
 
-//       void* retVal = malloc(sizeof(int));
-//       *((int*)retVal) = 15;
-//       return retVal;
-      return 0;
+      void* retVal = malloc(sizeof(int));
+      *((int*)retVal) = 15;
+      return retVal;
     }
 
     static void signal_handler(int sig)
@@ -97,18 +91,17 @@ public:
   void testSignalSend( void )
   {
     TEST_HEADER;
-    ThreadClassWithSignal *m2 = new ThreadClassWithSignal;
-    m2->start();
+    ThreadClassWithSignal m2 ;
+    m2.start();
     sleep(1);
-    m2->sendSignal(SIGINT);
+    m2.sendSignal(SIGINT);
 
-    void *retVal = m2->join();
+    void *retVal = m2.join();
     TS_ASSERT(retVal);
     if (retVal != 0 ) {
       TS_ASSERT_EQUALS ( *((int*)retVal) , 16 );
       free((int*)retVal);
     }
-    delete m2;
   }
 
 
@@ -127,7 +120,7 @@ private:
 
 public:
 
-  void testEmpty( void )
+  void eetestEmpty( void )
   {
     TEST_HEADER;
 
@@ -138,4 +131,17 @@ public:
     void *retVal = e.join();
     TS_ASSERT_EQUALS ( retVal , (void *)0 );
   }
+
+  void testJoiningNotStartedThread( void )
+  {
+    TEST_HEADER;
+
+    EmptyThreadClass e;
+
+    e.stop();
+    e.join();
+    void *retVal = e.join();
+    TS_ASSERT_EQUALS ( retVal , (void *)0 );
+  }
+
 };
