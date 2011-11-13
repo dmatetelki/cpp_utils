@@ -17,16 +17,14 @@ public:
   void sendSignal( const int nSignal ) const;
   bool isRunning() const;
 
-private:
-
-  virtual void* run() = 0;
-  static void* threadStarter( void* pData );
-
 protected:
 
   bool m_isRunning;
 
 private:
+
+  virtual void* run() = 0;
+  static void* threadStarter( void* pData );
 
   pthread_t m_threadHandler;
 

@@ -106,7 +106,6 @@ public:
     t1->join();
     t2->join();
 
-    sleep(1);
     delete t1;
     delete t2;
   }

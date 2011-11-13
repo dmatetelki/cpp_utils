@@ -27,12 +27,5 @@ void MysqlConnectionPool::create()
 
   MysqlClient *client = new MysqlClient ( m_host, m_user, m_passwd, m_db );
   client->connect();
-  release(client);
-}
-
-void MysqlConnectionPool::clear()
-{
-  TRACE;
-  while ( !empty() )
-    delete acquire();
+  add(client);
 }
