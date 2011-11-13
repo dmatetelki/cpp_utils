@@ -9,18 +9,27 @@ class MysqlConnectionPool : public ObjectPool<MysqlClient *>
 {
 public:
 
-  MysqlConnectionPool();
-  ~MysqlConnectionPool();
-
-  MysqlClient* create( const char *host         = NULL,
+  MysqlConnectionPool( const char *host         = NULL,
                        const char *user         = NULL,
                        const char *passwd       = NULL,
-                       const char *db           = NULL,
-                       unsigned int port        = 0,
-                       const char *unix_socket  = NULL,
-                       unsigned long clientflag = 0 );
+                       const char *db           = NULL );
+  ~MysqlConnectionPool();
 
-  bool reset(const MysqlClient* client);
+  void create();
+
+  /// @note Shall this be a specialized ObjectPool::clear?
+  void clear();
+
+private:
+
+  MysqlConnectionPool(const MysqlConnectionPool&);
+  MysqlConnectionPool& operator=(const MysqlConnectionPool&);
+
+  const char *m_host;
+  const char *m_user;
+  const char *m_passwd;
+  const char *m_db;
+
 };
 
 

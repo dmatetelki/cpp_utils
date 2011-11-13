@@ -3,11 +3,17 @@
 #include "Logger.hpp"
 
 
-MysqlConnectionPool::MysqlConnectionPool()
+MysqlConnectionPool::MysqlConnectionPool( const char *host,
+                                          const char *user,
+                                          const char *passwd,
+                                          const char *db )
+  : m_host(host)
+  , m_user(user)
+  , m_passwd(passwd)
+  , m_db(db)
 {
   TRACE;
 }
-
 
 MysqlConnectionPool::~MysqlConnectionPool()
 {
@@ -15,33 +21,18 @@ MysqlConnectionPool::~MysqlConnectionPool()
 }
 
 
-MysqlClient* MysqlConnectionPool::create( const char* host,
-                                          const char* user,
-                                          const char* passwd,
-                                          const char* db,
-                                          unsigned int port,
-                                          const char* unix_socket,
-                                          long unsigned int clientflag )
+void MysqlConnectionPool::create()
 {
   TRACE;
 
-  MysqlClient *client = new MysqlClient(host,
-                                        user,
-                                        passwd,
-                                        db,
-                                        port,
-                                        unix_socket,
-                                        clientflag);
-
-  return client;
+  MysqlClient *client = new MysqlClient ( m_host, m_user, m_passwd, m_db );
+  client->connect();
+  release(client);
 }
 
-
-bool MysqlConnectionPool::reset(const MysqlClient* client)
+void MysqlConnectionPool::clear()
 {
   TRACE;
-
-  // The MysqlClient is stateless
-
-  return true;
+  while ( !empty() )
+    delete acquire();
 }

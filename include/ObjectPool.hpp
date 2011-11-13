@@ -2,28 +2,46 @@
 #define OBJECT_POOL_HPP
 
 #include "ConcurrentQueue.hpp"
+#include "Logger.hpp"
 
 template <typename T>
 class ObjectPool
 {
 public:
 
-  ObjectPool();
-  virtual ~ObjectPool();
+  ObjectPool() : m_pool()
+  {
+    TRACE;
+  }
 
-  void add(const T object);
-  void remove(const T object);
-  void clear();
+  virtual ~ObjectPool()
+  {
+    TRACE;
+  }
 
-  T get();
-  virtual void reset(const T object) = 0;
-  void release(const T object);
+
+  T acquire()
+  {
+    TRACE;
+    return m_pool.waitAndPop();
+  }
+
+  void release(const T object)
+  {
+    TRACE;
+    m_pool.push(object);
+  }
+
+  bool empty() const
+  {
+    TRACE;
+    return m_pool.empty();
+  }
 
 
 private:
 
   ConcurrentQueue<T> m_pool;
-
 };
 
 #endif // OBJECT_POOL_HPP
