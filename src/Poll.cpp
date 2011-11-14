@@ -42,7 +42,7 @@ void Poll::startPolling()
   TRACE;
 
   m_polling = true;
-  struct timespec tm = {0,10000};
+  struct timespec tm = {0,1000};
 
   while ( m_polling ) {
 
@@ -63,7 +63,6 @@ void Poll::startPolling()
         m_fds[i].fd == m_pollSocket ?
             acceptClient() :
             handleClient(m_fds[i].fd);
-
 
   } // while
 }
@@ -89,7 +88,6 @@ void Poll::acceptClient()
     LOG( Logger::ERR, errnoToString("ERROR accepting. ").c_str() );
   } else {
 
-    /// @bug does not works every time
     std::string clientAddress, clientService;
     if ( Socket::convertNameInfo(&clientAddr, clientAddrLen,
                                  clientAddress, clientService ) ) {

@@ -1,33 +1,17 @@
 #ifndef TCP_CLIENT_HPP
 #define TCP_CLIENT_HPP
 
-#include "Socket.hpp"
+#include "TcpConnection.hpp"
+#include "MessageBuilder.hpp"
 #include "Thread.hpp"
 #include "Poll.hpp"
 
 #include <string>
 
 
-class TcpClient : public Socket
+class TcpClient
 {
-
-public:
-
-  TcpClient ( const std::string host,
-              const std::string port );
-
-  virtual ~TcpClient();
-
-  bool connect();
-  void disconnect();
-
-  bool send(const std::string msg);
-
-
 private:
-
-  virtual void msgArrived(const std::string) = 0;
-  virtual void onDisconnect() = 0;
 
   class WatcherThread : public Thread
                       , public Poll
@@ -43,11 +27,28 @@ private:
   private:
     void* run();
 
-    TcpClient &m_tcpClient;
+    TcpClient  &m_tcpClient;
   };
 
-  std::string   m_host;
-  std::string   m_port;
+
+public:
+
+  TcpClient ( const std::string host,
+              const std::string port,
+              MessageBuilder *buidler );
+
+  virtual ~TcpClient();
+
+  bool connect();
+  void disconnect();
+
+  bool send( const void* message, const int length );
+
+private:
+
+  virtual void onDisconnect() = 0;
+
+  TcpConnection m_connection;
   WatcherThread m_watcher;
 
 };

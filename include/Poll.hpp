@@ -7,7 +7,7 @@ class Poll
 {
 public:
 
-  Poll( int &socket, const nfds_t maxClient );
+  Poll( int &socket, const nfds_t maxClient = 10 );
   virtual ~Poll();
 
   void setOwnSocket( const int socket );
@@ -16,6 +16,7 @@ public:
 
   virtual void acceptClient();
   virtual void handleClient( const int socket );
+
   virtual bool receive( const int socket ) = 0;
 
 

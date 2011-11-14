@@ -24,7 +24,8 @@ public:
   bool receive( const int fd );
 
   virtual void msgArrived(const int clientSocket,
-                          const std::string msg) = 0;
+                          const unsigned char* msg,
+                          const int msgLen ) = 0;
 
 private:
 

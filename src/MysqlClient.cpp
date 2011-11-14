@@ -140,10 +140,6 @@ MysqlClient::queryResultToStringList(const MYSQL_RES *res_set,
 {
   TRACE_STATIC;
 
-//   unsigned int numrows = mysql_num_rows(res_set);
-//   LOG( Logger::DEBUG, std::string("MySQL query returned number of rows: ").
-//                         append(TToStr(numrows)).c_str());
-
   unsigned int num_fields = mysql_num_fields(const_cast<MYSQL_RES *>(res_set));
   MYSQL_ROW row;
 

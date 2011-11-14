@@ -14,15 +14,25 @@ public:
   Socket(const int domain,
          const int type,
          const int protocol = 0);
+
+  Socket(const int socket );
+
   virtual ~Socket();
 
-  bool openSocket();
+  bool createSocket();
   void closeSocket();
 
   bool connectToHost(const std::string host,
                      const std::string port);
   bool bindToHost(const std::string host,
                   const std::string port );
+
+  bool getPeerName(const int socket,
+                   std::string &host,
+                   std::string &port);
+
+  bool send( const void *message, const int lenght );
+  int& getSocket() const;
 
   static bool convertNameInfo( sockaddr* addr,
                                socklen_t addrLen,

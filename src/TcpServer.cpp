@@ -3,6 +3,8 @@
 #include "Logger.hpp"
 #include "Common.hpp"
 
+#include "MessageBuilder.hpp"
+
 
 TcpServer::TcpServer( const std::string host,
                       const std::string port,
@@ -28,6 +30,21 @@ bool TcpServer::start()
 
   if ( !openSocket() )
     return false;
+
+//   // Set the socket REUSABLE flag for the quick restart ability.
+//   if (setsockopt(m_server_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
+//   {
+//     errorArrived( EC_SETSOCKOPT ) ;
+//   }
+
+
+//   // Set the socket NONBLOCKING flag for polling.
+//   if (-1 == (fc_flags = fcntl(m_server_socket, F_GETFL, 0)))
+//   {
+//     fc_flags = 0;
+//   }
+//   fcntl(m_server_socket, F_SETFL, fc_flags | O_NONBLOCK);
+
 
   if ( !bindToHost(m_host, m_port) )
     return false;
@@ -57,7 +74,7 @@ bool TcpServer::receive(const int clientSocket)
 {
   TRACE;
 
-  char buffer[10];
+  unsigned char buffer[10];
   int len = recv( clientSocket, buffer , 10, 0) ;
 
   if (len == -1) {
@@ -70,8 +87,14 @@ bool TcpServer::receive(const int clientSocket)
     return false;
   }
 
-  std::string msg(buffer, len);
-  msgArrived(clientSocket, msg);
+  MessageBuilder *m_builder(0);
+
+  if ( !m_builder ) {
+    msgArrived(clientSocket, buffer, len);
+    return true;
+  }
+
+  return m_builder->buildMessage(buffer, len);
 
   return true;
 }

@@ -21,16 +21,18 @@ public:
   }
 
   void msgArrived(const int clientSocket,
-                  const std::string msg)
+                  const unsigned char*msg,
+                  const int msgLen )
   {
     TRACE;
 
-    LOG( Logger::DEBUG, std::string("Got msg: ").append(msg).c_str() );
+    std::string message((char*)msg, msgLen);
+    LOG( Logger::DEBUG, std::string("Got msg: ").append(message).c_str() );
 
     std::string reply("Got your msg, buddy: \"");
-    reply.append(msg).append("\" see you!");
+    reply.append(message).append("\" see you!");
 
-    ssize_t n = write(clientSocket, reply.c_str(), reply.length());
+    ssize_t n = write(clientSocket,message.c_str(), message.length());
     if (n == -1) {
       LOG( Logger::ERR, errnoToString("ERROR writing to socket. ").c_str() );
     }

@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h> // inet_ntop
+#include <sys/select.h>
 
 
 Socket::Socket(const int domain,
@@ -19,7 +20,20 @@ Socket::Socket(const int domain,
   , m_addrLen(0)
 {
   TRACE;
+}
 
+
+Socket::Socket(const int socket)
+  : m_socket(socket)
+  , m_domain(-1)
+  , m_type(-1)
+  , m_protocol(-1)
+  , m_addr()
+  , m_addrLen(0)
+{
+  TRACE;
+
+  /// @todo get domain type prot from socket
 }
 
 
@@ -29,7 +43,7 @@ Socket::~Socket()
 }
 
 
-bool Socket::openSocket()
+bool Socket::createSocket()
 {
   TRACE;
 
@@ -92,6 +106,27 @@ bool Socket::bindToHost( const std::string host,
 }
 
 
+bool Socket::send ( const void *message, const int length )
+{
+  TRACE;
+
+  if ( ::send(m_socket, message, length, MSG_NOSIGNAL) == -1 ) {
+    LOG( Logger::ERR, errnoToString("ERROR sending. ").c_str() );
+    return false;
+  }
+
+  return true;
+}
+
+
+int& Socket::getSocket() const
+{
+  TRACE;
+
+  return m_socket;
+}
+
+
 bool Socket::connectToFirstAddress(struct addrinfo *servinfo)
 {
   TRACE;
@@ -133,6 +168,25 @@ bool Socket::bindToFirstAddress(struct addrinfo *servinfo )
   LOG( Logger::ERR, "Could not bind to host. Address already in use." );
 
   return false;
+}
+
+
+bool Socket::getPeerName( const int socket,
+                          std::string &host,
+                          std::string &port )
+{
+  TRACE;
+
+  struct sockaddr_in  address ;
+  memset(&address, 0, sizeof(address));
+  socklen_t addressLength = sizeof(address) ;
+  getpeername( socket, (struct sockaddr*)&address, &addressLength ) ;
+
+  unsigned int ip = address.sin_addr.s_addr ;
+
+  char tmp[INET_ADDRSTRLEN];
+  host = inet_ntop(AF_INET, &address.sin_addr, tmp, INET_ADDRSTRLEN);
+  port = address.sin_port;
 }
 
 
