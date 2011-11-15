@@ -3,56 +3,39 @@
 #include "Logger.hpp"
 
 #include "TcpClient.hpp"
-#include "MessageBuilder.hpp"
+#include "Message.hpp"
 
 #include <iostream>
 #include <string>
 
-
-class DummyBuilder : public MessageBuilder
+class SimpleMessage : public Message
 {
 private:
 
-  void messageBuilt( const unsigned char* message,
+  bool buildMessage( const unsigned char* messagePart,
                      const int length )
   {
     TRACE;
+    m_buffer = std::string( (const char*) messagePart, length );
+    onMessageReady();
+  }
 
-    std::string reply((char *)message, length);
+  void onMessageReady()
+  {
+    TRACE;
     LOG( Logger::INFO, std::string("Got reply from server: ").
-                        append(reply).c_str() );
+                        append(m_buffer).c_str() );
   }
 
+protected:
+
+  int getExpectedLength()
+  {
+    TRACE;
+    return 0;
+  }
 };
 
-
-class PrinterTcpClient : public TcpClient
-{
-public:
-  PrinterTcpClient ( const std::string host,
-                     const std::string port,
-                     MessageBuilder *builder
-                   )
-    : TcpClient(host, port, builder)
-  {
-    TRACE;
-  }
-
-private:
-
-  void msgArrived( const std::string msg)
-  {
-    TRACE;
-    LOG( Logger::DEBUG, std::string("Got msg: ").append(msg).c_str() );
-  }
-
-  void onDisconnect()
-  {
-    TRACE;
-    LOG( Logger::DEBUG, "What shall I do..." );
-  }
-
-};
 
 int main( int argc, char * argv[] )
 {
@@ -60,9 +43,7 @@ int main( int argc, char * argv[] )
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::FINEST);
 
-  MessageBuilder *builder = new DummyBuilder;
-
-  PrinterTcpClient tcpclient("localhost", "4455", builder);
+  TcpClient<SimpleMessage> tcpclient("localhost", "4455");
 
   tcpclient.connect();
 
@@ -74,14 +55,9 @@ int main( int argc, char * argv[] )
   tcpclient.send( msg2.c_str(), msg2.length());
   sleep(2);
 
-//   std::string reply;
-//   tcpclient.receive(reply);
-//   std::cout << "got reply \"" << reply << "\"" << std::endl;
 
   tcpclient.disconnect();
 
-
-  delete builder;
   Logger::destroy();
   return 0;
 }

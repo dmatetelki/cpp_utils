@@ -2,7 +2,6 @@
 #define TCP_CLIENT_HPP
 
 #include "TcpConnection.hpp"
-#include "MessageBuilder.hpp"
 #include "Thread.hpp"
 #include "Poll.hpp"
 
@@ -34,8 +33,7 @@ private:
 public:
 
   TcpClient ( const std::string host,
-              const std::string port,
-              MessageBuilder *buidler );
+              const std::string port );
 
   virtual ~TcpClient();
 
@@ -46,7 +44,7 @@ public:
 
 private:
 
-  virtual void onDisconnect() = 0;
+//   virtual void onDisconnect() = 0;
 
   TcpConnection m_connection;
   WatcherThread m_watcher;
@@ -54,3 +52,5 @@ private:
 };
 
 #endif // TCP_CLIENT_HPP
+
+

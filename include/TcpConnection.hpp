@@ -1,7 +1,6 @@
 #ifndef TCP_CONNECTION_HPP
 #define TCP_CONNECTION_HPP
 
-#include "MessageBuilder.hpp"
 #include "Socket.hpp"
 
 #include <string>
@@ -16,12 +15,10 @@ public:
   };
 
   TcpConnection ( const int socket,
-                  const MessageBuilder *m_builder,
                   const int bufferLenght = 1024 );
 
   TcpConnection ( const std::string host,
                   const std::string port,
-                  MessageBuilder *builder,
                   const int bufferLenght = 1024 );
 
   virtual ~TcpConnection();
@@ -33,7 +30,8 @@ public:
 
   bool sendMessage( const void* message, const int length );
   bool readFromSocket();
-  virtual void onMessageReady ( const unsigned char * message, const int length ) = 0;
+  virtual void onMessageReady ( const unsigned char * message,
+                                const int length ) = 0;
 
 
   int getSocket() const;
@@ -47,7 +45,6 @@ private:
   Socket          m_socket;
   std::string     m_host;
   std::string     m_port;
-  MessageBuilder *m_builder;
   Status          m_status;
 
   unsigned char  *m_buffer;

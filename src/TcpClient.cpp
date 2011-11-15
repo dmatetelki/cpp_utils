@@ -5,9 +5,8 @@
 
 
 TcpClient::TcpClient( const std::string host,
-                      const std::string port,
-                      MessageBuilder *builder )
-  : m_connection (host, port, builder)
+                      const std::string port )
+  : m_connection (host, port)
   , m_watcher(*this)
 {
   TRACE;
