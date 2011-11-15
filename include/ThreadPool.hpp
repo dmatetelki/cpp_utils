@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "ConcurrentQueue.hpp"
+#include "ConcurrentDeque.hpp"
 #include "Task.hpp"
 #include "Thread.hpp"
 #include "Mutex.hpp"
@@ -32,7 +32,7 @@ class ThreadPool
     ThreadPool& operator=( const ThreadPool& );
 
     std::vector<Thread*> m_threads;
-    ConcurrentQueue<Task*> m_tasks;
+    ConcurrentDeque<Task*> m_tasks;
 };
 
 

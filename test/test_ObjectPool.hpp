@@ -34,11 +34,15 @@ public:
     op.add(a);
     op.add(b);
 
-    TS_ASSERT_EQUALS( op.acquire(), a );
-    TS_ASSERT_EQUALS( op.acquire(), b );
+    int *tmp_a = op.acquire();
+    int *tmp_b = op.acquire();
 
-    delete a;
-    delete b;
+    TS_ASSERT_EQUALS( *tmp_a, *a );
+    TS_ASSERT_EQUALS( *tmp_b, *b );
+
+    // release will delete them
+    op.release(tmp_a);
+    op.release(tmp_b);
   }
 
 
@@ -100,7 +104,7 @@ public:
     t1.join();
     t2.join();
 
-    delete a;
+    // no need to delete "a", dtor of the ConqurrentDeque takes care of it
   }
 
 

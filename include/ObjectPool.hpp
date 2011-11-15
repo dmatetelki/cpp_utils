@@ -1,7 +1,7 @@
 #ifndef OBJECT_POOL_HPP
 #define OBJECT_POOL_HPP
 
-#include "ConcurrentQueue.hpp"
+#include "ConcurrentDeque.hpp"
 #include "Logger.hpp"
 
 template <typename T>
@@ -36,19 +36,9 @@ public:
     return tmp;
   }
 
-  void release(T object)
-  {
-    TRACE;
-    if ( m_pool.cancelled() ) {
-      m_numberOfUsedObjects--;
-      return;
-    }
-
-    m_pool.push(object);
-    m_numberOfUsedObjects--;
-  }
-
-  void release(T* object)
+  template<class U = T>
+  typename std::enable_if< std::is_pointer<U>::value >::type
+  release(T object)
   {
     TRACE;
     if ( m_pool.cancelled() ) {
@@ -61,21 +51,30 @@ public:
     m_numberOfUsedObjects--;
   }
 
-  void clear(T a)
+  template<class U = T>
+  typename std::enable_if< !(std::is_pointer<U>::value) >::type
+  release(T object)
   {
     TRACE;
-    m_pool.cancel(a);
+    if ( m_pool.cancelled() ) {
+      m_numberOfUsedObjects--;
+      return;
+    }
+
+    m_pool.push(object);
+    m_numberOfUsedObjects--;
   }
 
-  void clear(T* a)
+  void clear()
   {
     TRACE;
-    m_pool.cancel(a);
+    m_pool.cancel();
   }
+
 
 private:
 
-  ConcurrentQueue<T> m_pool;
+  ConcurrentDeque<T> m_pool;
   int m_numberOfUsedObjects;
 };
 

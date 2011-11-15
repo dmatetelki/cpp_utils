@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <algorithm>
+#include <type_traits>
 
 #include "Mutex.hpp"
 #include "ConditionVariable.hpp"
@@ -15,11 +16,11 @@ class CancelledException {};
 
 
 template <typename T>
-class ConcurrentQueue
+class ConcurrentDeque
 {
 public:
 
-  ConcurrentQueue()
+  ConcurrentDeque()
     : m_queue()
     , m_cancelled(false)
     , m_mutex()
@@ -28,9 +29,10 @@ public:
     TRACE;
   }
 
-  ~ConcurrentQueue()
+  ~ConcurrentDeque()
   {
     TRACE;
+    freeDeque();
   }
 
 
@@ -81,29 +83,32 @@ public:
     return m_queue.empty();
   }
 
-
-  void cancel(T a)
+  void cancel()
   {
     TRACE;
     ScopedLock sl(m_mutex);
     m_cancelled = true;
     m_condVar.broadcast();
+    freeDeque();
+  }
+
+  template<class U = T>
+  typename std::enable_if< std::is_pointer<U>::value >::type
+  freeDeque()
+  {
+    TRACE;
+    typename std::deque<T>::iterator it;
+    for ( it = m_queue.begin(); it != m_queue.end(); ++it )
+      delete *it;
 
     m_queue.clear();
   }
 
-    void cancel(T *a)
+  template<class U = T>
+  typename std::enable_if< !(std::is_pointer<U>::value) >::type
+  freeDeque()
   {
     TRACE;
-    ScopedLock sl(m_mutex);
-    m_cancelled = true;
-    m_condVar.broadcast();
-
-    typename std::deque<T*>::iterator it;
-    for ( it = m_queue.begin(); it != m_queue.end(); ++it ) {
-      LOG( Logger::INFO, std::string("Deleting: ").append(*it).c_str() );
-      delete *it;
-    }
     m_queue.clear();
   }
 
@@ -116,8 +121,8 @@ public:
 private:
 
 
-  ConcurrentQueue& operator=( const ConcurrentQueue& );
-  ConcurrentQueue( const ConcurrentQueue& );
+  ConcurrentDeque& operator=( const ConcurrentDeque& );
+  ConcurrentDeque( const ConcurrentDeque& );
 
   std::deque<T> m_queue;
   bool m_cancelled;

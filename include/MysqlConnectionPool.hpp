@@ -17,7 +17,6 @@ public:
 
   void create();
 
-  /// @note Shall this be a specialized ObjectPool::clear?
   void clear();
 
 private:
