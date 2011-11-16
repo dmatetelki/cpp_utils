@@ -1,4 +1,5 @@
-// gpp tcpServer_main.cpp -o client -I../include ../src/Logger.cpp ../src/TcpClient.cpp
+// gpp tcpserver_main.cpp  -o server -I../include ../src/Logger.cpp ../src/Socket.cpp
+
 
 #include "Logger.hpp"
 #include "Common.hpp"
@@ -54,7 +55,7 @@ protected:
 };
 
 
-int main( int argc, char * argv[] )
+int main()
 {
   Logger::createInstance();
   Logger::init(std::cout);

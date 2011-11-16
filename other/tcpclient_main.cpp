@@ -49,16 +49,16 @@ protected:
 };
 
 
-int main( int argc, char * argv[] )
+int main()
 {
   Logger::createInstance();
   Logger::init(std::cout);
-  Logger::setLogLevel(Logger::FINEST);
+  Logger::setLogLevel(Logger::DEBUG);
 
   int *a = new int;
   *a=2;
 
-  TcpClient<SimpleMessage> tcpclient("localhost", "4455");
+  TcpClient<SimpleMessage> tcpclient("127.0.0.1", "4455");
 
   tcpclient.connect();
 

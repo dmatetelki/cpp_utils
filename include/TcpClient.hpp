@@ -39,21 +39,16 @@ private:
   protected:
 
   /// @todo this is unclear and nasty hack
-  virtual void acceptClient( const int socket )
+  virtual void acceptClient()
   {
     TRACE;
-
-    LOG( Logger::DEBUG, std::string("own socket: ").
-          append( TToStr(m_tcpClient.m_connection.getSocket())).
-          append( " param socket: ").
-          append( TToStr( socket) ).c_str() );
 
     m_tcpClient.m_connection.receive();
     stopPolling();
   }
 
   /// @todo this is unclear and nasty hack
-  virtual void handleClient( const int socket )
+  virtual void handleClient( const int )
   {
     TRACE;
     LOG( Logger::DEBUG, "Server closed the connection." );

@@ -59,7 +59,7 @@ public:
       for ( nfds_t i = 0; i < m_num_of_fds; ++i )
         if ( m_fds[i].revents != 0 )
           m_fds[i].fd == m_connection->getSocket() ?
-              acceptClient(m_fds[i].fd) :
+              acceptClient() :
               handleClient(m_fds[i].fd);
 
     } // while
@@ -74,7 +74,7 @@ public:
 
 protected:
 
-  virtual void acceptClient( const int socket )
+  virtual void acceptClient()
   {
     TRACE;
 
@@ -85,19 +85,17 @@ protected:
 
     if ( client_socket == -1 ) {
       LOG( Logger::ERR, errnoToString("ERROR accepting. ").c_str() );
-    } else {
-
-      std::string clientAddress, clientService;
-      if ( Socket::convertNameInfo(&clientAddr, clientAddrLen,
-                                  clientAddress, clientService ) ) {
-        LOG( Logger::DEBUG, std::string("New client connected: ").
-                              append(clientAddress).append(":").
-                              append(clientService).c_str() );
-      }
-
-      m_connectionPool[client_socket] = new Connection<T>(client_socket);
-      addFd( client_socket, POLLIN | POLLPRI );
+      return;
     }
+
+    Connection<T> *connection = new Connection<T>(client_socket);
+
+    LOG( Logger::DEBUG, std::string("New client connected: ").
+                            append(connection->getHost()).append(":").
+                            append(connection->getPort()).c_str() );
+
+    m_connectionPool[client_socket] = new Connection<T>(client_socket);
+    addFd( client_socket, POLLIN | POLLPRI );
   }
 
   virtual void handleClient( const int socket )

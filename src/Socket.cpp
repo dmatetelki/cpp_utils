@@ -194,7 +194,7 @@ void Socket::getPeerName( std::string &host,
 
   char tmp[INET_ADDRSTRLEN];
   host = inet_ntop(AF_INET, &address.sin_addr, tmp, INET_ADDRSTRLEN);
-  port = address.sin_port;
+  port = TToStr(address.sin_port);
 }
 
 

@@ -39,6 +39,11 @@ protected:
 
   /// @todo shall i use dinamic array?
   std::string     m_buffer;
+
+private:
+
+  Message<T>(const Message<T> &);
+  Message<T>& operator=(const Message<T> &);
 };
 
 

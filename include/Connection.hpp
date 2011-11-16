@@ -95,14 +95,14 @@ public:
   {
     TRACE;
 
-    LOG ( Logger::DEBUG, std::string("receving on socket: ").
-                          append(TToStr(m_socket.getSocket())).c_str() );
+//     LOG ( Logger::DEBUG, std::string("receving on socket: ").
+//                           append(TToStr(m_socket.getSocket())).c_str() );
 
     ssize_t len = recv(m_socket.getSocket(), m_buffer, m_bufferLength, 0);
 
-    LOG ( Logger::DEBUG, std::string("len: ").
-                          append(TToStr(len)).append(" errno: ").
-                          append(TToStr(errno)).c_str() );
+    LOG ( Logger::DEBUG, std::string("Received: ").
+                          append(TToStr(len)).append(" bytes from: ").
+                          append(m_host).append(":").append(m_port).c_str() );
 
     if (len == -1) {
       LOG( Logger::ERR, errnoToString("ERROR reading from socket. ").c_str() );
@@ -128,6 +128,12 @@ public:
   {
     TRACE;
     return m_host;
+  }
+
+  std::string getPort() const
+  {
+    TRACE;
+    return m_port;
   }
 
 

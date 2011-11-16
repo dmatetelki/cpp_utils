@@ -78,7 +78,7 @@ private:
     else (void)0
 
   #define LOG(level, msg) \
-  if ( Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
+  if ( Logger::getInstance()->getLoglevel() >= level ) \
   Logger::getInstance()->log_string( \
     level, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
   else (void)0
