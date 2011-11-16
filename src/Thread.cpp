@@ -33,6 +33,9 @@ void Thread::start()
 void* Thread::join() const
 {
   TRACE;
+  if ( !m_isRunning )
+    return 0;
+
   void* retVal;
   pthread_join( m_threadHandler, &retVal );
   return retVal;

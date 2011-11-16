@@ -19,19 +19,20 @@ if(CXXTEST_FOUND)
   Fixture.hpp
 
 #   test_ArgParse.hpp
-#   test_Singelton_call_once.hpp
-#   test_Singleton.hpp
-#   test_Singleton_meyers.hpp
-#   test_Singleton_DCLP.hpp
-#   test_Mutex.hpp
-#   test_ScopedLock.hpp
-#   test_ConditionalVariable.hpp
-  test_Thread.hpp
-#   test_ThreadPool.hpp
-#   test_Semaphore.hpp
-#   test_Timer.hpp
 #   test_Common.hpp
-#   test_TimerThreadMultimap.hpp
+#   test_ConditionalVariable.hpp
+#   test_Multiton.hpp
+#   test_Mutex.hpp
+  test_ObjectPool.hpp
+#   test_ScopedLock.hpp
+#   test_Semaphore.hpp
+#   test_Singleton_DCLP.hpp
+#   test_Singleton_call_once.hpp
+#   # test_Singleton.hpp Cannot test private member, Ficture.hpp loads it
+#   test_Singleton_meyers.hpp
+#   test_Thread.hpp
+#   test_ThreadPool.hpp
+#   # test_Timer.hpp Takes too much time&buggy
   )
   target_link_libraries(testCppUtils CppUtils gcov)
 endif()

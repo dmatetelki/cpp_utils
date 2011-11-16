@@ -69,7 +69,18 @@
    Memcheck:Leak
    fun:calloc
    fun:_dl_allocate_tls
-   fun:pthread_create@@GLIBC_*.*.*
+   fun:pthread_create@@GLIBC_*
+   ...
+   fun:main
+}
+
+{
+   create thread2
+   Memcheck:Leak
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:pthread_create@@GLIBC_*
    ...
    fun:main
 }

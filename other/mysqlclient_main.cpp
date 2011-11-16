@@ -1,12 +1,13 @@
-// gpp mysqlclient_main.cpp ../src/Logger.cpp ../src/MysqlClient.cpp  ../src/ArgParse.cpp -I../include -lmysqlclient -o mysqlclient
+// g++ mysqlclient_main.cpp src/Logger.cpp src/MysqlClient.cpp  src/ArgParse.cpp -I./include -lmysqlclient
 
-// ./mysqlclient -u USER -db MYSQL_DB -p PASS
 
 #include "Logger.hpp"
 #include "Common.hpp"
 
 #include "ArgParse.hpp"
 #include "MysqlClient.hpp"
+#include "MysqlConnectionPool.hpp"
+
 #include <mysql/errmsg.h>
 
 #include <string>
@@ -20,33 +21,24 @@ void setUpArgs(ArgParse &argParse)
 
   argParse.addArgument("--host",
                        "Hostname/IP",
-                       ArgParse::STRING );
+                       ArgParse::STRING,
+                       ArgParse::REQUIRED );
   argParse.addArgument("-u, --user",
                        "Username",
                        ArgParse::STRING,
-                       ArgParse::REQUIRED, ArgParse::REQUIRED );
+                       ArgParse::REQUIRED );
   argParse.addArgument("-db, --database",
                        "Database",
                        ArgParse::STRING,
-                       ArgParse::REQUIRED, ArgParse::REQUIRED );
+                       ArgParse::REQUIRED );
   argParse.addArgument("-p, --password",
                        "Password",
                        ArgParse::STRING,
-                       ArgParse::REQUIRED, ArgParse::REQUIRED );
-  argParse.addArgument("-port",
-                       "Port",
-                       ArgParse::INT );
-  argParse.addArgument("-s, --unix-socket",
-                       "Unix socket",
-                       ArgParse::STRING );
-  argParse.addArgument("-f, --client-flags",
-                       "Client flags",
-                       ArgParse::INT );
-  argParse.addArgument("-r, --max-reconnect",
-                       "Maximum number of retries if connection is lost. "
-                       "Default is 5.",
-                       ArgParse::INT,
                        ArgParse::REQUIRED );
+
+  argParse.addArgument("-n, --number-of-connections",
+                       "Number of connections. Default is 5",
+                       ArgParse::INT );
 }
 
 
@@ -56,10 +48,7 @@ void getArgs( int argc, char* argv[],
               std::string &user,
               std::string &db,
               std::string &pass,
-              std::string &unixsocket,
-              int &port,
-              int &clientflags,
-              int &retry )
+              int &numberOfConnections )
 {
   TRACE_STATIC;
 
@@ -69,10 +58,42 @@ void getArgs( int argc, char* argv[],
   argParse.argAsString("-u, --user", user);
   argParse.argAsString("-db, --database", db);
   argParse.argAsString("-p, --password", pass);
-  argParse.argAsInt("-port", port);
-  argParse.argAsString("-s, --unix-socket", unixsocket);
-  argParse.argAsInt("-f, --client-flags", clientflags);
-  argParse.argAsInt("-r, --max-reconnect", retry);
+
+  argParse.argAsInt("-n, --number-of-connections", numberOfConnections);
+}
+
+
+bool checkArgs( int argc, char* argv[],
+                ArgParse &argParse,
+                std::string &host,
+                std::string &user,
+                std::string &db,
+                std::string &pass,
+                int &numberOfConnections )
+{
+  TRACE_STATIC;
+
+  try {
+    getArgs( argc, argv,
+             argParse,
+             host, user, db, pass,
+             numberOfConnections );
+  } catch (std::runtime_error e) {
+    if ( argParse.foundArg("-h, --help") ) {
+      std::cout << argParse.usage() << std::endl;
+      return false;
+    }
+    std::cerr << e.what() << std::endl
+              << "Check usage: " << argv[0] << " --help" << std::endl;
+    return false;
+  }
+
+  if ( argParse.foundArg("-h, --help") ) {
+    std::cout << argParse.usage() << std::endl;
+    return false;
+  }
+
+  return true;
 }
 
 
@@ -97,79 +118,43 @@ int main(int argc, char* argv[] )
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::FINEST);
 
+
+  // args
   ArgParse argParse("Simple MySQL client",
                     "Report bugs to: denes.matetelki@gmail.com");
-
   setUpArgs(argParse);
 
-  std::string host, user, db, pass, unixsocket;
-  int port, clientflags, retry;
+  std::string host, user, db, pass;
+  int numberOfConnections(5);
 
-  try {
-    getArgs( argc, argv,
-             argParse,
-             host, user, db, pass, unixsocket,
-             port, clientflags, retry );
-  } catch (std::runtime_error e) {
-    if ( argParse.foundArg("-h, --help") ) {
-      std::cout << argParse.usage() << std::endl;
-      return 1;
-    }
-    std::cerr << e.what() << std::endl
-              << "Check usage: " << argv[0] << " --help" << std::endl;
+  if ( !checkArgs(argc, argv, argParse,
+                  host, user, db, pass, numberOfConnections ) )
     return 1;
-  }
 
-
-  if ( argParse.foundArg("-h, --help") ) {
-    std::cout << argParse.usage() << std::endl;
-    return 1;
-  }
-
+  // init
   init_client_errs();
+  MysqlConnectionPool cp (
+                  argParse.foundArg("--host") ? host.c_str() : NULL,
+                  argParse.foundArg("-u, --user") ? user.c_str() : NULL,
+                  argParse.foundArg("-p, --password") ? pass.c_str() : NULL,
+                  argParse.foundArg("-db, --database") ? db .c_str() : NULL );
 
-  MysqlClient mysqlClient (
-    argParse.foundArg("--host") ? host.c_str() : NULL,
-    argParse.foundArg("-u, --user") ? user.c_str() : NULL,
-    argParse.foundArg("-p, --password") ? pass.c_str() : NULL,
-    argParse.foundArg("-db, --database") ? db .c_str() : NULL,
-    argParse.foundArg("-port") ? port : 0,
-    argParse.foundArg("-s, --unix-socket") ? unixsocket.c_str() : NULL,
-    argParse.foundArg("-f, --client-flags") ? clientflags : 0,
-    argParse.foundArg("-r, --max-reconnect") ? retry : 5 );
-
-  if ( !mysqlClient.connect() && !mysqlClient.reconnect() ) {
-    finish_client_errs();
-    Logger::destroy();
-    return 0;
-  }
-
-  std::string queryMsg("SELECT * FROM seats");
-  MYSQL_RES *queryResult;
-  if ( !mysqlClient.querty(queryMsg.c_str(), queryMsg.length(), &queryResult) ) {
-    LOG( Logger::ERR, "Could not execute query." );
-    if ( !mysqlClient.reconnect() ) {
-      LOG( Logger::ERR, "Reconnect failed, exiting." );
-      finish_client_errs();
-      Logger::destroy();
-      return 0;
-    }
-
-    LOG( Logger::ERR, "Trying query again." );
-    if ( !mysqlClient.querty(queryMsg.c_str(), queryMsg.length(), &queryResult) ) {
-      LOG( Logger::ERR, "Query failed again, exiting." );
-      finish_client_errs();
-      Logger::destroy();
-      return 0;
-    }
-  }
+  for ( int i = 0; i < numberOfConnections; ++i )
+    cp.create();
 
 
+  // work
   std::list<std::string> results;
-  MysqlClient::queryResultToStringList(queryResult, results);
-  printResults(results);
+  MysqlClient *c = cp.acquire();
+  if ( !c->querty("SELECT * FROM seats", results) ) {
+    LOG ( Logger::ERR, "Could not execute query." );
+  } else {
+    printResults(results);
+  }
+  cp.release(c);
 
-  mysql_free_result(queryResult);
+  // end
+  cp.clear();
   finish_client_errs();
   Logger::destroy();
   return 0;

@@ -24,6 +24,11 @@ public:
       return m_instance;
     }
 
+    static void destroy()
+    {
+      delete m_instance;
+    }
+
 private:
 
     static void do_init()

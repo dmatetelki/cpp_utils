@@ -29,6 +29,7 @@ public:
     TEST_HEADER;
 
     TS_ASSERT_EQUALS( BasicSingleton::getInstance()->getSeven(), 7 );
+    BasicSingleton::destroy();
   }
 
 
