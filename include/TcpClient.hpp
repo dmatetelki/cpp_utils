@@ -76,9 +76,10 @@ private:
 
 public:
 
-  TcpClient ( const std::string host,
-              const std::string port )
-    : m_connection (host, port)
+  TcpClient ( const std::string   host,
+              const std::string   port,
+              void               *msgParam = 0 )
+    : m_connection (host, port, msgParam)
     , m_watcher(*this)
   {
     TRACE;

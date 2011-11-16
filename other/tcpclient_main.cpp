@@ -12,6 +12,12 @@ class SimpleMessage : public Message
 {
 public:
 
+  SimpleMessage(void* msgParam = 0)
+    : Message(msgParam)
+  {
+    TRACE;
+  }
+
   bool buildMessage( const void   *msgPart,
                      const size_t  msgLen )
   {
@@ -45,6 +51,9 @@ int main( int argc, char * argv[] )
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::FINEST);
 
+  int *a = new int;
+  *a=2;
+
   TcpClient<SimpleMessage> tcpclient("localhost", "4455");
 
   tcpclient.connect();
@@ -59,6 +68,8 @@ int main( int argc, char * argv[] )
 
 
   tcpclient.disconnect();
+
+  delete a;
 
   Logger::destroy();
   return 0;

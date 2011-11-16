@@ -19,13 +19,14 @@ public:
     CLOSED
   };
 
-  Connection ( const int    socket,
-               const size_t bufferLength = 1024 )
+  Connection ( const int      socket,
+               void          *msgParam = 0,
+               const size_t   bufferLength = 1024 )
     : m_socket(socket)
     , m_host()
     , m_port()
     , m_status(CLOSED)
-    , m_message()
+    , m_message(msgParam)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
 
@@ -36,14 +37,15 @@ public:
     m_buffer = new unsigned char[m_bufferLength];
   }
 
-  Connection ( const std::string host,
-               const std::string port,
-               const size_t      bufferLength = 1024 )
+  Connection ( const std::string   host,
+               const std::string   port,
+               void               *msgParam = 0,
+               const size_t        bufferLength = 1024 )
     : m_socket(AF_INET, SOCK_STREAM)
     , m_host(host)
     , m_port(port)
     , m_status(CLOSED)
-    , m_message()
+    , m_message(msgParam)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
   {
