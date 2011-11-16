@@ -1,53 +1,137 @@
 #ifndef TCP_CLIENT_HPP
 #define TCP_CLIENT_HPP
 
-#include "TcpConnection.hpp"
+#include "Logger.hpp"
+
+#include "Connection.hpp"
 #include "Thread.hpp"
 #include "Poll.hpp"
 
+
 #include <string>
+#include <stddef.h> // size_t
 
 
+template <typename T>
 class TcpClient
 {
 private:
 
-  class WatcherThread : public Thread
-                      , public Poll
+  template <typename U>
+  class PollerThread : public Thread
+                     , public Poll<U>
   {
   public:
-    WatcherThread( TcpClient &data );
+    PollerThread( TcpClient<U> &data )
+      : Poll<U>(data.m_connection)
+      , m_tcpClient(data)
+    {
+      TRACE;
+    }
 
-    // overringind Poll's accept behaviour
-    void acceptClient();
-    void handleClient( const int fd );
-    bool receive( const int fd );
+    void stopPoller()
+    {
+      TRACE;
+      stopPolling();
+      stop();
+    }
+
+  protected:
+
+  /// @todo this is unclear and nasty hack
+  virtual void acceptClient( const int socket )
+  {
+    TRACE;
+
+    LOG( Logger::DEBUG, std::string("own socket: ").
+          append( TToStr(m_tcpClient.m_connection.getSocket())).
+          append( " param socket: ").
+          append( TToStr( socket) ).c_str() );
+
+    m_tcpClient.m_connection.receive();
+    stopPolling();
+  }
+
+  /// @todo this is unclear and nasty hack
+  virtual void handleClient( const int socket )
+  {
+    TRACE;
+    LOG( Logger::DEBUG, "Server closed the connection." );
+    stopPolling();
+  }
 
   private:
-    void* run();
 
-    TcpClient  &m_tcpClient;
-  };
+    void* run()
+    {
+      TRACE;
+      startPolling();
+      return 0;
+    }
+
+    TcpClient<U> &m_tcpClient;
+
+  };  // class PollerThread
 
 
 public:
 
   TcpClient ( const std::string host,
-              const std::string port );
+              const std::string port )
+    : m_connection (host, port)
+    , m_watcher(*this)
+  {
+    TRACE;
+  }
 
-  virtual ~TcpClient();
+  virtual ~TcpClient()
+  {
+    TRACE;
+    disconnect();
+  }
 
-  bool connect();
-  void disconnect();
+  bool connect()
+  {
+    TRACE;
 
-  bool send( const void* message, const int length );
+    if ( !m_connection.connectToHost() )
+      return false;
+
+    m_watcher.start();
+    return true;
+  }
+
+  void disconnect()
+  {
+    TRACE;
+
+    if ( m_watcher.isRunning() ) {
+      m_watcher.stopPoller();
+      m_watcher.join();
+    }
+
+    m_connection.closeConnection();
+  }
+
+  bool send( const void* msg, const size_t msgLen )
+  {
+    TRACE;
+    return m_connection.send(msg, msgLen);
+  }
 
 private:
 
-//   virtual void onDisconnect() = 0;
+  TcpClient(const TcpClient& );
+  TcpClient& operator=(const TcpClient& );
 
-  TcpConnection m_connection;
-  WatcherThread m_watcher;
+  Connection<T>& getConnection()
+  {
+    TRACE;
+    return m_connection;
+  }
+
+  Connection<T>    m_connection;
+  PollerThread<T>  m_watcher;
 
 };
 

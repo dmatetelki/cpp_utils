@@ -2,9 +2,9 @@
 #define MESSAGE_HPP
 
 #include <string>
+#include <stddef.h> // size_t
 
-
-  /** Append messageParts with buildMessage() to m_buffer.
+  /** Append msgParts with buildMessage() to m_buffer.
    *  Call onMessageReady() if the length of the buffer equals the value from
    * getExpectedLength().
    */
@@ -16,13 +16,13 @@ public:
   Message() : m_buffer() {};
   virtual ~Message() {};
 
-  virtual bool buildMessage( const unsigned char* messagePart,
-                             const int length ) = 0;
+  virtual bool buildMessage( const void   *msgPart,
+                             const size_t  msgLen ) = 0;
   virtual void onMessageReady() = 0;
 
 protected:
 
-  virtual int getExpectedLength() = 0;
+  virtual size_t getExpectedLength() = 0;
 
   /// @todo shall i use dinamic array?
   std::string m_buffer;

@@ -27,12 +27,11 @@ public:
   bool bindToHost(const std::string host,
                   const std::string port );
 
-  bool getPeerName(const int socket,
-                   std::string &host,
+  void getPeerName(std::string &host,
                    std::string &port);
 
   bool send( const void *message, const int lenght );
-  int& getSocket() const;
+  int getSocket() const;
 
   static bool convertNameInfo( sockaddr* addr,
                                socklen_t addrLen,

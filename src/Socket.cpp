@@ -119,10 +119,9 @@ bool Socket::send ( const void *message, const int length )
 }
 
 
-int& Socket::getSocket() const
+int Socket::getSocket() const
 {
   TRACE;
-
   return m_socket;
 }
 
@@ -171,8 +170,7 @@ bool Socket::bindToFirstAddress(struct addrinfo *servinfo )
 }
 
 
-bool Socket::getPeerName( const int socket,
-                          std::string &host,
+void Socket::getPeerName( std::string &host,
                           std::string &port )
 {
   TRACE;
@@ -180,9 +178,7 @@ bool Socket::getPeerName( const int socket,
   struct sockaddr_in  address ;
   memset(&address, 0, sizeof(address));
   socklen_t addressLength = sizeof(address) ;
-  getpeername( socket, (struct sockaddr*)&address, &addressLength ) ;
-
-  unsigned int ip = address.sin_addr.s_addr ;
+  getpeername( m_socket, (struct sockaddr*)&address, &addressLength ) ;
 
   char tmp[INET_ADDRSTRLEN];
   host = inet_ntop(AF_INET, &address.sin_addr, tmp, INET_ADDRSTRLEN);

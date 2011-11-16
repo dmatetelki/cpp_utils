@@ -8,16 +8,16 @@
 #include <stdlib.h> // malloc, free
 
 
-Poll::Poll ( int &socket, const nfds_t maxClient )
-  : m_polling(false)
-  , m_pollSocket(socket)
+Poll::Poll ( Connection &connection, const nfds_t maxClient )
+  : m_connection(connection)
+  , m_polling(false)
   , m_maxclients(maxClient)
   , m_fds(0)
   , m_num_of_fds(0)
 {
   TRACE;
 
-  m_fds = (pollfd*) malloc (sizeof(struct pollfd)*m_maxclients);
+  m_fds = new pollfd[m_maxclients];
 }
 
 
@@ -25,15 +25,7 @@ Poll::~Poll()
 {
   TRACE;
 
-  free(m_fds);
-}
-
-
-void Poll::setOwnSocket ( const int socket )
-{
-  TRACE;
-
-  addFd(socket, POLLIN | POLLPRI);
+  delete[] m_fds;
 }
 
 
@@ -51,7 +43,7 @@ void Poll::startPolling()
 
     if ( ret == -1 ) {
         LOG( Logger::ERR, errnoToString("ERROR polling. ").c_str() );
-        /// @todo shall we handle this?
+        /// @todo reconnect
         return;
     }
 
@@ -60,7 +52,7 @@ void Poll::startPolling()
 
     for ( nfds_t i = 0; i < m_num_of_fds; ++i )
       if ( m_fds[i].revents != 0 )
-        m_fds[i].fd == m_pollSocket ?
+        m_fds[i].fd == m_connection.getSocket() ?
             acceptClient() :
             handleClient(m_fds[i].fd);
 
@@ -82,7 +74,7 @@ void Poll::acceptClient()
 
   sockaddr clientAddr;
   socklen_t clientAddrLen;
-  int client_socket = accept( m_pollSocket, &clientAddr, &clientAddrLen ) ;
+  int client_socket = accept( m_connection.getSocket(), &clientAddr, &clientAddrLen ) ;
 
   if ( client_socket == -1 ) {
     LOG( Logger::ERR, errnoToString("ERROR accepting. ").c_str() );
@@ -95,6 +87,9 @@ void Poll::acceptClient()
                             append(clientAddress).append(":").
                             append(clientService).c_str() );
     }
+
+    m_connectionPool.insert (
+      std::pair<int, Connection>( client_socket, Connection(client_socket)) );
     addFd( client_socket, POLLIN | POLLPRI );
   }
 }
@@ -104,13 +99,16 @@ void Poll::handleClient( const int socket )
 {
   TRACE;
 
-  if ( !receive( socket ) ) {
-    removeFd( socket );
+  ConnectionPool::iterator it = m_connectionPool.find(socket);
+
+  if ( it == m_connectionPool.end() || !it->second.receive() ) {
+    m_connectionPool.erase(socket);
+    removeFd(socket);
   }
 }
 
 
-bool Poll::addFd( const int socket, short events )
+bool Poll::addFd( const int socket, const short events )
 {
   TRACE;
   LOG( Logger::DEBUG, std::string("Adding socket: ").

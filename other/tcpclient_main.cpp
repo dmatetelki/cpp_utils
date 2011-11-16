@@ -10,26 +10,28 @@
 
 class SimpleMessage : public Message
 {
-private:
+public:
 
-  bool buildMessage( const unsigned char* messagePart,
-                     const int length )
+  bool buildMessage( const void   *msgPart,
+                     const size_t  msgLen )
   {
     TRACE;
-    m_buffer = std::string( (const char*) messagePart, length );
+    m_buffer = std::string( (const char*) msgPart, msgLen );
     onMessageReady();
+    return true;
   }
 
   void onMessageReady()
   {
     TRACE;
+
     LOG( Logger::INFO, std::string("Got reply from server: ").
                         append(m_buffer).c_str() );
   }
 
 protected:
 
-  int getExpectedLength()
+  size_t getExpectedLength()
   {
     TRACE;
     return 0;
@@ -51,9 +53,9 @@ int main( int argc, char * argv[] )
   std::string msg1("madao");
   tcpclient.send( msg1.c_str(), msg1.length());
   sleep(2);
-  std::string msg2("this message is long. Cannot fit into one buffer");
-  tcpclient.send( msg2.c_str(), msg2.length());
-  sleep(2);
+//   std::string msg2("this message is long. Cannot fit into one buffer");
+//   tcpclient.send( msg2.c_str(), msg2.length());
+//   sleep(2);
 
 
   tcpclient.disconnect();
