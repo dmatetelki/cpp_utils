@@ -3,17 +3,21 @@
 #include "Logger.hpp"
 
 #include "TcpClient.hpp"
+#include "Connection.hpp"
 #include "Message.hpp"
+
 
 #include <iostream>
 #include <string>
 
-class SimpleMessage : public Message
+
+class SimpleMessage : public Message<SimpleMessage>
 {
 public:
 
-  SimpleMessage(void* msgParam = 0)
-    : Message(msgParam)
+  SimpleMessage( Connection<SimpleMessage>  *connection,
+                 void                       *msgParam = 0)
+    : Message<SimpleMessage>(connection, msgParam)
   {
     TRACE;
   }

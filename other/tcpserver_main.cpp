@@ -1,43 +1,56 @@
 // gpp tcpServer_main.cpp -o client -I../include ../src/Logger.cpp ../src/TcpClient.cpp
 
-#include "TcpServer.hpp"
-
 #include "Logger.hpp"
 #include "Common.hpp"
+
+#include "TcpServer.hpp"
+#include "Message.hpp"
 
 #include <iostream>
 #include <string>
 
-class EchoTcpServer : public TcpServer
+class EchoMessage : public Message<EchoMessage>
 {
 public:
 
-  EchoTcpServer ( const std::string host,
-                  const std::string port,
-                  const int maxClients = 5 )
-    : TcpServer(host, port, maxClients)
+  EchoMessage( Connection<EchoMessage>  *connection,
+               void                     *msgParam = 0)
+    : Message<EchoMessage>(connection, msgParam)
   {
     TRACE;
   }
 
-  void msgArrived(const int clientSocket,
-                  const unsigned char*msg,
-                  const int msgLen )
+  bool buildMessage( const void   *msgPart,
+                     const size_t  msgLen )
+  {
+    TRACE;
+    m_buffer = std::string( (const char*) msgPart, msgLen );
+    onMessageReady();
+    return true;
+  }
+
+  void onMessageReady()
   {
     TRACE;
 
-    std::string message((char*)msg, msgLen);
-    LOG( Logger::DEBUG, std::string("Got msg: ").append(message).c_str() );
+    LOG( Logger::INFO, std::string("Got message: \"").
+                        append(m_buffer).append("\" from: ").
+                        append(m_connection->getHost()).c_str() );
 
-    std::string reply("Got your msg, buddy: \"");
-    reply.append(message).append("\" see you!");
+    std::string reply("Got your message, ");
+    reply.append(m_connection->getHost()).
+      append(" \"").append(m_buffer).append("\"");
 
-    ssize_t n = write(clientSocket,message.c_str(), message.length());
-    if (n == -1) {
-      LOG( Logger::ERR, errnoToString("ERROR writing to socket. ").c_str() );
-    }
+    m_connection->send( reply.c_str(), reply.length() );
   }
 
+protected:
+
+  size_t getExpectedLength()
+  {
+    TRACE;
+    return 0;
+  }
 };
 
 
@@ -47,7 +60,7 @@ int main( int argc, char * argv[] )
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::FINEST);
 
-  EchoTcpServer tcpServer("localhost", "4455");
+  TcpServer<EchoMessage> tcpServer("localhost", "4455");
 
   tcpServer.start();
 
@@ -55,7 +68,6 @@ int main( int argc, char * argv[] )
   sleep(1);
 
   tcpServer.stop();
-
   Logger::destroy();
   return 0;
 }

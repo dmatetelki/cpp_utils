@@ -15,10 +15,8 @@ class Poll
 {
 public:
 
-  Poll( Connection<T> &connection,
-        const nfds_t maxClient = 10,
-        void *MessageParam )
-      )
+  Poll( Connection<T>  *connection,
+        const nfds_t    maxClient = 10 )
     : m_connection(connection)
     , m_polling(false)
     , m_connectionPool()
@@ -28,7 +26,7 @@ public:
   {
     TRACE;
     m_fds = new pollfd[m_maxclients];
-    addFd( m_connection.getSocket(), POLLIN | POLLPRI );
+    addFd( m_connection->getSocket(), POLLIN | POLLPRI );
   }
 
   virtual ~Poll()
@@ -60,7 +58,7 @@ public:
 
       for ( nfds_t i = 0; i < m_num_of_fds; ++i )
         if ( m_fds[i].revents != 0 )
-          m_fds[i].fd == m_connection.getSocket() ?
+          m_fds[i].fd == m_connection->getSocket() ?
               acceptClient(m_fds[i].fd) :
               handleClient(m_fds[i].fd);
 
@@ -82,7 +80,7 @@ protected:
 
     sockaddr clientAddr;
     socklen_t clientAddrLen;
-    int client_socket = accept( m_connection.getSocket(),
+    int client_socket = accept( m_connection->getSocket(),
                                 &clientAddr, &clientAddrLen ) ;
 
     if ( client_socket == -1 ) {
@@ -165,7 +163,7 @@ private:
 
   typedef typename std::map< int, Connection<T>* > ConnectionPool;
 
-  Connection<T>  &m_connection;
+  Connection<T>  *m_connection;
   bool            m_polling;
   ConnectionPool  m_connectionPool;
 

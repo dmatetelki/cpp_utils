@@ -23,7 +23,7 @@ private:
   {
   public:
     PollerThread( TcpClient<U> &data )
-      : Poll<U>(data.m_connection)
+      : Poll<U>( &(data.m_connection) )
       , m_tcpClient(data)
     {
       TRACE;

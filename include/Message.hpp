@@ -1,6 +1,8 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
+#include "Connection.hpp"
+
 #include <string>
 #include <stddef.h> // size_t
 
@@ -9,13 +11,17 @@
    * getExpectedLength().
    */
 
+template <typename T>
 class Message
 {
 public:
 
-  Message( void * msgParam = 0 )
-    : m_buffer()
-    , m_param(msgParam) {};
+  Message( Connection<T>  *connection,
+           void           *msgParam = 0 )
+    : m_connection(connection)
+    , m_param(msgParam)
+    , m_buffer()
+  {};
 
   virtual ~Message() {};
 
@@ -27,10 +33,12 @@ protected:
 
   virtual size_t getExpectedLength() = 0;
 
-  /// @todo shall i use dinamic array?
-  std::string   m_buffer;
-  void         *m_param;
 
+  Connection<T>  *m_connection;
+  void           *m_param;
+
+  /// @todo shall i use dinamic array?
+  std::string     m_buffer;
 };
 
 

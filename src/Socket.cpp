@@ -106,6 +106,18 @@ bool Socket::bindToHost( const std::string host,
 }
 
 
+bool Socket::listen ( const int maxPendingQueueLen )
+{
+  TRACE;
+
+  if ( ::listen(m_socket, maxPendingQueueLen) == -1 ) {
+    LOG( Logger::ERR, errnoToString("ERROR listening. ").c_str() );
+    return false;
+  }
+  return true;
+}
+
+
 bool Socket::send ( const void *message, const int length )
 {
   TRACE;

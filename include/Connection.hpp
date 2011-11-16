@@ -26,7 +26,7 @@ public:
     , m_host()
     , m_port()
     , m_status(CLOSED)
-    , m_message(msgParam)
+    , m_message(this, msgParam)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
 
@@ -45,7 +45,7 @@ public:
     , m_host(host)
     , m_port(port)
     , m_status(CLOSED)
-    , m_message(msgParam)
+    , m_message(this, msgParam)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
   {
@@ -71,6 +71,12 @@ public:
   {
     TRACE;
     return m_socket.bindToHost(m_host, m_port);
+  }
+
+  bool listen( const int maxPendingQueueLen = 64 )
+  {
+    TRACE;
+    return m_socket.listen( maxPendingQueueLen );
   }
 
   void closeConnection()
@@ -116,6 +122,12 @@ public:
   {
     TRACE;
     return m_socket.getSocket();
+  }
+
+  std::string getHost() const
+  {
+    TRACE;
+    return m_host;
   }
 
 

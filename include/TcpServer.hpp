@@ -1,39 +1,67 @@
 #ifndef TCP_SERVER_HPP
 #define TCP_SERVER_HPP
 
-#include "Socket.hpp"
+#include "Logger.hpp"
+
+#include "Connection.hpp"
 #include "Poll.hpp"
+
+
 
 #include <string>
 
-class TcpServer : public Socket
-                , public Poll
+template <typename T>
+class TcpServer
 {
 public:
 
   TcpServer ( const std::string host,
               const std::string port,
-              const int maxClients = 5 );
+              const int maxClients = 5,
+              const int maxPendingQueueLen = 10 )
+    : m_connection(host, port)
+    , m_poll( &m_connection, maxClients)
+    , m_maxPendingQueueLen(maxPendingQueueLen)
+  {
+    TRACE;
+  }
 
-  virtual ~TcpServer();
+  virtual ~TcpServer()
+  {
+    TRACE;
+  }
 
-  bool start();
-  void stop();
+  bool start()
+  {
+    TRACE;
 
-  // implements Poll::receive
-  bool receive( const int fd );
+    if ( !m_connection.bindToHost() )
+      return false;
 
-  virtual void msgArrived(const int clientSocket,
-                          const unsigned char* msg,
-                          const int msgLen ) = 0;
+    if ( m_connection.listen( m_maxPendingQueueLen ) == -1 ) {
+      return false;
+    }
+
+    m_poll.startPolling();
+    return true;
+  }
+
+  void stop()
+  {
+    TRACE;
+    m_poll.stopPolling();
+    m_connection.closeConnection();
+  }
+
 
 private:
 
   TcpServer(const TcpServer&);
   TcpServer& operator=(const TcpServer&);
 
-  std::string  m_host;
-  std::string  m_port;
+  Connection<T>   m_connection;
+  Poll<T>         m_poll;
+  const int       m_maxPendingQueueLen;
 };
 
 #endif // TCP_SERVER_HPP

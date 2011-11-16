@@ -11,21 +11,23 @@ class Socket
 {
 public:
 
-  Socket(const int domain,
-         const int type,
-         const int protocol = 0);
+  Socket( const int domain,
+          const int type,
+          const int protocol = 0 );
 
-  Socket(const int socket );
+  Socket( const int socket );
 
   virtual ~Socket();
 
   bool createSocket();
   void closeSocket();
 
-  bool connectToHost(const std::string host,
-                     const std::string port);
-  bool bindToHost(const std::string host,
-                  const std::string port );
+  bool connectToHost( const std::string host,
+                      const std::string port );
+  bool bindToHost( const std::string host,
+                   const std::string port );
+
+  bool listen( const int maxPendingQueueLen = 64 );
 
   void getPeerName(std::string &host,
                    std::string &port);
