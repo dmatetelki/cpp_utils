@@ -8,6 +8,8 @@
 
 #include <string>
 
+/** @todo make connection an iface and this class shall be a TcpConnection,
+ * inherited from connection */
 
 template <typename T>
 class Connection
@@ -95,27 +97,23 @@ public:
   {
     TRACE;
 
-//     LOG ( Logger::DEBUG, std::string("receving on socket: ").
-//                           append(TToStr(m_socket.getSocket())).c_str() );
-
-    ssize_t len = recv(m_socket.getSocket(), m_buffer, m_bufferLength, 0);
+    ssize_t length;
+    if ( !m_socket.receive(m_buffer, m_bufferLength, &length) ) {
+      if (length == -1) {
+        LOG( Logger::ERR, errnoToString("ERROR reading from socket. ").c_str() );
+      }
+      else if (length == 0) {
+        LOG( Logger::INFO, std::string("Connection closed by ").
+                        append(m_host).append(":").append(m_port).c_str() );
+      }
+    return false;
+    }
 
     LOG ( Logger::DEBUG, std::string("Received: ").
-                          append(TToStr(len)).append(" bytes from: ").
-                          append(m_host).append(":").append(m_port).c_str() );
+                        append(TToStr(length)).append(" bytes from: ").
+                        append(m_host).append(":").append(m_port).c_str() );
 
-    if (len == -1) {
-      LOG( Logger::ERR, errnoToString("ERROR reading from socket. ").c_str() );
-      return false;
-    }
-
-    if (len == 0) {
-      LOG( Logger::INFO, std::string("Connection closed by ").
-                          append(m_host).append(":").append(m_port).c_str() );
-      return false;
-    }
-
-    return m_message.buildMessage( (void*)m_buffer, (size_t)len);
+    return m_message.buildMessage( (void*)m_buffer, (size_t)length);
   }
 
 

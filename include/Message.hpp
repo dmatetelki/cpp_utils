@@ -36,8 +36,6 @@ protected:
 
   Connection<T>  *m_connection;
   void           *m_param;
-
-  /// @todo shall i use dinamic array?
   std::string     m_buffer;
 
 private:

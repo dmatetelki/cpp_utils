@@ -38,7 +38,7 @@ private:
 
   protected:
 
-  /// @todo this is unclear and nasty hack
+  // overridig poll's behaviour
   virtual void acceptClient()
   {
     TRACE;
@@ -47,7 +47,7 @@ private:
     stopPolling();
   }
 
-  /// @todo this is unclear and nasty hack
+  // overridig poll's behaviour
   virtual void handleClient( const int )
   {
     TRACE;
@@ -120,11 +120,6 @@ private:
   TcpClient(const TcpClient& );
   TcpClient& operator=(const TcpClient& );
 
-  Connection<T>& getConnection()
-  {
-    TRACE;
-    return m_connection;
-  }
 
   Connection<T>    m_connection;
   PollerThread<T>  m_watcher;
@@ -132,5 +127,3 @@ private:
 };
 
 #endif // TCP_CLIENT_HPP
-
-

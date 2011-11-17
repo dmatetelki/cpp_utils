@@ -66,7 +66,11 @@ int main()
 
   TcpServer<EchoMessage> tcpServer("localhost", "4455");
 
-  tcpServer.start();
+  if ( !tcpServer.start() ) {
+    LOG( Logger::ERR, "Failed to start TCP server, exiting...");
+    Logger::destroy();
+    return 1;
+  }
 
   // never reached
   sleep(1);

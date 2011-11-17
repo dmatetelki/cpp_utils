@@ -33,6 +33,8 @@ public:
                    std::string &port);
 
   bool send( const void *message, const int lenght );
+  bool receive ( void* buffer, const int bufferLen, ssize_t *msgLen );
+
   int getSocket() const;
 
   static bool convertNameInfo( sockaddr* addr,

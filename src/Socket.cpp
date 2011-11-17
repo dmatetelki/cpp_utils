@@ -131,6 +131,16 @@ bool Socket::send ( const void *message, const int length )
 }
 
 
+bool Socket::receive( void *buffer, const int bufferLen, ssize_t *msgLen )
+{
+  TRACE;
+
+  *msgLen = recv(m_socket, buffer, bufferLen, 0);
+
+  return (*msgLen > 0);
+}
+
+
 int Socket::getSocket() const
 {
   TRACE;

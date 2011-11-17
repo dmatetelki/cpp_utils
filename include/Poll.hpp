@@ -25,7 +25,7 @@ public:
     , m_num_of_fds(0)
   {
     TRACE;
-    m_fds = new pollfd[m_maxclients];
+    m_fds = new pollfd[m_maxclients+1]; // plus the server socket
     addFd( m_connection->getSocket(), POLLIN | POLLPRI );
   }
 
@@ -74,6 +74,7 @@ public:
 
 protected:
 
+  // can be overriden: behaviour alters in server/client
   virtual void acceptClient()
   {
     TRACE;
@@ -98,6 +99,8 @@ protected:
     addFd( client_socket, POLLIN | POLLPRI );
   }
 
+
+  // can be overriden: behaviour alters in server/client
   virtual void handleClient( const int socket )
   {
     TRACE;

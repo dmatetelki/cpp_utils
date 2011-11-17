@@ -70,11 +70,22 @@ int main(int argc, char* argv[] )
 
   TcpClient<SimpleMessage> tcpclient(argv[1], argv[2], &finished);
 
-  tcpclient.connect();
-  sleep(1); // wait for thread creation
+  if ( !tcpclient.connect() ) {
+    LOG( Logger::ERR, "Couldn't connect to server, exiting..." );
+    Logger::destroy();
+    return 1;
+  }
 
+  // wait for thread creation
+  sleep(1);
+
+  // send message to server
   std::string msg1(argv[3]);
-  tcpclient.send( msg1.c_str(), msg1.length());
+  if ( !tcpclient.send( msg1.c_str(), msg1.length()) ) {
+    LOG( Logger::ERR, "Couldn't send message to server, exiting..." );
+    Logger::destroy();
+    return 1;
+  }
 
   // wait for the complate &handled reply
   struct timespec tm = {0,1000};
@@ -82,7 +93,6 @@ int main(int argc, char* argv[] )
     nanosleep(&tm, &tm) ;
 
   tcpclient.disconnect();
-
   Logger::destroy();
   return 0;
 }
