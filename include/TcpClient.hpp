@@ -32,7 +32,7 @@ private:
     void stopPoller()
     {
       TRACE;
-      stopPolling();
+      Poll<U>::stopPolling();
       stop();
     }
 
@@ -44,7 +44,7 @@ private:
     TRACE;
 
     m_tcpClient.m_connection.receive();
-    stopPolling();
+    Poll<U>::stopPolling();
   }
 
   // overridig poll's behaviour
@@ -52,7 +52,7 @@ private:
   {
     TRACE;
     LOG( Logger::DEBUG, "Server closed the connection." );
-    stopPolling();
+    Poll<U>::stopPolling();
   }
 
   private:
@@ -60,7 +60,7 @@ private:
     void* run()
     {
       TRACE;
-      startPolling();
+      Poll<U>::startPolling();
       return 0;
     }
 

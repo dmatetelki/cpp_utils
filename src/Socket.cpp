@@ -49,7 +49,7 @@ bool Socket::createSocket()
 
   m_socket = socket(m_domain, m_type, m_protocol);
   if ( m_socket == -1 ) {
-    LOG( Logger::ERR,  errnoToString("ERROR opening socket. ").c_str() );
+    LOG( Logger::ERR,  errnoToString("ERROR creating socket. ").c_str() );
     return false;
   }
 
