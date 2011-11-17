@@ -18,12 +18,22 @@ void Logger::setLogLevel ( const LogLevel loglevel )
 }
 
 
+void Logger::setNoPrefix ()
+{
+  m_usePrefix = false;
+}
+
 
 void Logger::log_pointer( const void* msg,
                           const char* file,
                           const int line,
                           const char* function)
 {
+  if ( !m_usePrefix ) {
+    *m_ostream << msg << std::endl;
+    return;
+  }
+
   *m_ostream  << getTime() << " "
               << COLOR( FG_GREEN ) << extractFilename(file)
               << COLOR_RESET << ":"
@@ -40,6 +50,11 @@ void Logger::log_string( const int level,
                          const int line,
                          const char* function)
 {
+  if ( !m_usePrefix ) {
+    *m_ostream << msg << std::endl;
+    return;
+  }
+
   const char *color;
   if ( level <= WARNING ) { color = COLOR_F_FG( F_BOLD, FG_RED ); }
   else if ( level <= INFO ) { color = COLOR_F_FG( F_BOLD, FG_WHITE); }
@@ -62,3 +77,4 @@ void Logger::msg(const char* text)
 
 Logger::LogLevel Logger::m_logLevel = Logger::FINEST;
 std::ostream* Logger::m_ostream = 0;
+bool Logger::m_usePrefix = true;

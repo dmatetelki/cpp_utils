@@ -110,7 +110,8 @@ public:
     }
 
     if (len == 0) {
-      LOG( Logger::DEBUG, "Connection closed by peer." );
+      LOG( Logger::INFO, std::string("Connection closed by ").
+                          append(m_host).append(":").append(m_port).c_str() );
       return false;
     }
 

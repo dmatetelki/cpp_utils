@@ -31,6 +31,8 @@ public:
   static void init(std::ostream& log_stream );
 
   static void setLogLevel ( const LogLevel loglevel );
+  static void setNoPrefix ();
+
   inline static LogLevel getLoglevel() { return m_logLevel; }
 
   static void log_pointer( const void* msg,
@@ -54,6 +56,7 @@ private:
 
     static LogLevel m_logLevel;
     static std::ostream *m_ostream;
+    static bool m_usePrefix;
 };
 
 

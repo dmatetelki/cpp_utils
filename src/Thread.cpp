@@ -1,11 +1,9 @@
 #include "Thread.hpp"
-#include "Common.hpp"
 
-#include <signal.h>
-#include <iostream>
-#include <exception> // std::runtime_error
+#include "Logger.hpp"
 
-#include <sched.h> // sched_param
+#include <signal.h> // pthread_kill
+
 
 
 Thread::Thread()

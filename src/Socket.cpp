@@ -146,7 +146,7 @@ bool Socket::connectToFirstAddress(struct addrinfo *servinfo)
     if (::connect(m_socket, it->ai_addr, it->ai_addrlen) != -1) {
       std::string address, service;
       if ( convertNameInfo( it->ai_addr, it->ai_addrlen, address, service) ) {
-        LOG( Logger::DEBUG, std::string("Connected to ").
+        LOG( Logger::INFO, std::string("Connected to ").
                               append(address).append(":").
                               append(service).c_str() );
       }
@@ -169,7 +169,7 @@ bool Socket::bindToFirstAddress(struct addrinfo *servinfo )
 
       std::string address, service;
       if ( Socket::convertNameInfo( &m_addr, m_addrLen, address, service) ) {
-        LOG( Logger::DEBUG, std::string("Binded to ").
+        LOG( Logger::INFO, std::string("Binded to ").
                               append(address).append(":").
                               append(service).c_str() );
       }

@@ -10,6 +10,10 @@
 #include <iostream>
 #include <string>
 
+#include <time.h> // nanosleep
+
+
+
 
 class SimpleMessage : public Message<SimpleMessage>
 {
@@ -37,6 +41,8 @@ public:
 
     LOG( Logger::INFO, std::string("Got reply from server: ").
                         append(m_buffer).c_str() );
+
+    *( static_cast<bool*>(m_param) ) = true;
   }
 
 protected:
@@ -49,31 +55,33 @@ protected:
 };
 
 
-int main()
+int main(int argc, char* argv[] )
 {
+  if ( argc != 4 ) {
+    std::cerr << "Usage: client <HOST> <PORT> <MSG>" << std::endl;
+    return 1;
+  }
+
   Logger::createInstance();
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::DEBUG);
 
-  int *a = new int;
-  *a=2;
+  bool finished = false;
 
-  TcpClient<SimpleMessage> tcpclient("127.0.0.1", "4455");
+  TcpClient<SimpleMessage> tcpclient(argv[1], argv[2], &finished);
 
   tcpclient.connect();
+  sleep(1); // wait for thread creation
 
-  sleep(2);
-  std::string msg1("madao");
+  std::string msg1(argv[3]);
   tcpclient.send( msg1.c_str(), msg1.length());
-  sleep(2);
-//   std::string msg2("this message is long. Cannot fit into one buffer");
-//   tcpclient.send( msg2.c_str(), msg2.length());
-//   sleep(2);
 
+  // wait for the complate &handled reply
+  struct timespec tm = {0,1000};
+  while ( !finished )
+    nanosleep(&tm, &tm) ;
 
   tcpclient.disconnect();
-
-  delete a;
 
   Logger::destroy();
   return 0;

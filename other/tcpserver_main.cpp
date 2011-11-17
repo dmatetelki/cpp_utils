@@ -36,11 +36,13 @@ public:
 
     LOG( Logger::INFO, std::string("Got message: \"").
                         append(m_buffer).append("\" from: ").
-                        append(m_connection->getHost()).c_str() );
+                        append(m_connection->getHost().append(":").
+                        append(m_connection->getPort()) ).c_str() );
 
     std::string reply("Got your message, ");
-    reply.append(m_connection->getHost()).
-      append(" \"").append(m_buffer).append("\"");
+    reply.append(m_connection->getHost()).append(":").
+          append(m_connection->getPort()).
+          append(" \"").append(m_buffer).append("\"");
 
     m_connection->send( reply.c_str(), reply.length() );
   }
@@ -59,7 +61,8 @@ int main()
 {
   Logger::createInstance();
   Logger::init(std::cout);
-  Logger::setLogLevel(Logger::FINEST);
+  Logger::setLogLevel(Logger::INFO);
+  Logger::setNoPrefix();
 
   TcpServer<EchoMessage> tcpServer("localhost", "4455");
 

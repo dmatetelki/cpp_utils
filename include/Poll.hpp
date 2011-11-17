@@ -90,7 +90,7 @@ protected:
 
     Connection<T> *connection = new Connection<T>(client_socket);
 
-    LOG( Logger::DEBUG, std::string("New client connected: ").
+    LOG( Logger::INFO, std::string("New client connected: ").
                             append(connection->getHost()).append(":").
                             append(connection->getPort()).c_str() );
 
