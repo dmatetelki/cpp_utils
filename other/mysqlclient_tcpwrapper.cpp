@@ -1,5 +1,4 @@
-// g++ mysqlclient_main.cpp src/Logger.cpp src/MysqlClient.cpp  src/ArgParse.cpp -I./include -lmysqlclient
-
+// gpp  mysqlclient_tcpwrapper.cpp  -o mysqltcpwrapper  -I../include ../src/Logger.cpp  ../src/Thread.cpp -lpthread ../src/Socket.cpp   -std=c++0x  ../src/WorkerThread.cpp MysqlTask.cpp EchoMessage.cpp ../src/ScopedLock.cpp ../src/ThreadPool.cpp ../src/ConditionVariable.cpp ../src/Mutex.cpp ../src/ArgParse.cpp ../src/MysqlConnectionPool.cpp -lmysqlclient -lrt ../src/MysqlClient.cpp  -o mysqlclient
 
 #include "Logger.hpp"
 #include "Common.hpp"
@@ -37,18 +36,22 @@ void setUpArgs(ArgParse &argParse)
   argParse.addArgument("--host",
                        "MySQL server hostname/IP",
                        ArgParse::STRING,
-                       ArgParse::REQUIRED );
+                       ArgParse::REQUIRED,
+                       ArgParse::REQUIRED);
   argParse.addArgument("-u, --user",
                        "MsSQL username",
                        ArgParse::STRING,
+                       ArgParse::REQUIRED,
                        ArgParse::REQUIRED );
   argParse.addArgument("-db, --database",
                        "MySQL database",
                        ArgParse::STRING,
+                       ArgParse::REQUIRED,
                        ArgParse::REQUIRED );
   argParse.addArgument("-p, --password",
                        "MySQL password",
                        ArgParse::STRING,
+                       ArgParse::REQUIRED,
                        ArgParse::REQUIRED );
   argParse.addArgument("-n, --number-of-connections",
                        "MySQL connections in connection pool. Default is 5",
@@ -116,6 +119,11 @@ bool checkArgs( int argc, char* argv[],
 {
   TRACE_STATIC;
 
+  if ( argc == 1 || ( argc == 2 && argv[1][0] != '-' ) ) {
+    std::cout << argParse.usage() << std::endl;
+    return false;
+  }
+
   try {
     getArgs( argc, argv,
              argParse,
@@ -175,6 +183,8 @@ int main(int argc, char* argv[] )
                   conns, port, clients, pending, threads ) )
     return 1;
 
+  /*
+
   // init MySQL connection pool
   init_client_errs();
   MysqlConnectionPool mysqlConnectionPool (
@@ -218,6 +228,8 @@ int main(int argc, char* argv[] )
   // end
   mysqlConnectionPool.clear();
   finish_client_errs();
+
+  */
   Logger::destroy();
   return 0;
 }

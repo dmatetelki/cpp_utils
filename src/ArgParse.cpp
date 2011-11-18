@@ -278,7 +278,7 @@ ArgParse::printArgs(const Required argRequired) const
       }
     }
 
-    ret.append( std::string(30-length, ' ') );
+    ret.append( std::string( length < 30 ? 30-length : 2, ' ') );
     ret.append( (*it).second.m_help );
     ret.append("\n");
   }
