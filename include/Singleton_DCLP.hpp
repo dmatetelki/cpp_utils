@@ -25,8 +25,6 @@ public:
       {
         std::lock_guard<std::mutex> guard(m_lock);
 
-        // this is now the critical section
-
         if ( not m_instance ) // re-check pinstance
         {
           // Douglas Schmidt proposed volatile
@@ -48,7 +46,9 @@ public:
 private:
 
     static std::mutex m_lock;
-    static T* m_instance;
+
+    // instance chack shall not be cached
+    static volatile T* m_instance;
 };
 
 template<class T> std::mutex Singleton_DCLP<T>::m_lock;

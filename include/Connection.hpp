@@ -31,7 +31,7 @@ public:
     , m_message(this, msgParam)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
-
+    , m_msgParam(msgParam)
   {
     TRACE;
 
@@ -50,6 +50,7 @@ public:
     , m_message(this, msgParam)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
+    , m_msgParam(msgParam)
   {
     TRACE;
     m_socket.createSocket();
@@ -135,6 +136,12 @@ public:
     return m_port;
   }
 
+  void* getMsgParam() const
+  {
+    TRACE;
+    return m_msgParam;
+  }
+
 
 private:
 
@@ -149,6 +156,7 @@ private:
 
   unsigned char  *m_buffer;
   size_t          m_bufferLength;
+  void           *m_msgParam;
 };
 
 

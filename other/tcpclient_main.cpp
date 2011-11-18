@@ -64,7 +64,7 @@ int main(int argc, char* argv[] )
 
   Logger::createInstance();
   Logger::init(std::cout);
-  Logger::setLogLevel(Logger::DEBUG);
+  Logger::setLogLevel(Logger::FINEST);
 
   bool finished = false;
 
@@ -89,7 +89,7 @@ int main(int argc, char* argv[] )
 
   // wait for the complate &handled reply
   struct timespec tm = {0,1000};
-  while ( !finished )
+  while ( !finished && tcpclient.isPolling() )
     nanosleep(&tm, &tm) ;
 
   tcpclient.disconnect();

@@ -8,34 +8,64 @@
 #include "MysqlClient.hpp"
 #include "MysqlConnectionPool.hpp"
 
+#include "TcpServer.hpp"
+#include "Message.hpp"
+
+#include "ThreadPool.hpp"
+#include "WorkerThread.hpp"
+
+#include "EchoMessage.hpp"
+#include "MysqlTask.hpp"
+
+#include <mysql/errmsg.h>
+
 #include <string>
 #include <list>
 #include <iostream>
 #include <stdexcept>
+
+
+
+
+
+
 
 void setUpArgs(ArgParse &argParse)
 {
   TRACE_STATIC;
 
   argParse.addArgument("--host",
-                       "Hostname/IP",
+                       "MySQL server hostname/IP",
                        ArgParse::STRING,
                        ArgParse::REQUIRED );
   argParse.addArgument("-u, --user",
-                       "Username",
+                       "MsSQL username",
                        ArgParse::STRING,
                        ArgParse::REQUIRED );
   argParse.addArgument("-db, --database",
-                       "Database",
+                       "MySQL database",
                        ArgParse::STRING,
                        ArgParse::REQUIRED );
   argParse.addArgument("-p, --password",
-                       "Password",
+                       "MySQL password",
                        ArgParse::STRING,
                        ArgParse::REQUIRED );
-
   argParse.addArgument("-n, --number-of-connections",
-                       "Number of connections. Default is 5",
+                       "MySQL connections in connection pool. Default is 5",
+                       ArgParse::INT );
+
+  argParse.addArgument("--port",
+                       "Listening port. Default is 4455",
+                       ArgParse::INT );
+  argParse.addArgument("-cl, --clients",
+                       "Maximum number of served clients. Default is 5.",
+                       ArgParse::INT );
+  argParse.addArgument("--pending",
+                       "Maximum number of pending clients. Default is 5.",
+                       ArgParse::INT );
+
+  argParse.addArgument("-t, --worker-threads",
+                       "Number of worker threads. Default is 5.",
                        ArgParse::INT );
 }
 
@@ -46,7 +76,12 @@ void getArgs( int argc, char* argv[],
               std::string &user,
               std::string &db,
               std::string &pass,
-              int &numberOfConnections )
+              int &conns,
+              int &port,
+              int &clients,
+              int &pending,
+              int &threads
+            )
 {
   TRACE_STATIC;
 
@@ -56,8 +91,13 @@ void getArgs( int argc, char* argv[],
   argParse.argAsString("-u, --user", user);
   argParse.argAsString("-db, --database", db);
   argParse.argAsString("-p, --password", pass);
+  argParse.argAsInt("-n, --number-of-connections", conns);
 
-  argParse.argAsInt("-n, --number-of-connections", numberOfConnections);
+  argParse.argAsInt("--port", port);
+  argParse.argAsInt("-cl, --clients", clients);
+  argParse.argAsInt("--pending", pending);
+
+  argParse.argAsInt("-t, --worker-threads", threads);
 }
 
 
@@ -67,7 +107,12 @@ bool checkArgs( int argc, char* argv[],
                 std::string &user,
                 std::string &db,
                 std::string &pass,
-                int &numberOfConnections )
+                int &conns,
+                int &port,
+                int &clients,
+                int &pending,
+                int &threads
+              )
 {
   TRACE_STATIC;
 
@@ -75,7 +120,7 @@ bool checkArgs( int argc, char* argv[],
     getArgs( argc, argv,
              argParse,
              host, user, db, pass,
-             numberOfConnections );
+             conns, port, clients, pending, threads );
   } catch (std::runtime_error e) {
     if ( argParse.foundArg("-h, --help") ) {
       std::cout << argParse.usage() << std::endl;
@@ -118,41 +163,60 @@ int main(int argc, char* argv[] )
 
 
   // args
-  ArgParse argParse("Simple MySQL client",
+  ArgParse argParse("TCP server wrapper on a MySQL client",
                     "Report bugs to: denes.matetelki@gmail.com");
   setUpArgs(argParse);
 
   std::string host, user, db, pass;
-  int numberOfConnections(5);
+  int conns(5), port(4455), clients(5), pending(5), threads(5);
 
   if ( !checkArgs(argc, argv, argParse,
-                  host, user, db, pass, numberOfConnections ) )
+                  host, user, db, pass,
+                  conns, port, clients, pending, threads ) )
     return 1;
 
-  // init
+  // init MySQL connection pool
   init_client_errs();
-  MysqlConnectionPool cp (
+  MysqlConnectionPool mysqlConnectionPool (
                   argParse.foundArg("--host") ? host.c_str() : NULL,
                   argParse.foundArg("-u, --user") ? user.c_str() : NULL,
                   argParse.foundArg("-p, --password") ? pass.c_str() : NULL,
                   argParse.foundArg("-db, --database") ? db .c_str() : NULL );
 
-  for ( int i = 0; i < numberOfConnections; ++i )
-    cp.create();
+  for ( int i = 0; i < conns; ++i )
+    mysqlConnectionPool.create();
 
 
-  // work
-  std::list<std::string> results;
-  MysqlClient *c = cp.acquire();
-  if ( !c->querty("SELECT * FROM seats", results) ) {
-    LOG ( Logger::ERR, "Could not execute query." );
-  } else {
-    printResults(results);
+  // threadpool
+  ThreadPool threadPool;
+  for ( int i = 0; i < threads; ++i )
+    threadPool.pushWorkerThread(new WorkerThread(threadPool));
+
+  threadPool.startWorkerThreads();
+
+  // TCP server
+  MsgParam msgParam(&mysqlConnectionPool, &threadPool);
+  TcpServer<EchoMessage> tcpServer(std::string("127.0.0.1"),
+                                   TToStr(port),
+                                   &msgParam,
+                                   clients,
+                                   pending );
+
+  if ( !tcpServer.start() ) {
+    LOG( Logger::ERR, "Failed to start TCP server, exiting...");
+    mysqlConnectionPool.clear();
+    finish_client_errs();
+    Logger::destroy();
+    return 1;
   }
-  cp.release(c);
+
+  // never reached
+  sleep(1);
+  tcpServer.stop();
+
 
   // end
-  cp.clear();
+  mysqlConnectionPool.clear();
   finish_client_errs();
   Logger::destroy();
   return 0;

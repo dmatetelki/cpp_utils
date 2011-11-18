@@ -71,6 +71,12 @@ public:
     m_polling = false;
   }
 
+  bool isPolling() const
+  {
+    TRACE;
+    return m_polling;
+  }
+
 
 protected:
 
@@ -95,7 +101,9 @@ protected:
                             append(connection->getHost()).append(":").
                             append(connection->getPort()).c_str() );
 
-    m_connectionPool[client_socket] = new Connection<T>(client_socket);
+    m_connectionPool[client_socket] = new Connection<T>(
+                                              client_socket,
+                                              m_connection->getMsgParam() );
     addFd( client_socket, POLLIN | POLLPRI );
   }
 
@@ -165,7 +173,7 @@ private:
   typedef typename std::map< int, Connection<T>* > ConnectionPool;
 
   Connection<T>  *m_connection;
-  bool            m_polling;
+  volatile bool   m_polling;
   ConnectionPool  m_connectionPool;
 
   nfds_t          m_maxclients;

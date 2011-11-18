@@ -15,11 +15,12 @@ class TcpServer
 {
 public:
 
-  TcpServer ( const std::string host,
-              const std::string port,
-              const int maxClients = 5,
-              const int maxPendingQueueLen = 10 )
-    : m_connection(host, port)
+  TcpServer ( const std::string   host,
+              const std::string   port,
+              void               *msgParam = 0,
+              const int           maxClients = 5,
+              const int           maxPendingQueueLen = 10 )
+    : m_connection(host, port, msgParam)
     , m_poll( &m_connection, maxClients)
     , m_maxPendingQueueLen(maxPendingQueueLen)
   {

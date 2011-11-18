@@ -17,7 +17,6 @@ public:
 
   void create();
 
-  void clear();
 
 private:
 

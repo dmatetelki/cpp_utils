@@ -115,6 +115,12 @@ public:
     return m_connection.send(msg, msgLen);
   }
 
+  bool isPolling() const
+  {
+    TRACE;
+    return m_watcher.isPolling();
+  }
+
 private:
 
   TcpClient(const TcpClient& );
