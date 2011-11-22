@@ -16,18 +16,12 @@ class Connection
 {
 public:
 
-  enum Status {
-    OPENED,
-    CLOSED
-  };
-
   Connection ( const int      socket,
                void          *msgParam = 0,
                const size_t   bufferLength = 1024 )
     : m_socket(socket)
     , m_host()
     , m_port()
-    , m_status(CLOSED)
     , m_message(this, msgParam)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
@@ -46,7 +40,6 @@ public:
     : m_socket(AF_INET, SOCK_STREAM)
     , m_host(host)
     , m_port(port)
-    , m_status(CLOSED)
     , m_message(this, msgParam)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
@@ -151,7 +144,6 @@ private:
   Socket          m_socket;
   std::string     m_host;
   std::string     m_port;
-  Status          m_status;
   T               m_message;
 
   unsigned char  *m_buffer;

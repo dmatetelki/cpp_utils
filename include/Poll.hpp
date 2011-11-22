@@ -95,15 +95,15 @@ protected:
       return;
     }
 
-    Connection<T> *connection = new Connection<T>(client_socket);
+    Connection<T> *connection = new Connection<T>(
+                                            client_socket,
+                                            m_connection->getMsgParam() );
 
     LOG( Logger::INFO, std::string("New client connected: ").
                             append(connection->getHost()).append(":").
                             append(connection->getPort()).c_str() );
 
-    m_connectionPool[client_socket] = new Connection<T>(
-                                              client_socket,
-                                              m_connection->getMsgParam() );
+    m_connectionPool[client_socket] = connection;
     addFd( client_socket, POLLIN | POLLPRI );
   }
 
