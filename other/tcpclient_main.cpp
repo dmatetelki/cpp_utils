@@ -15,13 +15,12 @@
 
 
 
-class SimpleMessage : public Message<SimpleMessage>
+class SimpleMessage : public Message
 {
 public:
 
-  SimpleMessage( Connection<SimpleMessage>  *connection,
-                 void                       *msgParam = 0)
-    : Message<SimpleMessage>(connection, msgParam)
+  SimpleMessage( void *msgParam = 0)
+    : Message(msgParam)
   {
     TRACE;
   }
@@ -45,6 +44,12 @@ public:
     *( static_cast<bool*>(m_param) ) = true;
   }
 
+  Message* clone()
+  {
+    TRACE;
+    return new SimpleMessage(m_param);
+  }
+
 protected:
 
   size_t getExpectedLength()
@@ -58,7 +63,7 @@ protected:
 int main(int argc, char* argv[] )
 {
   if ( argc != 4 ) {
-    std::cerr << "Usage: client <HOST> <PORT> <MSG>" << std::endl;
+    std::cerr << "Usage: " << argv[0] <<  " <HOST> <PORT> <MSG>" << std::endl;
     return 1;
   }
 
@@ -68,7 +73,11 @@ int main(int argc, char* argv[] )
 
   bool finished = false;
 
-  TcpClient<SimpleMessage> tcpclient(argv[1], argv[2], &finished);
+  SimpleMessage msg(&finished);
+
+  TcpClient tcpclient( argv[1],
+                       argv[2],
+                       &msg);
 
   if ( !tcpclient.connect() ) {
     LOG( Logger::ERR, "Couldn't connect to server, exiting..." );

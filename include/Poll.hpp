@@ -10,12 +10,11 @@
 
 
 
-template <typename T>
 class Poll
 {
 public:
 
-  Poll( Connection<T>  *connection,
+  Poll( Connection     *connection,
         const nfds_t    maxClient = 10 )
     : m_connection(connection)
     , m_polling(false)
@@ -95,9 +94,7 @@ protected:
       return;
     }
 
-    Connection<T> *connection = new Connection<T>(
-                                            client_socket,
-                                            m_connection->getMsgParam() );
+    Connection *connection = m_connection->create(client_socket);
 
     LOG( Logger::INFO, std::string("New client connected: ").
                             append(connection->getHost()).append(":").
@@ -170,9 +167,9 @@ private:
   }
 
 
-  typedef typename std::map< int, Connection<T>* > ConnectionPool;
+  typedef typename std::map< int, Connection* > ConnectionPool;
 
-  Connection<T>  *m_connection;
+  Connection     *m_connection;
   volatile bool   m_polling;
   ConnectionPool  m_connectionPool;
 

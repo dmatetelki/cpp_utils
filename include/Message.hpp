@@ -1,7 +1,9 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
-#include "Connection.hpp"
+#include "Logger.hpp"
+
+// #include "Connection.hpp"
 
 #include <string>
 #include <stddef.h> // size_t
@@ -11,37 +13,56 @@
    * getExpectedLength().
    */
 
-template <typename T>
+class Connection;
+
+
 class Message
 {
 public:
 
-  Message( Connection<T>  *connection,
+  Message( Connection     *connection,
            void           *msgParam = 0 )
     : m_connection(connection)
     , m_param(msgParam)
     , m_buffer()
-  {};
+  {
+    TRACE;
+  };
+
+  Message( void *msgParam = 0 )
+    : m_connection(0)
+    , m_param(msgParam)
+    , m_buffer()
+  {
+    TRACE;
+  };
 
   virtual ~Message() {};
+  virtual Message* clone() = 0;
 
   virtual bool buildMessage( const void   *msgPart,
                              const size_t  msgLen ) = 0;
   virtual void onMessageReady() = 0;
+
+  void setConnection(Connection* conn )
+  {
+    TRACE;
+    m_connection = conn;
+  }
 
 protected:
 
   virtual size_t getExpectedLength() = 0;
 
 
-  Connection<T>  *m_connection;
+  Connection     *m_connection;
   void           *m_param;
   std::string     m_buffer;
 
 private:
 
-  Message<T>(const Message<T> &);
-  Message<T>& operator=(const Message<T> &);
+  Message(const Message &);
+  Message& operator=(const Message &);
 };
 
 

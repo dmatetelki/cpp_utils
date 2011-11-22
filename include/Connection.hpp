@@ -5,27 +5,26 @@
 #include "Common.hpp"
 
 #include "Socket.hpp"
+#include "Message.hpp"
 
 #include <string>
 
 /** @todo make connection an iface and this class shall be a TcpConnection,
  * inherited from connection */
 
-template <typename T>
 class Connection
 {
 public:
 
   Connection ( const int      socket,
-               void          *msgParam = 0,
+               Message       *message,
                const size_t   bufferLength = 1024 )
     : m_socket(socket)
     , m_host()
     , m_port()
-    , m_message(this, msgParam)
+    , m_message(message)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
-    , m_msgParam(msgParam)
   {
     TRACE;
 
@@ -35,15 +34,14 @@ public:
 
   Connection ( const std::string   host,
                const std::string   port,
-               void               *msgParam = 0,
+               Message            *message,
                const size_t        bufferLength = 1024 )
     : m_socket(AF_INET, SOCK_STREAM)
     , m_host(host)
     , m_port(port)
-    , m_message(this, msgParam)
+    , m_message(message)
     , m_buffer(0)
     , m_bufferLength(bufferLength)
-    , m_msgParam(msgParam)
   {
     TRACE;
     m_socket.createSocket();
@@ -55,6 +53,16 @@ public:
     TRACE;
     m_socket.closeSocket();
     delete[] m_buffer;
+  }
+
+  Connection* create(const int socket)
+  {
+    TRACE;
+    Connection *conn = new Connection( socket,
+                                       m_message->clone(),
+                                       m_bufferLength);
+    conn->m_message->setConnection(conn);
+    return conn;
   }
 
   bool connectToHost()
@@ -107,7 +115,7 @@ public:
                         append(TToStr(length)).append(" bytes from: ").
                         append(m_host).append(":").append(m_port).c_str() );
 
-    return m_message.buildMessage( (void*)m_buffer, (size_t)length);
+    return m_message->buildMessage( (void*)m_buffer, (size_t)length);
   }
 
 
@@ -129,12 +137,6 @@ public:
     return m_port;
   }
 
-  void* getMsgParam() const
-  {
-    TRACE;
-    return m_msgParam;
-  }
-
 
 private:
 
@@ -144,11 +146,10 @@ private:
   Socket          m_socket;
   std::string     m_host;
   std::string     m_port;
-  T               m_message;
+  Message        *m_message;
 
   unsigned char  *m_buffer;
   size_t          m_bufferLength;
-  void           *m_msgParam;
 };
 
 

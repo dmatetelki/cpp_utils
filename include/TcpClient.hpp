@@ -12,18 +12,17 @@
 #include <stddef.h> // size_t
 
 
-template <typename T>
 class TcpClient
 {
 private:
 
-  template <typename U>
   class PollerThread : public Thread
-                     , public Poll<U>
+                     , public Poll
   {
   public:
-    PollerThread( TcpClient<U> &data )
-      : Poll<U>( &(data.m_connection) )
+
+    PollerThread( TcpClient* data )
+      : Poll( &(data->m_connection) )
       , m_tcpClient(data)
     {
       TRACE;
@@ -32,39 +31,42 @@ private:
     void stopPoller()
     {
       TRACE;
-      Poll<U>::stopPolling();
+      stopPolling();
       stop();
     }
 
   protected:
 
-  // overridig poll's behaviour
-  virtual void acceptClient()
-  {
-    TRACE;
+    // overridig poll's behaviour
+    virtual void acceptClient()
+    {
+      TRACE;
 
-    m_tcpClient.m_connection.receive();
-    Poll<U>::stopPolling();
-  }
+      m_tcpClient->m_connection.receive();
+      stopPolling();
+    }
 
-  // overridig poll's behaviour
-  virtual void handleClient( const int )
-  {
-    TRACE;
-    LOG( Logger::DEBUG, "Server closed the connection." );
-    Poll<U>::stopPolling();
-  }
+    // overridig poll's behaviour
+    virtual void handleClient( const int )
+    {
+      TRACE;
+      LOG( Logger::DEBUG, "Server closed the connection." );
+      stopPolling();
+    }
 
   private:
+
+    PollerThread(const PollerThread&);
+    PollerThread& operator=(const PollerThread&);
 
     void* run()
     {
       TRACE;
-      Poll<U>::startPolling();
+      startPolling();
       return 0;
     }
 
-    TcpClient<U> &m_tcpClient;
+    TcpClient   *m_tcpClient;
 
   };  // class PollerThread
 
@@ -73,11 +75,13 @@ public:
 
   TcpClient ( const std::string   host,
               const std::string   port,
-              void               *msgParam = 0 )
-    : m_connection (host, port, msgParam)
-    , m_watcher(*this)
+              Message            *message )
+    : m_connection (host, port, message)
+    , m_watcher(this)
   {
     TRACE;
+
+    message->setConnection(&m_connection);
   }
 
   virtual ~TcpClient()
@@ -127,8 +131,8 @@ private:
   TcpClient& operator=(const TcpClient& );
 
 
-  Connection<T>    m_connection;
-  PollerThread<T>  m_watcher;
+  Connection     m_connection;
+  PollerThread   m_watcher;
 
 };
 

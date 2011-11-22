@@ -5,26 +5,27 @@
 
 #include "Connection.hpp"
 #include "Poll.hpp"
-
+#include "Message.hpp"
 
 
 #include <string>
 
-template <typename T>
 class TcpServer
 {
 public:
 
   TcpServer ( const std::string   host,
               const std::string   port,
-              void               *msgParam = 0,
+              Message            *message,
               const int           maxClients = 5,
               const int           maxPendingQueueLen = 10 )
-    : m_connection(host, port, msgParam)
+    : m_connection(host, port, message)
     , m_poll( &m_connection, maxClients)
     , m_maxPendingQueueLen(maxPendingQueueLen)
   {
     TRACE;
+
+    message->setConnection(&m_connection);
   }
 
   virtual ~TcpServer()
@@ -60,8 +61,8 @@ private:
   TcpServer(const TcpServer&);
   TcpServer& operator=(const TcpServer&);
 
-  Connection<T>   m_connection;
-  Poll<T>         m_poll;
+  Connection      m_connection;
+  Poll            m_poll;
   const int       m_maxPendingQueueLen;
 };
 

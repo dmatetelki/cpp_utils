@@ -10,13 +10,12 @@
 #include <iostream>
 #include <string>
 
-class EchoMessage : public Message<EchoMessage>
+class EchoMessage : public Message
 {
 public:
 
-  EchoMessage( Connection<EchoMessage>  *connection,
-               void                     *msgParam = 0)
-    : Message<EchoMessage>(connection, msgParam)
+  EchoMessage( void *msgParam = 0)
+    : Message(msgParam)
   {
     TRACE;
   }
@@ -47,6 +46,12 @@ public:
     m_connection->send( reply.c_str(), reply.length() );
   }
 
+  Message* clone()
+  {
+    TRACE;
+    return new EchoMessage(m_param);
+  }
+
 protected:
 
   size_t getExpectedLength()
@@ -57,14 +62,23 @@ protected:
 };
 
 
-int main()
+int main(int argc, char* argv[] )
 {
+  if ( argc != 3 ) {
+    std::cerr << "Usage: " << argv[0] <<  " <HOST> <PORT>" << std::endl;
+    return 1;
+  }
+
   Logger::createInstance();
   Logger::init(std::cout);
-  Logger::setLogLevel(Logger::INFO);
-  Logger::setNoPrefix();
+  Logger::setLogLevel(Logger::FINEST);
+//   Logger::setNoPrefix();
 
-  TcpServer<EchoMessage> tcpServer("localhost", "4455");
+  EchoMessage msg;
+
+  TcpServer tcpServer( argv[1],
+                       argv[2],
+                       &msg );
 
   if ( !tcpServer.start() ) {
     LOG( Logger::ERR, "Failed to start TCP server, exiting...");
