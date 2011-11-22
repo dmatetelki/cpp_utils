@@ -3,7 +3,6 @@
 
 #include "Logger.hpp"
 
-// #include "Connection.hpp"
 
 #include <string>
 #include <stddef.h> // size_t

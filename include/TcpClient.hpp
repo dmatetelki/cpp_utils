@@ -1,7 +1,6 @@
 #ifndef TCP_CLIENT_HPP
 #define TCP_CLIENT_HPP
 
-#include "Logger.hpp"
 
 #include "Connection.hpp"
 #include "Thread.hpp"
@@ -21,50 +20,24 @@ private:
   {
   public:
 
-    PollerThread( TcpClient* data )
-      : Poll( &(data->m_connection) )
-      , m_tcpClient(data)
-    {
-      TRACE;
-    }
+    PollerThread( TcpClient* data );
 
-    void stopPoller()
-    {
-      TRACE;
-      stopPolling();
-      stop();
-    }
+    void stopPoller();
 
   protected:
 
     // overridig poll's behaviour
-    virtual void acceptClient()
-    {
-      TRACE;
-
-      m_tcpClient->m_connection.receive();
-      stopPolling();
-    }
+    virtual void acceptClient();
 
     // overridig poll's behaviour
-    virtual void handleClient( const int )
-    {
-      TRACE;
-      LOG( Logger::DEBUG, "Server closed the connection." );
-      stopPolling();
-    }
+    virtual void handleClient( const int );
 
   private:
 
     PollerThread(const PollerThread&);
     PollerThread& operator=(const PollerThread&);
 
-    void* run()
-    {
-      TRACE;
-      startPolling();
-      return 0;
-    }
+    void* run();
 
     TcpClient   *m_tcpClient;
 
@@ -75,55 +48,16 @@ public:
 
   TcpClient ( const std::string   host,
               const std::string   port,
-              Message            *message )
-    : m_connection (host, port, message)
-    , m_watcher(this)
-  {
-    TRACE;
+              Message            *message );
 
-    message->setConnection(&m_connection);
-  }
+  virtual ~TcpClient();
 
-  virtual ~TcpClient()
-  {
-    TRACE;
-    disconnect();
-  }
+  bool connect();
+  void disconnect();
 
-  bool connect()
-  {
-    TRACE;
+  bool send( const void* msg, const size_t msgLen );
 
-    if ( !m_connection.connectToHost() )
-      return false;
-
-    m_watcher.start();
-    return true;
-  }
-
-  void disconnect()
-  {
-    TRACE;
-
-    if ( m_watcher.isRunning() ) {
-      m_watcher.stopPoller();
-      m_watcher.join();
-    }
-
-    m_connection.closeConnection();
-  }
-
-  bool send( const void* msg, const size_t msgLen )
-  {
-    TRACE;
-    return m_connection.send(msg, msgLen);
-  }
-
-  bool isPolling() const
-  {
-    TRACE;
-    return m_watcher.isPolling();
-  }
+  bool isPolling() const;
 
 private:
 
