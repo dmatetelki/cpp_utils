@@ -6,6 +6,19 @@
 #include "Common.hpp"
 
 
+void MysqlClient::init()
+{
+  TRACE_STATIC;
+  init_client_errs();
+}
+
+void MysqlClient::destroy()
+{
+  TRACE_STATIC;
+  finish_client_errs();
+}
+
+
 MysqlClient::MysqlClient( const char *host,
                           const char *user,
                           const char *passwd,

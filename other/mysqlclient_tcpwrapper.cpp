@@ -183,10 +183,9 @@ int main(int argc, char* argv[] )
                   conns, port, clients, pending, threads ) )
     return 1;
 
-  /*
 
   // init MySQL connection pool
-  init_client_errs();
+  MysqlClient::init();
   MysqlConnectionPool mysqlConnectionPool (
                   argParse.foundArg("--host") ? host.c_str() : NULL,
                   argParse.foundArg("-u, --user") ? user.c_str() : NULL,
@@ -227,9 +226,7 @@ int main(int argc, char* argv[] )
 
   // end
   mysqlConnectionPool.clear();
-  finish_client_errs();
-
-  */
+  MysqlClient::destroy();
   Logger::destroy();
   return 0;
 }

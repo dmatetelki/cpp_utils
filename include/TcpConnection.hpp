@@ -3,7 +3,6 @@
 
 
 #include "SocketConnection.hpp"
-#include "Socket.hpp"
 #include "Message.hpp"
 
 #include <string>

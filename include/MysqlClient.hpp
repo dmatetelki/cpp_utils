@@ -6,12 +6,16 @@
 #include <string>
 #include <list>
 
+
+/// @note Call init/destroy before/after usage
 class MysqlClient
 {
 
 public:
 
-  /// @note Call init_client_errs() / finish_client_errs() before / after
+  static void init();
+  static void destroy();
+
   MysqlClient ( const char *host                = NULL,
                 const char *user                = NULL,
                 const char *passwd              = NULL,

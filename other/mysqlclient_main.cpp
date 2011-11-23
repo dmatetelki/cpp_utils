@@ -130,7 +130,7 @@ int main(int argc, char* argv[] )
     return 1;
 
   // init
-  init_client_errs();
+  MysqlClient::init();
   MysqlConnectionPool cp (
                   argParse.foundArg("--host") ? host.c_str() : NULL,
                   argParse.foundArg("-u, --user") ? user.c_str() : NULL,
@@ -153,7 +153,7 @@ int main(int argc, char* argv[] )
 
   // end
   cp.clear();
-  finish_client_errs();
+  MysqlClient::destroy();
   Logger::destroy();
   return 0;
 }
