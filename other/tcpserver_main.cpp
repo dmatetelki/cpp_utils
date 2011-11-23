@@ -1,11 +1,13 @@
-// gpp tcpserver_main.cpp  -o server -I../include ../src/Logger.cpp ../src/Socket.cpp
+//  gpp tcpserver_main.cpp  -o server -I../include ../src/Logger.cpp ../src/Socket.cpp -ggdb ../src/SocketServer.cpp ../src/SocketConnection.cpp ../src/Poll.cpp  ../src/TcpConnection.cpp
 
 
 #include "Logger.hpp"
 #include "Common.hpp"
 
-#include "TcpServer.hpp"
 #include "Message.hpp"
+#include "TcpConnection.hpp"
+#include "SocketServer.hpp"
+
 
 #include <iostream>
 #include <string>
@@ -75,12 +77,10 @@ int main(int argc, char* argv[] )
 //   Logger::setNoPrefix();
 
   EchoMessage msg;
+  TcpConnection conn(argv[1], argv[2], &msg);
+  SocketServer socketServer(&conn);
 
-  TcpServer tcpServer( argv[1],
-                       argv[2],
-                       &msg );
-
-  if ( !tcpServer.start() ) {
+  if ( !socketServer.start() ) {
     LOG( Logger::ERR, "Failed to start TCP server, exiting...");
     Logger::destroy();
     return 1;
@@ -89,7 +89,7 @@ int main(int argc, char* argv[] )
   // never reached
   sleep(1);
 
-  tcpServer.stop();
+  socketServer.stop();
   Logger::destroy();
   return 0;
 }

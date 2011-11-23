@@ -1,7 +1,7 @@
 #ifndef POLL_HPP
 #define POLL_HPP
 
-#include "Connection.hpp"
+#include "SocketConnection.hpp"
 
 #include <poll.h>
 #include <map>
@@ -12,8 +12,8 @@ class Poll
 {
 public:
 
-  Poll( Connection     *connection,
-        const nfds_t    maxClient = 10 );
+  Poll( SocketConnection   *connection,
+        const nfds_t        maxClient = 10 );
 
   virtual ~Poll();
 
@@ -41,15 +41,15 @@ private:
   bool removeFd( const int socket );
 
 
-  typedef typename std::map< int, Connection* > ConnectionPool;
+  typedef typename std::map< int, SocketConnection* > ConnectionPool;
 
-  Connection     *m_connection;
-  volatile bool   m_polling;
-  ConnectionPool  m_connectionPool;
+  SocketConnection   *m_connection;
+  volatile bool       m_polling;
+  ConnectionPool      m_connectionPool;
 
-  nfds_t          m_maxclients;
-  pollfd         *m_fds;
-  nfds_t          m_num_of_fds;
+  nfds_t              m_maxclients;
+  pollfd             *m_fds;
+  nfds_t              m_num_of_fds;
 
 };
 

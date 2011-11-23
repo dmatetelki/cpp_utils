@@ -1,10 +1,11 @@
-// gpp tcpclient_main.cpp -o client -I../include ../src/Logger.cpp ../src/TcpClient.cpp
+//  gpp tcpclient_main.cpp -o client -I../include ../src/Logger.cpp ../src/Thread.cpp ../src/Socket.cpp -lpthread ../src/SocketClient.cpp  ../src/Poll.cpp ../src/SocketConnection.cpp ../src/TcpConnection.cpp
+
 
 #include "Logger.hpp"
 
-#include "TcpClient.hpp"
-#include "Connection.hpp"
 #include "Message.hpp"
+#include "TcpConnection.hpp"
+#include "SocketClient.hpp"
 
 
 #include <iostream>
@@ -74,12 +75,10 @@ int main(int argc, char* argv[] )
   bool finished = false;
 
   SimpleMessage msg(&finished);
+  TcpConnection conn(argv[1], argv[2], &msg);
+  SocketClient socketClient(&conn);
 
-  TcpClient tcpclient( argv[1],
-                       argv[2],
-                       &msg);
-
-  if ( !tcpclient.connect() ) {
+  if ( !socketClient.connect() ) {
     LOG( Logger::ERR, "Couldn't connect to server, exiting..." );
     Logger::destroy();
     return 1;
@@ -90,7 +89,7 @@ int main(int argc, char* argv[] )
 
   // send message to server
   std::string msg1(argv[3]);
-  if ( !tcpclient.send( msg1.c_str(), msg1.length()) ) {
+  if ( !socketClient.send( msg1.c_str(), msg1.length()) ) {
     LOG( Logger::ERR, "Couldn't send message to server, exiting..." );
     Logger::destroy();
     return 1;
@@ -98,10 +97,10 @@ int main(int argc, char* argv[] )
 
   // wait for the complate &handled reply
   struct timespec tm = {0,1000};
-  while ( !finished && tcpclient.isPolling() )
+  while ( !finished && socketClient.isPolling() )
     nanosleep(&tm, &tm) ;
 
-  tcpclient.disconnect();
+  socketClient.disconnect();
   Logger::destroy();
   return 0;
 }

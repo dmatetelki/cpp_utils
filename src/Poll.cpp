@@ -4,8 +4,8 @@
 #include "Common.hpp"
 
 
-Poll::Poll( Connection     *connection,
-            const nfds_t    maxClient )
+Poll::Poll( SocketConnection  *connection,
+            const nfds_t       maxClient )
   : m_connection(connection)
   , m_polling(false)
   , m_connectionPool()
@@ -85,7 +85,7 @@ void Poll::acceptClient()
     return;
   }
 
-  Connection *connection = m_connection->create(client_socket);
+  SocketConnection *connection = m_connection->clone(client_socket);
 
   LOG( Logger::INFO, std::string("New client connected: ").
                           append(connection->getHost()).append(":").

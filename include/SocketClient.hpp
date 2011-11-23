@@ -1,8 +1,8 @@
-#ifndef TCP_CLIENT_HPP
-#define TCP_CLIENT_HPP
+#ifndef SOCKET_CLIENT_HPP
+#define SOCKET_CLIENT_HPP
 
 
-#include "Connection.hpp"
+#include "SocketConnection.hpp"
 #include "Thread.hpp"
 #include "Poll.hpp"
 
@@ -11,7 +11,7 @@
 #include <stddef.h> // size_t
 
 
-class TcpClient
+class SocketClient
 {
 private:
 
@@ -20,7 +20,7 @@ private:
   {
   public:
 
-    PollerThread( TcpClient* data );
+    PollerThread( SocketClient* data );
 
     void stopPoller();
 
@@ -39,18 +39,16 @@ private:
 
     void* run();
 
-    TcpClient   *m_tcpClient;
+    SocketClient   *m_tcpClient;
 
   };  // class PollerThread
 
 
 public:
 
-  TcpClient ( const std::string   host,
-              const std::string   port,
-              Message            *message );
+  SocketClient (SocketConnection *connection );
 
-  virtual ~TcpClient();
+  virtual ~SocketClient();
 
   bool connect();
   void disconnect();
@@ -61,13 +59,13 @@ public:
 
 private:
 
-  TcpClient(const TcpClient& );
-  TcpClient& operator=(const TcpClient& );
+  SocketClient(const SocketClient& );
+  SocketClient& operator=(const SocketClient& );
 
 
-  Connection     m_connection;
-  PollerThread   m_watcher;
+  SocketConnection  *m_connection;
+  PollerThread       m_watcher;
 
 };
 
-#endif // TCP_CLIENT_HPP
+#endif // SOCKET_CLIENT_HPP
