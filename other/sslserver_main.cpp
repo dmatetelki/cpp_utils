@@ -81,8 +81,8 @@ void signalHandler(int s)
 
 int main(int argc, char* argv[] )
 {
-  if ( argc != 3 ) {
-    std::cerr << "Usage: " << argv[0] <<  " <HOST> <PORT>" << std::endl;
+  if ( argc != 5 ) {
+    std::cerr << "Usage: " << argv[0] <<  " <HOST> <PORT> <CERT> <PRIVKEY>" << std::endl;
     return 1;
   }
 
@@ -100,6 +100,7 @@ int main(int argc, char* argv[] )
 
   EchoMessage msg;
   SslConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
+  conn.initServerContext(argv[3], argv[4]);
   socketServer = new SocketServer(&conn);
 
   if ( !socketServer->start() ) {

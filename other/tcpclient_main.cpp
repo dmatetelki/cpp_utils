@@ -82,7 +82,7 @@ int main(int argc, char* argv[] )
   SocketClient socketClient(&conn);
 
   if ( !socketClient.connect() ) {
-    LOG( Logger::ERR, "Couldn't connect to server, exiting..." );
+    LOG_STATIC( Logger::ERR, "Couldn't connect to server, exiting..." );
     Logger::destroy();
     return 1;
   }
@@ -93,7 +93,7 @@ int main(int argc, char* argv[] )
   // send message to server
   std::string msg1(argv[3]);
   if ( !socketClient.send( msg1.c_str(), msg1.length()) ) {
-    LOG( Logger::ERR, "Couldn't send message to server, exiting..." );
+    LOG_STATIC( Logger::ERR, "Couldn't send message to server, exiting..." );
     Logger::destroy();
     return 1;
   }

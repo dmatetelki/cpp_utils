@@ -50,7 +50,6 @@ void Poll::startPolling()
         /// @todo reconnect
         return;
     }
-
     if ( ret == 0 )  // timeout
       continue;
 
@@ -82,15 +81,10 @@ void Poll::acceptClient()
 {
   TRACE;
 
-//   sockaddr clientAddr;
-//   socklen_t clientAddrLen;
-//   int client_socket = accept( m_connection->getSocket(),
-//                               &clientAddr, &clientAddrLen ) ;
   int client_socket = m_connection->accept();
 
 
   if ( client_socket == -1 ) {
-    LOG( Logger::ERR, errnoToString("ERROR accepting. ").c_str() );
     return;
   }
 

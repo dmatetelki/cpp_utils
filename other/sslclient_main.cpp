@@ -78,6 +78,7 @@ int main(int argc, char* argv[] )
 
   SimpleMessage msg(&finished);
   SslConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
+  conn.initClientContext();
   SocketClient socketClient(&conn);
 
   if ( !socketClient.connect() ) {

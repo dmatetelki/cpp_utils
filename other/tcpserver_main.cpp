@@ -83,7 +83,7 @@ int main(int argc, char* argv[] )
   SocketServer socketServer(&conn);
 
   if ( !socketServer.start() ) {
-    LOG( Logger::ERR, "Failed to start TCP server, exiting...");
+    LOG_STATIC( Logger::ERR, "Failed to start TCP server, exiting...");
     Logger::destroy();
     return 1;
   }

@@ -38,6 +38,10 @@ public:
   bool connect();
   bool disconnect();
 
+  bool initServerContext( const std::string certificateFile,
+                          const std::string privateKeyFile );
+  bool initClientContext();
+
   bool send( const void* message, const size_t length );
   bool receive();
 
@@ -52,8 +56,10 @@ private:
   SslConnection(const SslConnection&);
   SslConnection& operator=(const SslConnection&);
 
-  bool initHandlers();
+  bool initHandle();
   std::string getSslError(const std::string &msg);
+  bool loadCertificates( const std::string certificateFile,
+                         const std::string keyFile );
 
 
   TcpConnection   m_tcpConnection;

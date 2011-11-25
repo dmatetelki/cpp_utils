@@ -83,10 +83,18 @@ bool TcpConnection::listen( const int maxPendingQueueLen )
 
 int TcpConnection::accept()
 {
+  TRACE;
   sockaddr clientAddr;
   socklen_t clientAddrLen;
 
-  return ::accept( getSocket(), &clientAddr, &clientAddrLen ) ;
+  int client_socket = ::accept( getSocket(), &clientAddr, &clientAddrLen ) ;
+
+  if ( client_socket == -1 ) {
+    LOG( Logger::ERR, errnoToString("ERROR accepting. ").c_str() );
+    return -1;
+  }
+
+  return client_socket;
 }
 
 
