@@ -2,7 +2,7 @@
 #define SOCKET_CLIENT_HPP
 
 
-#include "SocketConnection.hpp"
+#include "StreamConnection.hpp"
 #include "Thread.hpp"
 #include "Poll.hpp"
 
@@ -46,7 +46,7 @@ private:
 
 public:
 
-  SocketClient (SocketConnection *connection );
+  SocketClient (StreamConnection *connection );
 
   virtual ~SocketClient();
 
@@ -63,7 +63,7 @@ private:
   SocketClient& operator=(const SocketClient& );
 
 
-  SocketConnection  *m_connection;
+  StreamConnection  *m_connection;
   PollerThread       m_watcher;
 
 };

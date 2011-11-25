@@ -28,64 +28,91 @@ void SslConnection::destroy()
 SslConnection::SslConnection (  const int      socket,
                                 Message       *message,
                                 const size_t   bufferLength )
-  : SocketConnection(socket, message, bufferLength)
-  , m_tcpConnection(socket, 0, 0)
+  : StreamConnection()
+  , m_tcpConnection(socket, message, 0)
+  , m_message(message)
+  , m_buffer(0)
+  , m_bufferLength(bufferLength)
   , m_sslHandle(0)
   , m_sslContext(0)
 {
   TRACE;
+
+  setHost(m_tcpConnection.getHost());
+  setPort(m_tcpConnection.getPort());
+
+  m_buffer = new unsigned char[m_bufferLength];
+  m_message->setConnection(this);
 }
 
 
 SslConnection::SslConnection (  const std::string   host,
-                                const std::string   port,
+                                const int           port,
                                 Message            *message,
                                 const size_t        bufferLength )
-  : SocketConnection(host, port, message, bufferLength)
-  , m_tcpConnection(host, port, 0, 0)
+  : StreamConnection(host, port)
+  , m_tcpConnection(host, port, message, 0)
+  , m_message(message)
+  , m_buffer(0)
+  , m_bufferLength(bufferLength)
   , m_sslHandle(0)
   , m_sslContext(0)
 {
   TRACE;
+  m_buffer = new unsigned char[m_bufferLength];
+  m_message->setConnection(this);
 }
 
 
 SslConnection::~SslConnection()
 {
   TRACE;
-  closeConnection();
+  disconnect();
+  delete m_buffer;
 }
 
 
-SocketConnection* SslConnection::clone(const int socket)
+Connection* SslConnection::clone(const int socket)
 {
-  SocketConnection *conn = new SslConnection(socket,
-                                             m_message->clone(),
-                                             m_bufferLength );
+  Connection *conn = new SslConnection( socket,
+                                        m_message->clone(),
+                                        m_bufferLength );
 
   return conn;
 }
 
 
-bool SslConnection::connectToHost()
+bool SslConnection::connect()
 {
   TRACE;
 
-  if ( !m_tcpConnection.connectToHost() )
+  if ( !m_tcpConnection.connect() )
     return false;
 
-  return connect();
+  if ( !initHandlers() )
+    return false;
+
+  if ( SSL_connect (m_sslHandle) != 1 ) {
+    LOG (Logger::ERR, getSslError("Handshake with SSL server failed. ").c_str() );
+    return false;
+  }
+
+  return true;
 }
 
 
-bool SslConnection::bindToHost()
+bool SslConnection::bind()
 {
   TRACE;
 
-  if ( !m_tcpConnection.bindToHost() )
+  if ( !m_tcpConnection.bind() )
     return false;
 
-  return connect();
+  if ( !initHandlers() )
+    return false;
+
+
+  return true;
 }
 
 
@@ -96,21 +123,25 @@ bool SslConnection::listen( const int maxPendingQueueLen )
 }
 
 
-void SslConnection::closeConnection()
+/// @todo this function shall be refactored
+bool SslConnection::disconnect()
 {
   TRACE;
 
   /// @note do I have to call this?
-  m_tcpConnection.closeConnection();
+  if ( m_tcpConnection.getSocket() != -1 )
+    m_tcpConnection.disconnect();
+
+  if ( m_sslHandle == 0 || m_sslContext == 0 )
+    return false;
 
   int ret = SSL_shutdown(m_sslHandle);
-
   if ( ret == 0 ) {
     LOG( Logger::INFO, "\"close notify\" alert was sent and the peer's "
                        "\"close notify\" alert was received.");
   }
   else if (ret == 1 ) {
-    LOG( Logger::WARNING, "\"The shutdown is not yet finished. "
+    LOG( Logger::WARNING, "The shutdown is not yet finished. "
                           "Calling SSL_shutdown() for a second time...");
     SSL_shutdown(m_sslHandle);
   }
@@ -118,8 +149,17 @@ void SslConnection::closeConnection()
     LOG (Logger::ERR, getSslError("The shutdown was not successful. ").c_str() );
   }
 
-  SSL_free(m_sslHandle);
-  SSL_CTX_free(m_sslContext);
+  /// @note I have to check the ref count?! This stinks
+  if (m_sslHandle && m_sslHandle->references > 0)
+    SSL_free(m_sslHandle);
+
+  if (m_sslHandle && m_sslContext->references > 0)
+    SSL_CTX_free(m_sslContext);
+
+  m_sslHandle = 0;
+  m_sslContext = 0;
+
+  return true;
 }
 
 
@@ -163,7 +203,14 @@ bool SslConnection::receive()
 }
 
 
-bool SslConnection::connect()
+int SslConnection::getSocket() const
+{
+  TRACE;
+  return m_tcpConnection.getSocket();
+}
+
+
+bool SslConnection::initHandlers()
 {
   TRACE;
 
@@ -182,12 +229,6 @@ bool SslConnection::connect()
 
   if ( !SSL_set_fd (m_sslHandle, m_tcpConnection.getSocket()) ) {
     LOG (Logger::ERR, getSslError("Connect the SSL object with a file descriptor failed. ").c_str() );
-    return false;
-  }
-
-
-  if ( SSL_connect (m_sslHandle) != 1 ) {
-    LOG (Logger::ERR, getSslError("Handshake with SSL server failed. ").c_str() );
     return false;
   }
 

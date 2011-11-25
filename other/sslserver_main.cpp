@@ -1,11 +1,10 @@
-//  gpp tcpserver_main.cpp  -o server -I../include ../src/Logger.cpp ../src/Socket.cpp -ggdb ../src/SocketServer.cpp ../src/SocketConnection.cpp ../src/Poll.cpp  ../src/TcpConnection.cpp
-
+//  gpp sslserver_main.cpp  -o sslserver -I../include ../src/Logger.cpp ../src/Socket.cpp -ggdb ../src/SocketServer.cpp ../src/Connection.cpp ../src/Poll.cpp  ../src/TcpConnection.cpp ../src/SslConnection.cpp  -lssl -lcrypto
 
 #include "Logger.hpp"
 #include "Common.hpp"
 
 #include "Message.hpp"
-#include "TcpConnection.hpp"
+#include "SslConnection.hpp"
 #include "SocketServer.hpp"
 
 
@@ -34,8 +33,6 @@ public:
   void onMessageReady()
   {
     TRACE;
-
-    std::cout << "buffer: " << m_buffer << std::endl;
 
     LOG( Logger::INFO, std::string("Got message: \"").
                         append(m_buffer).append("\" from: ").
@@ -77,9 +74,10 @@ int main(int argc, char* argv[] )
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::FINEST);
 //   Logger::setNoPrefix();
+  SslConnection::init();
 
   EchoMessage msg;
-  TcpConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
+  SslConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
   SocketServer socketServer(&conn);
 
   if ( !socketServer.start() ) {
@@ -92,6 +90,7 @@ int main(int argc, char* argv[] )
   sleep(1);
 
   socketServer.stop();
+  SslConnection::destroy();
   Logger::destroy();
   return 0;
 }

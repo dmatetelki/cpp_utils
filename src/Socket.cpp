@@ -57,7 +57,7 @@ bool Socket::createSocket()
 }
 
 
-void Socket::closeSocket()
+bool Socket::closeSocket()
 {
   TRACE;
 
@@ -65,6 +65,8 @@ void Socket::closeSocket()
   shutdown(m_socket, SHUT_RDWR);
   close(m_socket);
   m_socket = -1;
+
+  return true;
 }
 
 
@@ -230,7 +232,7 @@ bool Socket::getHostInfo( const std::string host,
   int status = getaddrinfo(host.c_str(), port.c_str(), &hints, &results);
 
   if (status != 0) {
-    LOG( Logger::ERR, std::string("Error at network address translation: ").
+    LOG_STATIC( Logger::ERR, std::string("Error at network address translation: ").
                                   append(gai_strerror(status)).c_str() ) ;
     return false;
   }
@@ -263,7 +265,7 @@ void Socket::printHostDetails(struct addrinfo *servinfo)
     char ipstr[INET6_ADDRSTRLEN];
     inet_ntop( it->ai_family, addr, ipstr, sizeof ipstr );
 
-    LOG( Logger::DEBUG, std::string(TToStr(counter)).append(". address is ").
+    LOG_STATIC( Logger::DEBUG, std::string(TToStr(counter)).append(". address is ").
                                      append(ipver).append(": ").
                                      append(ipstr).c_str() );
   }
@@ -286,7 +288,7 @@ bool Socket::convertNameInfo(sockaddr* addr,
                             NI_NAMEREQD );
 
   if ( status != 0 ) {
-    LOG( Logger::WARNING, std::string("Could not resolve hostname. ").
+    LOG_STATIC( Logger::WARNING, std::string("Could not resolve hostname. ").
                             append(gai_strerror(status)).c_str() );
     return false;
   }

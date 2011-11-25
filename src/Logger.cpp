@@ -24,13 +24,13 @@ void Logger::setNoPrefix ()
 }
 
 
-void Logger::log_pointer( const void* msg,
+void Logger::log_pointer( const void* pointer,
                           const char* file,
                           const int line,
                           const char* function)
 {
   if ( !m_usePrefix ) {
-    *m_ostream << msg << std::endl;
+    *m_ostream << pointer << std::endl;
     return;
   }
 
@@ -39,12 +39,13 @@ void Logger::log_pointer( const void* msg,
               << COLOR_RESET << ":"
               << COLOR( FG_BROWN ) <<  line << COLOR_RESET << " "
               << COLOR( FG_CYAN ) << function << COLOR_RESET << " "
-              << COLOR( FG_BLUE ) << "\"" << msg << "\""
+              << COLOR( FG_BLUE ) << "\"" << pointer << "\""
               << COLOR_RESET << std::endl;
 }
 
 
 void Logger::log_string( const int level,
+                         const void* pointer,
                          const char* msg,
                          const char* file,
                          const int line,
@@ -66,6 +67,7 @@ void Logger::log_string( const int level,
               << COLOR( FG_BROWN ) <<  line << COLOR_RESET << " "
               << COLOR( FG_CYAN ) << function << COLOR_RESET << " "
               << color << "\"" << msg << "\""
+              << COLOR( FG_BLUE ) << "\"" << pointer << "\""
               << COLOR_RESET << std::endl;
 }
 

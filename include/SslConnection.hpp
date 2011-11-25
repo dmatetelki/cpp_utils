@@ -2,7 +2,7 @@
 #define SSL_CONNECTION_HPP
 
 
-#include "SocketConnection.hpp"
+#include "StreamConnection.hpp"
 #include "TcpConnection.hpp"
 #include "Message.hpp"
 
@@ -15,7 +15,7 @@
 
 
 /// @note Call init/destroy before/after usage
-class SslConnection : public SocketConnection
+class SslConnection : public StreamConnection
 {
 public:
 
@@ -27,33 +27,38 @@ public:
                   const size_t   bufferLength = 1024 );
 
   SslConnection ( const std::string   host,
-                  const std::string   port,
+                  const int           port,
                   Message            *message,
                   const size_t        bufferLength = 1024 );
 
   virtual ~SslConnection();
 
-  SocketConnection* clone(const int socket);
+  Connection* clone(const int socket);
 
-  bool connectToHost();
-  bool bindToHost();
-  bool listen( const int maxPendingQueueLen = 64 );
-  void closeConnection();
+  bool connect();
+  bool disconnect();
 
   bool send( const void* message, const size_t length );
   bool receive();
 
+  bool bind();
+  bool listen( const int maxPendingQueueLen = 64 );
+
+  int getSocket() const;
 
 private:
 
   SslConnection(const SslConnection&);
   SslConnection& operator=(const SslConnection&);
 
-  bool connect();
+  bool initHandlers();
   std::string getSslError(const std::string &msg);
 
 
   TcpConnection   m_tcpConnection;
+  Message        *m_message;
+  unsigned char  *m_buffer;
+  size_t          m_bufferLength;
   SSL            *m_sslHandle;
   SSL_CTX        *m_sslContext;
 };

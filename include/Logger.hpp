@@ -35,12 +35,13 @@ public:
 
   inline static LogLevel getLoglevel() { return m_logLevel; }
 
-  static void log_pointer( const void* msg,
+  static void log_pointer( const void* pointer,
                            const char* file,
                            const int line,
                            const char* function);
 
   static void log_string( const int level,
+                          const void* pointer,
                           const char* msg,
                           const char* file,
                           const int line,
@@ -65,6 +66,7 @@ private:
   #define TRACE           (void)0
   #define TRACE_STATIC    (void)0
   #define LOG(level, msg) (void)0
+  #define LOG_STATIC(level, msg) (void)0
 
 #else
 
@@ -83,7 +85,13 @@ private:
   #define LOG(level, msg) \
   if ( Logger::getInstance()->getLoglevel() >= level ) \
   Logger::getInstance()->log_string( \
-    level, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+    level, this, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+  else (void)0
+
+  #define LOG_STATIC(level, msg) \
+  if ( Logger::getInstance()->getLoglevel() >= level ) \
+  Logger::getInstance()->log_string( \
+    level, 0, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
   else (void)0
 
 #endif

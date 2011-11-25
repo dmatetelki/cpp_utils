@@ -2,13 +2,14 @@
 #define TCP_CONNECTION_HPP
 
 
-#include "SocketConnection.hpp"
+#include "StreamConnection.hpp"
 #include "Message.hpp"
+#include "Socket.hpp"
 
 #include <string>
 
 
-class TcpConnection : public SocketConnection
+class TcpConnection : public StreamConnection
 {
 public:
 
@@ -17,27 +18,34 @@ public:
                   const size_t   bufferLength = 1024 );
 
   TcpConnection ( const std::string   host,
-                  const std::string   port,
+                  const int           port,
                   Message            *message,
                   const size_t        bufferLength = 1024 );
 
   virtual ~TcpConnection();
 
-  SocketConnection* clone(const int socket);
+  Connection* clone(const int socket);
 
-  bool connectToHost();
-  bool bindToHost();
-  bool listen( const int maxPendingQueueLen = 64 );
-  void closeConnection();
+  bool connect();
+  bool disconnect();
 
   bool send( const void* message, const size_t length );
   bool receive();
 
+  int getSocket() const;
+
+  bool bind();
+  bool listen( const int maxPendingQueueLen = 64 );
 
 private:
 
   TcpConnection(const TcpConnection&);
   TcpConnection& operator=(const TcpConnection&);
+
+  Socket          m_socket;
+  Message        *m_message;
+  unsigned char  *m_buffer;
+  size_t          m_bufferLength;
 };
 
 

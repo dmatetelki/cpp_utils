@@ -1,4 +1,5 @@
-//  gpp sslclient_main.cpp -o sslclient -I../include ../src/Logger.cpp ../src/Thread.cpp ../src/Socket.cpp -lpthread ../src/SocketClient.cpp  ../src/Poll.cpp ../src/SocketConnection.cpp ../src/SslConnection.cpp -lssl -lcrypto ../src/TcpConnection.cpp
+// gpp sslclient_main.cpp -o sslclient -I../include ../src/Logger.cpp ../src/Thread.cpp ../src/Socket.cpp -lpthread ../src/SocketClient.cpp  ../src/Poll.cpp ../src/Connection.cpp ../src/SslConnection.cpp -lssl -lcrypto ../src/TcpConnection.cpp
+
 
 #include "Logger.hpp"
 
@@ -11,6 +12,7 @@
 #include <string>
 
 #include <time.h> // nanosleep
+#include <Common.hpp>
 
 
 
@@ -75,11 +77,12 @@ int main(int argc, char* argv[] )
   bool finished = false;
 
   SimpleMessage msg(&finished);
-  SslConnection conn(argv[1], argv[2], &msg);
+  SslConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
   SocketClient socketClient(&conn);
 
   if ( !socketClient.connect() ) {
-    LOG( Logger::ERR, "Couldn't connect to server, exiting..." );
+    LOG_STATIC( Logger::ERR, "Couldn't connect to server, exiting..." );
+    SslConnection::destroy();
     Logger::destroy();
     return 1;
   }
@@ -90,7 +93,8 @@ int main(int argc, char* argv[] )
   // send message to server
   std::string msg1(argv[3]);
   if ( !socketClient.send( msg1.c_str(), msg1.length()) ) {
-    LOG( Logger::ERR, "Couldn't send message to server, exiting..." );
+    LOG_STATIC( Logger::ERR, "Couldn't send message to server, exiting..." );
+    SslConnection::destroy();
     Logger::destroy();
     return 1;
   }
@@ -100,7 +104,7 @@ int main(int argc, char* argv[] )
   while ( !finished && socketClient.isPolling() )
     nanosleep(&tm, &tm) ;
 
-  socketClient.disconnect();
+//   socketClient.disconnect();
   SslConnection::destroy();
   Logger::destroy();
   return 0;

@@ -4,8 +4,13 @@
 #include "Common.hpp"
 
 
-Poll::Poll( SocketConnection  *connection,
-            const nfds_t       maxClient )
+#include <sys/types.h>
+#include <sys/socket.h>
+
+
+
+Poll::Poll( Connection   *connection,
+            const nfds_t  maxClient )
   : m_connection(connection)
   , m_polling(false)
   , m_connectionPool()
@@ -36,6 +41,8 @@ void Poll::startPolling()
   while ( m_polling ) {
 
     nanosleep(&tm, &tm) ;
+
+    /// @todo put poll into Socket class
     int ret = poll( m_fds , m_maxclients, 1000);
 
     if ( ret == -1 ) {
@@ -77,6 +84,8 @@ void Poll::acceptClient()
 
   sockaddr clientAddr;
   socklen_t clientAddrLen;
+
+  /// @todo put accept into Socket class
   int client_socket = accept( m_connection->getSocket(),
                               &clientAddr, &clientAddrLen ) ;
 
@@ -85,11 +94,11 @@ void Poll::acceptClient()
     return;
   }
 
-  SocketConnection *connection = m_connection->clone(client_socket);
+  Connection *connection = m_connection->clone(client_socket);
 
   LOG( Logger::INFO, std::string("New client connected: ").
                           append(connection->getHost()).append(":").
-                          append(connection->getPort()).c_str() );
+                          append(TToStr(connection->getPort())).c_str() );
 
   m_connectionPool[client_socket] = connection;
   addFd( client_socket, POLLIN | POLLPRI );

@@ -12,14 +12,14 @@
    * getExpectedLength().
    */
 
-class SocketConnection;
+class Connection;
 
 
 class Message
 {
 public:
 
-  Message( SocketConnection *connection,
+  Message( Connection *connection,
            void             *msgParam = 0 )
     : m_connection(connection)
     , m_param(msgParam)
@@ -43,7 +43,7 @@ public:
                              const size_t  msgLen ) = 0;
   virtual void onMessageReady() = 0;
 
-  void setConnection(SocketConnection* conn )
+  void setConnection(Connection* conn )
   {
     TRACE;
     m_connection = conn;
@@ -54,7 +54,7 @@ protected:
   virtual size_t getExpectedLength() = 0;
 
 
-  SocketConnection   *m_connection;
+  Connection   *m_connection;
   void               *m_param;
   std::string         m_buffer;
 

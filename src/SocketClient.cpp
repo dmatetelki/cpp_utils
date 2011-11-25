@@ -48,7 +48,7 @@ void* SocketClient::PollerThread::run()
 
 // SocketClient
 
-SocketClient::SocketClient (SocketConnection *connection )
+SocketClient::SocketClient (StreamConnection *connection )
   : m_connection (connection)
   , m_watcher(this)
 {
@@ -67,7 +67,7 @@ bool SocketClient::connect()
 {
   TRACE;
 
-  if ( !m_connection->connectToHost() )
+  if ( !m_connection->connect() )
     return false;
 
   m_watcher.start();
@@ -84,7 +84,7 @@ void SocketClient::disconnect()
     m_watcher.join();
   }
 
-  m_connection->closeConnection();
+  m_connection->disconnect();
 }
 
 

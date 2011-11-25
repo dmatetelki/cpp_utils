@@ -1,7 +1,7 @@
 #ifndef SOCKET_SERVER_HPP
 #define SOCKET_SERVER_HPP
 
-#include "SocketConnection.hpp"
+#include "StreamConnection.hpp"
 #include "Poll.hpp"
 
 
@@ -9,9 +9,9 @@ class SocketServer
 {
 public:
 
-  SocketServer ( SocketConnection   *connection,
-                 const int           maxClients = 5,
-                 const int           maxPendingQueueLen = 10 );
+  SocketServer ( StreamConnection  *connection,
+                 const int          maxClients = 5,
+                 const int          maxPendingQueueLen = 10 );
 
   virtual ~SocketServer();
 
@@ -24,7 +24,7 @@ private:
   SocketServer(const SocketServer&);
   SocketServer& operator=(const SocketServer&);
 
-  SocketConnection  *m_connection;
+  StreamConnection  *m_connection;
   Poll               m_poll;
   const int          m_maxPendingQueueLen;
 };

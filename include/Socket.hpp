@@ -20,7 +20,7 @@ public:
   virtual ~Socket();
 
   bool createSocket();
-  void closeSocket();
+  bool closeSocket();
 
   bool connectToHost( const std::string host,
                       const std::string port );

@@ -108,11 +108,20 @@ inline std::string TToStr(const T t)
 }
 
 
+// template <class T>
+// inline void StrToT( T &t, const std::string s )
+// {
+//   std::stringstream ss(s);
+//   ss >> t;
+// }
+
 template <class T>
-inline void StrToT( T &t, const std::string s )
+inline T StrToT( const std::string s )
 {
   std::stringstream ss(s);
+  T t;
   ss >> t;
+  return t;
 }
 
 

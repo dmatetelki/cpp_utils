@@ -24,3 +24,6 @@ test/testCppUtils.out
 *.kate-swp
 other/client
 other/server
+other/sslclient
+other/sslserver
+

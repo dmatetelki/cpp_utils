@@ -2,6 +2,7 @@
 
 
 #include "Logger.hpp"
+#include "Common.hpp"
 
 #include "Message.hpp"
 #include "TcpConnection.hpp"
@@ -68,6 +69,7 @@ int main(int argc, char* argv[] )
     return 1;
   }
 
+
   Logger::createInstance();
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::FINEST);
@@ -75,7 +77,8 @@ int main(int argc, char* argv[] )
   bool finished = false;
 
   SimpleMessage msg(&finished);
-  TcpConnection conn(argv[1], argv[2], &msg);
+
+  TcpConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
   SocketClient socketClient(&conn);
 
   if ( !socketClient.connect() ) {

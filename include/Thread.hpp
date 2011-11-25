@@ -19,7 +19,7 @@ public:
 
 protected:
 
-  bool m_isRunning;
+  volatile bool m_isRunning;
 
 private:
 
