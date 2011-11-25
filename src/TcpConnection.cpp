@@ -81,6 +81,15 @@ bool TcpConnection::listen( const int maxPendingQueueLen )
 }
 
 
+int TcpConnection::accept()
+{
+  sockaddr clientAddr;
+  socklen_t clientAddrLen;
+
+  return ::accept( getSocket(), &clientAddr, &clientAddrLen ) ;
+}
+
+
 bool TcpConnection::disconnect()
 {
   TRACE;

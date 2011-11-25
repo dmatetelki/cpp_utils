@@ -1,7 +1,7 @@
 #ifndef POLL_HPP
 #define POLL_HPP
 
-#include "Connection.hpp"
+#include "StreamConnection.hpp"
 
 #include <poll.h>
 #include <map>
@@ -12,7 +12,7 @@ class Poll
 {
 public:
 
-  Poll( Connection   *connection,
+  Poll( StreamConnection *connection,
         const nfds_t  maxClient = 10 );
 
   virtual ~Poll();
@@ -43,13 +43,13 @@ private:
 
   typedef typename std::map< int, Connection* > ConnectionPool;
 
-  Connection     *m_connection;
-  volatile bool   m_polling;
-  ConnectionPool  m_connectionPool;
+  StreamConnection  *m_connection;
+  volatile bool      m_polling;
+  ConnectionPool     m_connectionPool;
 
-  nfds_t          m_maxclients;
-  pollfd         *m_fds;
-  nfds_t          m_num_of_fds;
+  nfds_t             m_maxclients;
+  pollfd            *m_fds;
+  nfds_t             m_num_of_fds;
 
 };
 

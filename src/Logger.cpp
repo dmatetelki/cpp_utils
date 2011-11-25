@@ -39,7 +39,7 @@ void Logger::log_pointer( const void* pointer,
               << COLOR_RESET << ":"
               << COLOR( FG_BROWN ) <<  line << COLOR_RESET << " "
               << COLOR( FG_CYAN ) << function << COLOR_RESET << " "
-              << COLOR( FG_BLUE ) << "\"" << pointer << "\""
+              << COLOR( FG_BLUE ) << pointer
               << COLOR_RESET << std::endl;
 }
 
@@ -66,8 +66,8 @@ void Logger::log_string( const int level,
               << COLOR_RESET << ":"
               << COLOR( FG_BROWN ) <<  line << COLOR_RESET << " "
               << COLOR( FG_CYAN ) << function << COLOR_RESET << " "
-              << color << "\"" << msg << "\""
-              << COLOR( FG_BLUE ) << "\"" << pointer << "\""
+              << color << "\"" << msg << "\" "
+              << COLOR( FG_BLUE ) << pointer
               << COLOR_RESET << std::endl;
 }
 

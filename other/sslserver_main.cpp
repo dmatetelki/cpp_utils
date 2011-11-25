@@ -11,6 +11,8 @@
 #include <iostream>
 #include <string>
 
+#include <signal.h>
+
 class EchoMessage : public Message
 {
 public:
@@ -63,6 +65,20 @@ protected:
 };
 
 
+SocketServer *socketServer;
+
+void signalHandler(int s)
+{
+  LOG_STATIC( Logger::INFO, std::string("Exiting after receiving signal: ").
+                              append(TToStr(s)).c_str() );
+  socketServer->stop();
+  delete socketServer;
+  SslConnection::destroy();
+  Logger::destroy();
+  exit(1);
+}
+
+
 int main(int argc, char* argv[] )
 {
   if ( argc != 3 ) {
@@ -70,27 +86,31 @@ int main(int argc, char* argv[] )
     return 1;
   }
 
+  struct sigaction sigIntHandler;
+  sigIntHandler.sa_handler = signalHandler;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  sigaction(SIGINT, &sigIntHandler, NULL);
+
+
   Logger::createInstance();
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::FINEST);
-//   Logger::setNoPrefix();
   SslConnection::init();
 
   EchoMessage msg;
   SslConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
-  SocketServer socketServer(&conn);
+  socketServer = new SocketServer(&conn);
 
-  if ( !socketServer.start() ) {
-    LOG( Logger::ERR, "Failed to start TCP server, exiting...");
+  if ( !socketServer->start() ) {
+    LOG_STATIC( Logger::ERR, "Failed to start TCP server, exiting...");
+    delete socketServer;
+    SslConnection::destroy();
     Logger::destroy();
     return 1;
   }
 
   // never reached
-  sleep(1);
 
-  socketServer.stop();
-  SslConnection::destroy();
-  Logger::destroy();
   return 0;
 }

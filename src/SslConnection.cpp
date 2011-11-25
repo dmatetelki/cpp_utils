@@ -15,6 +15,7 @@ void SslConnection::init()
 
   SSL_load_error_strings();
   SSL_library_init();
+  OpenSSL_add_all_algorithms();
 }
 
 void SslConnection::destroy()
@@ -74,6 +75,8 @@ SslConnection::~SslConnection()
 
 Connection* SslConnection::clone(const int socket)
 {
+  TRACE;
+
   Connection *conn = new SslConnection( socket,
                                         m_message->clone(),
                                         m_bufferLength );
@@ -93,7 +96,7 @@ bool SslConnection::connect()
     return false;
 
   if ( SSL_connect (m_sslHandle) != 1 ) {
-    LOG (Logger::ERR, getSslError("Handshake with SSL server failed. ").c_str() );
+    LOG (Logger::ERR, getSslError("SSL handshake failed. ").c_str() );
     return false;
   }
 
@@ -122,6 +125,27 @@ bool SslConnection::listen( const int maxPendingQueueLen )
   return m_tcpConnection.listen(maxPendingQueueLen);
 }
 
+
+int SslConnection::accept()
+{
+  TRACE;
+
+  int client_socket = m_tcpConnection.accept();
+  if ( client_socket == -1)
+    return client_socket;
+
+  if ( SSL_accept(m_sslHandle) == -1 ) {
+    getSslError("SSL accept failed. ");
+    return -1;
+  }
+
+  if ( SSL_set_fd(m_sslHandle, client_socket) == 0 ) {
+    getSslError("SSL set connection socket failed. ");
+    return -1;
+  }
+
+  return client_socket;
+}
 
 /// @todo this function shall be refactored
 bool SslConnection::disconnect()

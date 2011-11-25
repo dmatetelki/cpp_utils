@@ -43,6 +43,7 @@ public:
 
   bool bind();
   bool listen( const int maxPendingQueueLen = 64 );
+  int accept();
 
   int getSocket() const;
 
