@@ -83,7 +83,6 @@ void Poll::acceptClient()
 
   int client_socket = m_connection->accept();
 
-
   if ( client_socket == -1 ) {
     return;
   }

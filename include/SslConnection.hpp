@@ -57,9 +57,11 @@ private:
   SslConnection& operator=(const SslConnection&);
 
   bool initHandle();
+  void setHandle(SSL *handle);
   std::string getSslError(const std::string &msg);
   bool loadCertificates( const std::string certificateFile,
                          const std::string keyFile );
+  void showCertificates();
 
 
   TcpConnection   m_tcpConnection;

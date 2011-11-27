@@ -78,7 +78,7 @@ Connection* SslConnection::clone(const int socket)
   TRACE;
 
   SslConnection *conn = new SslConnection( socket, m_message->clone(), m_bufferLength );
-  conn->initClientContext();
+  conn->setHandle(m_sslHandle);
   return conn;
 }
 
@@ -90,20 +90,15 @@ bool SslConnection::connect()
   if ( !m_tcpConnection.connect() )
     return false;
 
-//   if ( !initHandlers() )
-//     return false;
-
   if ( SSL_set_fd(m_sslHandle, m_tcpConnection.getSocket() ) == 0 ) {
-    getSslError("SSL set connection socket failed. ");
+    LOG( Logger::ERR, getSslError("SSL set connection socket failed. ").c_str() );
     return -1;
   }
 
-  LOG( Logger::INFO, "itt" );
   if ( SSL_connect (m_sslHandle) != 1 ) {
     LOG (Logger::ERR, getSslError("SSL handshake failed. ").c_str() );
     return false;
   }
-  LOG( Logger::INFO, "de itt mar nem?" );
 
   return true;
 }
@@ -113,14 +108,7 @@ bool SslConnection::bind()
 {
   TRACE;
 
-  if ( !m_tcpConnection.bind() )
-    return false;
-
-//   if ( !initHandlers() )
-//     return false;
-
-
-  return true;
+  return m_tcpConnection.bind();
 }
 
 
@@ -139,21 +127,15 @@ int SslConnection::accept()
   if ( client_socket == -1)
     return client_socket;
 
-  LOG( Logger::INFO, "server itt");
-
   if ( SSL_set_fd(m_sslHandle, client_socket) == 0 ) {
-    getSslError("SSL set connection socket failed. ");
+    LOG( Logger::ERR, getSslError("SSL set connection socket failed. ").c_str() );
     return -1;
   }
-
-  LOG( Logger::INFO, "server itt 2");
 
   if ( SSL_accept(m_sslHandle) == -1 ) {
-    getSslError("SSL accept failed. ");
+    LOG( Logger::ERR, getSslError("SSL accept failed. ").c_str() );
     return -1;
   }
-
-  LOG( Logger::INFO, "server itt 3");
 
   return client_socket;
 }
@@ -203,7 +185,7 @@ bool SslConnection::initServerContext( const std::string certificateFile,
 {
   TRACE;
 
-  m_sslContext = SSL_CTX_new (SSLv2_server_method ());
+  m_sslContext = SSL_CTX_new (SSLv3_method ());
   if ( m_sslContext == NULL ) {
     LOG (Logger::ERR, getSslError("Creating SSL context failed. ").c_str() );
     return false;
@@ -211,6 +193,8 @@ bool SslConnection::initServerContext( const std::string certificateFile,
 
   if ( !loadCertificates(certificateFile, privateKeyFile) )
     return false;
+
+  showCertificates();
 
   return initHandle();
 }
@@ -220,7 +204,7 @@ bool SslConnection::initClientContext()
 {
   TRACE;
 
-  m_sslContext = SSL_CTX_new (SSLv23_client_method ());
+  m_sslContext = SSL_CTX_new (SSLv3_method ());
   if ( m_sslContext == NULL ) {
     LOG (Logger::ERR, getSslError("Creating SSL context failed. ").c_str() );
     return false;
@@ -259,10 +243,9 @@ bool SslConnection::receive()
   if ( length > 0 )
     return m_message->buildMessage( (void*)m_buffer, (size_t)length);
 
-  unsigned long sslErrNo = ERR_peek_error();
-  if ( length == 0 && sslErrNo == SSL_ERROR_ZERO_RETURN ) {
-    LOG( Logger::INFO, "Underlying connection has been closed.");
-    return true;
+  if ( length == 0 ) {
+    LOG( Logger::INFO, "SSL connection has been closed.");
+    return false;
   }
 
   LOG (Logger::ERR, getSslError("SSL read failed. ").c_str() );
@@ -287,18 +270,22 @@ bool SslConnection::initHandle()
     return false;
   }
 
-
-  if ( !SSL_set_fd (m_sslHandle, m_tcpConnection.getSocket()) ) {
-    LOG (Logger::ERR, getSslError("Connect the SSL object with a file descriptor failed. ").c_str() );
-    return false;
-  }
-
   return true;
+}
+
+
+void SslConnection::setHandle(SSL *handle)
+{
+  TRACE;
+
+  m_sslHandle = handle;
 }
 
 
 std::string SslConnection::getSslError(const std::string &msg)
 {
+  TRACE;
+
   char buffer[130];
   unsigned long sslErrNo = ERR_get_error();
 
@@ -311,46 +298,50 @@ std::string SslConnection::getSslError(const std::string &msg)
 bool SslConnection::loadCertificates( const std::string certificateFile,
                                       const std::string privateKeyFile )
 {
-  if ( SSL_CTX_use_certificate_file(m_sslContext, certificateFile.c_str(), SSL_FILETYPE_PEM) != 1 )
-  {
-    getSslError("SSL certificate file loading failed. ");
+  TRACE;
+
+  if ( SSL_CTX_use_certificate_file(m_sslContext,
+                                    certificateFile.c_str(),
+                                    SSL_FILETYPE_PEM) != 1 ) {
+    LOG (Logger::ERR, getSslError("SSL certificate file loading failed. ").c_str() );
     return false;
   }
 
-  if ( SSL_CTX_use_PrivateKey_file(m_sslContext, privateKeyFile.c_str(), SSL_FILETYPE_PEM) != 1 )
-  {
-    getSslError("SSL private Key file loading failed. ");
+  if ( SSL_CTX_use_PrivateKey_file(m_sslContext,
+                                   privateKeyFile.c_str(),
+                                   SSL_FILETYPE_PEM) != 1 ) {
+    LOG (Logger::ERR, getSslError("SSL private Key file loading failed. ").c_str() );
     return false;
   }
 
-  if ( SSL_CTX_check_private_key(m_sslContext) != 1 )
-  {
-    LOG( Logger::ERR, "Private key does not match the public certificate\n");
+  if ( SSL_CTX_check_private_key(m_sslContext) != 1 ) {
+    LOG( Logger::ERR, getSslError("Private key does not match the public certificate.\n").c_str() );
     return false;
   }
 
   return true;
 }
 
-/*---------------------------------------------------------------------*/
-/*--- ShowCerts - print out certificates.                           ---*/
-/*---------------------------------------------------------------------*/
-// void showCertificates(SSL* ssl)
-// {   X509 *cert;
-//     char *line;
-//
-//     cert = SSL_get_peer_certificate(ssl); /* Get certificates (if available) */
-//     if ( cert != NULL )
-//     {
-//         printf("Server certificates:\n");
-//         line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
-//         printf("Subject: %s\n", line);
-//         free(line);
-//         line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
-//         printf("Issuer: %s\n", line);
-//         free(line);
-//         X509_free(cert);
-//     }
-//     else
-//         printf("No certificates.\n");
-// }
+
+void SslConnection::showCertificates()
+{
+  TRACE;
+
+  X509 *cert = SSL_get_peer_certificate(m_sslHandle);
+  if (cert == NULL) {
+    LOG( Logger::ERR, "SSL get peer certificate failed. " );
+    return;
+  }
+
+  char *line;
+  line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
+  LOG( Logger::DEBUG, std::string("Server certificate, subject: \"").append(line).append("\"").c_str() );
+  free(line);
+
+  line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
+  LOG( Logger::DEBUG, std::string("Server certificate, issuer: \"").append(line).append("\"").c_str() );
+  free(line);
+
+  X509_free(cert);
+  return;
+}

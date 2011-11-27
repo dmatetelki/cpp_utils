@@ -100,7 +100,13 @@ int main(int argc, char* argv[] )
 
   EchoMessage msg;
   SslConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
-  conn.initServerContext(argv[3], argv[4]);
+  if ( !conn.initServerContext(argv[3], argv[4]) ) {
+    LOG_STATIC( Logger::ERR, "Failed to init SSL context, exiting...");
+    SslConnection::destroy();
+    Logger::destroy();
+    return 1;
+  }
+
   socketServer = new SocketServer(&conn);
 
   if ( !socketServer->start() ) {
