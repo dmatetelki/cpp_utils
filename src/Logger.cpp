@@ -18,9 +18,9 @@ void Logger::setLogLevel ( const LogLevel loglevel )
 }
 
 
-void Logger::setNoPrefix ()
+void Logger::usePrefix( const bool use )
 {
-  m_usePrefix = false;
+  m_usePrefix = use;
 }
 
 

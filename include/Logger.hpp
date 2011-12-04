@@ -6,6 +6,7 @@
 #include <string>
 #include <set>
 #include <ostream>
+#include "Common.hpp"
 
 
 class Logger : public Singleton<Logger>
@@ -31,7 +32,7 @@ public:
   static void init(std::ostream& log_stream );
 
   static void setLogLevel ( const LogLevel loglevel );
-  static void setNoPrefix ();
+  static void usePrefix ( const bool use = true );
 
   inline static LogLevel getLoglevel() { return m_logLevel; }
 
@@ -63,42 +64,73 @@ private:
 
 #ifdef NO_TRACE
 
-  #define TRACE           (void)0
-  #define TRACE_STATIC    (void)0
-  #define LOG(level, msg) (void)0
-  #define LOG_STATIC(level, msg) (void)0
+  #define TRACE           (void)0;
+  #define TRACE_STATIC    (void)0;
 
 #else
 
   #define TRACE \
     if ( Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
-    Logger::getInstance()->log_pointer( \
-      this, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-    else (void)0
+      Logger::getInstance()->log_pointer( \
+        this, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
 
   #define TRACE_STATIC \
     if ( Logger::getInstance()->getLoglevel() >= Logger::FINEST ) \
-    Logger::getInstance()->log_pointer( \
-      0, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-    else (void)0
-
-  #define LOG(level, msg) \
-  if ( Logger::getInstance()->getLoglevel() >= level ) \
-  Logger::getInstance()->log_string( \
-    level, this, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-  else (void)0
-
-  #define LOG_STATIC(level, msg) \
-  if ( Logger::getInstance()->getLoglevel() >= level ) \
-  Logger::getInstance()->log_string( \
-    level, 0, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-  else (void)0
+      Logger::getInstance()->log_pointer( \
+        0, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
 
 #endif
 
 
-/// @todo remove this
-#define MSG(text) Logger::getInstance()->msg(text)
+#ifdef NO_LOGS
+
+  #define LOG(level, msg) (void)0;
+  #define LOG_STATIC(level, msg) (void)0;
+
+  #define LOG_BEGIN(level) {
+  #define LOG_PROP(name, value) (void)0;
+  #define LOG_END(msg) }
+  #define LOG_STATIC_END(msg) }
+
+#else
+
+  #define LOG(level, msg) \
+    if ( Logger::getInstance()->getLoglevel() >= level ) \
+      Logger::getInstance()->log_string( \
+        level, this, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+
+  #define LOG_STATIC(level, msg) \
+    if ( Logger::getInstance()->getLoglevel() >= level ) \
+      Logger::getInstance()->log_string( \
+        level, 0, msg, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
+
+  #define LOG_BEGIN(level) \
+    if (Logger::getInstance()->getLoglevel() >= level) { \
+      Logger::LogLevel loglevel(level); \
+      std::string prop; \
+
+  #define LOG_SPROP(variable) \
+    prop.append(" ").append(#variable).append(":").append(TToStr(variable));
+
+  #define LOG_PROP(name, value) \
+    prop.append(" ").append(name).append(":").append(TToStr(value));
+
+  #define LOG_END(msg) \
+    std::string logline(msg); \
+    logline.append(prop); \
+    Logger::getInstance()->log_string(loglevel, this, logline.c_str(), \
+      __FILE__, __LINE__, __PRETTY_FUNCTION__ ); }
+
+  #define LOG_END_STATIC(msg) \
+    std::string logline(msg); \
+    logline.append(prop); \
+    Logger::getInstance()->log_string(loglevel, 0, logline.c_str(), \
+      __FILE__, __LINE__, __PRETTY_FUNCTION__ ); }
+
+#endif
+
+
+#define MSG(text) Logger::getInstance()->msg(text);
 
 
 #endif // LOGGER_HPP
