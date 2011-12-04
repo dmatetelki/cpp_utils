@@ -17,10 +17,10 @@ class ThreadPool
     ThreadPool();
     ~ThreadPool();
 
-    void pushTask( Task* task );
+    void pushTask(Task* task);
     Task* popTask();
 
-    void pushWorkerThread( Thread * thread);
+    void pushWorkerThread(Thread * thread);
     void startWorkerThreads();
 
     void stop();
@@ -28,8 +28,8 @@ class ThreadPool
 
   private:
 
-    ThreadPool( const ThreadPool& );
-    ThreadPool& operator=( const ThreadPool& );
+    ThreadPool(const ThreadPool&);
+    ThreadPool& operator=(const ThreadPool&);
 
     std::vector<Thread*> m_threads;
     ConcurrentDeque<Task*> m_tasks;
