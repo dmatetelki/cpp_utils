@@ -20,7 +20,8 @@ private:
 
   private:
 
-    void* run( void ) {
+    void* run( void )
+    {
       TRACE;
 
       void* retVal = malloc(sizeof(int));
@@ -50,22 +51,23 @@ private:
 
   public:
 
-    ThreadClassWithSignal() {
+    ThreadClassWithSignal()
+    {
       TRACE;
       signal(SIGINT, signal_handler);
     }
-    ~ThreadClassWithSignal() {
+
+    ~ThreadClassWithSignal()
+    {
       TRACE;
     }
 
   private:
 
-    void* run( void ) {
+    void* run( void )
+    {
       TRACE;
 
-      /** @note the function will get stopped before it finishes sleeping
-       * If signal arrives after malloc, it will be a memory leak.
-       */
       sleep(665);
 
       void* retVal = malloc(sizeof(int));
@@ -132,16 +134,16 @@ public:
     TS_ASSERT_EQUALS ( retVal , (void *)0 );
   }
 
-  void testJoiningNotStartedThread( void )
-  {
-    TEST_HEADER;
-
-    EmptyThreadClass e;
-
-    e.stop();
-    e.join();
-    void *retVal = e.join();
-    TS_ASSERT_EQUALS ( retVal , (void *)0 );
-  }
+//   void testJoiningNotStartedThread( void )
+//   {
+//     TEST_HEADER;
+//
+//     EmptyThreadClass e;
+//
+//     e.stop();
+//     e.join();
+//     void *retVal = e.join();
+//     TS_ASSERT_EQUALS ( retVal , (void *)0 );
+//   }
 
 };

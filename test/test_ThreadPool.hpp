@@ -1,9 +1,8 @@
 #include <cxxtest/TestSuite.h>
 
-// #include <time.h> // time
-
 #include "Task.hpp"
 #include "Thread.hpp"
+#include "WorkerThread.hpp"
 #include "ThreadPool.hpp"
 #include "Common.hpp"
 #include "Fixture.hpp"
@@ -18,54 +17,17 @@ class TestThreadPoolSuite : public CxxTest::TestSuite
 
   public:
 
-    DummyTask() { /*m_timeOut = 5*/; TRACE; }
+    DummyTask()
+    {
+      TRACE;
+    }
 
     void run()
     {
       TRACE;
-//       m_startedToRun = time(NULL);
       LOG( Logger::FINEST, "I'm a task...");
-//       m_startedToRun = 0;
     }
 
-    bool isItStucked () const
-    {
-      TRACE;
-      return false;
-    }
-  };
-
-  class WorkerThread : public Thread
-  {
-
-  public:
-
-    WorkerThread( ThreadPool& tp )
-      : m_tp(tp)
-    {
-      TRACE;
-    }
-
-    private:
-
-      void* run()
-      {
-        TRACE;
-        while ( m_isRunning )
-        {
-          Task* task(0);
-          try {
-            task = m_tp.popTask();
-            task->run();
-            delete task;
-          } catch (CancelledException) {
-            LOG( Logger::FINEST, "Now I die.");
-          }
-        }
-        return 0;
-      }
-
-      ThreadPool& m_tp;
   };
 
 

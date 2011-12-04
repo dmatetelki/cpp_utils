@@ -61,8 +61,7 @@ void ThreadPool::stop()
     (*it)->stop();
   }
 
-  /// @todo solve this!
-//   m_tasks.cancel( );
+  m_tasks.cancel();
 }
 
 
