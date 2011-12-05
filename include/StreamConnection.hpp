@@ -25,7 +25,7 @@ public:
 
 protected:
 
-  StreamConnection(std::string host = std::string("invalid"), int port = -1)
+  StreamConnection(const std::string host, const std::string port)
    : Connection(host, port) {};
 
 

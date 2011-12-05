@@ -27,7 +27,7 @@ public:
                   const size_t   bufferLength = 1024 );
 
   SslConnection ( const std::string   host,
-                  const int           port,
+                  const std::string   port,
                   Message            *message,
                   const size_t        bufferLength = 1024 );
 

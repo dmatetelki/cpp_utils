@@ -3,7 +3,7 @@
 #include "Logger.hpp"
 
 
-Connection::Connection(std::string host, int port)
+Connection::Connection(const std::string host, const std::string port)
   : m_host(host)
   , m_port(port)
 {
@@ -24,7 +24,7 @@ std::string Connection::getHost() const
 }
 
 
-int Connection::getPort() const
+std::string Connection::getPort() const
 {
   TRACE;
   return m_port;
@@ -38,7 +38,7 @@ void Connection::setHost(const std::string host)
 }
 
 
-void Connection::setPort(const int port)
+void Connection::setPort(const std::string port)
 {
   TRACE;
   m_port = port;

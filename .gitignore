@@ -26,4 +26,4 @@ other/client
 other/server
 other/sslclient
 other/sslserver
-
+other/server.*

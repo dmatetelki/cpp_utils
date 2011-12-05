@@ -27,7 +27,7 @@ class TestFixture : public CxxTest::GlobalFixture
 
 static TestFixture testCommon;
 
-/// @todo remove the dot at prev line from cxxtest
+
 #define TEST_HEADER \
   MSG( std::string("\n+++ ").append(__PRETTY_FUNCTION__).append(" +++\n").c_str());
 

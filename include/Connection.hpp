@@ -17,20 +17,20 @@ public:
   virtual bool receive() = 0;
 
   std::string getHost() const;
-  int getPort() const;
+  std::string getPort() const;
 
   void setHost(const std::string host);
-  void setPort(const int port);
+  void setPort(const std::string port);
 
   virtual int getSocket() const = 0;
 
 
 protected:
 
-  Connection(std::string host = std::string("invalid"), int port = -1);
+  Connection(const std::string host, const std::string port);
 
   std::string m_host;
-  int         m_port;
+  std::string m_port;
 
 
 private:

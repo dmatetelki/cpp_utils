@@ -3,10 +3,15 @@
 #include "Logger.hpp"
 #include "Common.hpp"
 
+#include "AddrInfo.hpp"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h> // inet_ntop
 #include <sys/select.h>
+
+#include <string.h> // strerror
+#include <errno.h> // errno
 
 
 Socket::Socket(const int domain,
@@ -16,8 +21,6 @@ Socket::Socket(const int domain,
   , m_domain(domain)
   , m_type(type)
   , m_protocol(protocol)
-  , m_addr()
-  , m_addrLen(0)
 {
   TRACE;
 }
@@ -28,8 +31,6 @@ Socket::Socket(const int socket)
   , m_domain(-1)
   , m_type(-1)
   , m_protocol(-1)
-  , m_addr()
-  , m_addrLen(0)
 {
   TRACE;
 
@@ -49,10 +50,11 @@ bool Socket::createSocket()
 
   m_socket = socket(m_domain, m_type, m_protocol);
   if ( m_socket == -1 ) {
-    LOG( Logger::ERR,  errnoToString("ERROR creating socket. ").c_str() );
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not create socket.");
     return false;
   }
-
   return true;
 }
 
@@ -70,40 +72,52 @@ bool Socket::closeSocket()
 }
 
 
-bool Socket::connectToHost( const std::string host,
-                            const std::string port )
+bool Socket::connect(struct addrinfo *servinfo)
 {
   TRACE;
 
-  struct addrinfo *results(0);
-  if ( !Socket::getHostInfo(host, port, &results) )
+  if (servinfo == 0)
     return false;
 
-  Socket::printHostDetails(results);
-
-  if ( !connectToFirstAddress(results) )
+  if (::connect(m_socket, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not connect to peer.");
     return false;
+  }
 
-  freeaddrinfo(results);
+  std::string address, service;
+  if ( AddrInfo::convertNameInfo( servinfo, address, service) ) {
+    LOG_BEGIN(Logger::INFO)
+      LOG_PROP("Host", address)
+      LOG_PROP("Port", service)
+    LOG_END("Connected to peer.");
+  }
   return true;
 }
 
 
-bool Socket::bindToHost( const std::string host,
-                         const std::string port )
+bool Socket::bind(struct addrinfo *servinfo )
 {
   TRACE;
 
-  struct addrinfo *results(0);
-  if ( !Socket::getHostInfo(host, port, &results) )
+  if (servinfo == 0)
     return false;
 
-  Socket::printHostDetails(results);
-
-  if ( !bindToFirstAddress(results) )
+  if (::bind(m_socket, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not bind name to socket.");
     return false;
+  }
 
-  freeaddrinfo(results);
+  std::string address, service;
+  if ( AddrInfo::convertNameInfo( servinfo, address, service) ) {
+    LOG_BEGIN(Logger::INFO)
+      LOG_PROP("Host", address)
+      LOG_PROP("Port", service)
+    LOG_END("Binded to socket.");
+  }
   return true;
 }
 
@@ -113,7 +127,9 @@ bool Socket::listen ( const int maxPendingQueueLen )
   TRACE;
 
   if ( ::listen(m_socket, maxPendingQueueLen) == -1 ) {
-    LOG( Logger::ERR, errnoToString("ERROR listening. ").c_str() );
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not listen on socket.");
     return false;
   }
   return true;
@@ -125,10 +141,11 @@ bool Socket::send ( const void *message, const int length )
   TRACE;
 
   if ( ::send(m_socket, message, length, MSG_NOSIGNAL) == -1 ) {
-    LOG( Logger::ERR, errnoToString("ERROR sending. ").c_str() );
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not send message to socket.");
     return false;
   }
-
   return true;
 }
 
@@ -138,59 +155,13 @@ bool Socket::receive( void *buffer, const int bufferLen, ssize_t *msgLen )
   TRACE;
 
   *msgLen = recv(m_socket, buffer, bufferLen, 0);
-
-  return (*msgLen > 0);
-}
-
-
-int Socket::getSocket() const
-{
-  TRACE;
-  return m_socket;
-}
-
-
-bool Socket::connectToFirstAddress(struct addrinfo *servinfo)
-{
-  TRACE;
-
-  for ( struct addrinfo *it = servinfo; it != 0; it = it->ai_next)
-    if (::connect(m_socket, it->ai_addr, it->ai_addrlen) != -1) {
-      std::string address, service;
-      if ( convertNameInfo( it->ai_addr, it->ai_addrlen, address, service) ) {
-        LOG( Logger::INFO, std::string("Connected to ").
-                              append(address).append(":").
-                              append(service).c_str() );
-      }
-      return true;
-    }
-
-  LOG( Logger::ERR, "Could not connect to host, connection refused." );
-  return false;
-}
-
-
-bool Socket::bindToFirstAddress(struct addrinfo *servinfo )
-{
-  TRACE;
-
-  for ( struct addrinfo *it = servinfo; it != 0; it = it->ai_next)
-    if (bind(m_socket, it->ai_addr, it->ai_addrlen) == 0) {
-      memcpy(&m_addr, it->ai_addr, it->ai_addrlen);
-      m_addrLen = it->ai_addrlen;
-
-      std::string address, service;
-      if ( Socket::convertNameInfo( &m_addr, m_addrLen, address, service) ) {
-        LOG( Logger::INFO, std::string("Binded to ").
-                              append(address).append(":").
-                              append(service).c_str() );
-      }
-      return true;
-    }
-
-  LOG( Logger::ERR, "Could not bind to host. Address already in use." );
-
-  return false;
+  if (*msgLen == -1) {
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not read from socket.");
+    return false;
+  }
+  return true;
 }
 
 
@@ -210,90 +181,8 @@ void Socket::getPeerName( std::string &host,
 }
 
 
-bool Socket::getHostInfo( const std::string host,
-                          const std::string port,
-                          struct addrinfo **servinfo)
+int Socket::getSocket() const
 {
-  TRACE_STATIC;
-
-  struct addrinfo hints;
-
-  memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_UNSPEC;    // Allow IPv4 or IPv6
-  hints.ai_socktype = SOCK_DGRAM; // Datagram socket
-  hints.ai_flags = AI_PASSIVE;    // For wildcard IP address
-  hints.ai_protocol = 0;          // Any protocol
-  hints.ai_canonname = NULL;
-  hints.ai_addr = NULL;
-  hints.ai_next = NULL;
-
-
-  struct addrinfo *results;
-  int status = getaddrinfo(host.c_str(), port.c_str(), &hints, &results);
-
-  if (status != 0) {
-    LOG_STATIC( Logger::ERR, std::string("Error at network address translation: ").
-                                  append(gai_strerror(status)).c_str() ) ;
-    return false;
-  }
-
-  *servinfo = results;
-  return true;
-}
-
-
-void Socket::printHostDetails(struct addrinfo *servinfo)
-{
-  TRACE_STATIC;
-
-  int counter(0);
-  for ( struct addrinfo *it = servinfo; it != 0; it = it->ai_next) {
-
-    counter++;
-    void *addr;
-    std::string ipver;
-
-    if ( it->ai_family == AF_INET) { // IPv4
-      struct sockaddr_in *ipv4 = (struct sockaddr_in *)it->ai_addr;
-      addr = &(ipv4->sin_addr);
-      ipver = "IPv4";
-    } else { // IPv6
-      struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)it->ai_addr;
-      addr = &(ipv6->sin6_addr);
-      ipver = "IPv6";
-    }
-    char ipstr[INET6_ADDRSTRLEN];
-    inet_ntop( it->ai_family, addr, ipstr, sizeof ipstr );
-
-    LOG_STATIC( Logger::DEBUG, std::string(TToStr(counter)).append(". address is ").
-                                     append(ipver).append(": ").
-                                     append(ipstr).c_str() );
-  }
-}
-
-
-bool Socket::convertNameInfo(sockaddr* addr,
-                             socklen_t addrLen,
-                             std::string &retAddr,
-                             std::string &retService)
-{
-  TRACE_STATIC;
-
-  char hostBuffer[256];
-  char serviceBuffer[256];
-
-  int status = getnameinfo( addr, addrLen,
-                            hostBuffer, sizeof(hostBuffer),
-                            serviceBuffer, sizeof(serviceBuffer),
-                            NI_NAMEREQD );
-
-  if ( status != 0 ) {
-    LOG_STATIC( Logger::WARNING, std::string("Could not resolve hostname. ").
-                            append(gai_strerror(status)).c_str() );
-    return false;
-  }
-
-  retAddr.assign(hostBuffer);
-  retService.assign(serviceBuffer);
-  return true;
+  TRACE;
+  return m_socket;
 }

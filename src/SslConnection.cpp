@@ -29,7 +29,7 @@ void SslConnection::destroy()
 SslConnection::SslConnection (  const int      socket,
                                 Message       *message,
                                 const size_t   bufferLength )
-  : StreamConnection()
+  : StreamConnection("invalid", "invalid")
   , m_tcpConnection(socket, message, 0)
   , m_message(message)
   , m_buffer(0)
@@ -48,7 +48,7 @@ SslConnection::SslConnection (  const int      socket,
 
 
 SslConnection::SslConnection (  const std::string   host,
-                                const int           port,
+                                const std::string   port,
                                 Message            *message,
                                 const size_t        bufferLength )
   : StreamConnection(host, port)
@@ -99,6 +99,8 @@ bool SslConnection::connect()
     LOG (Logger::ERR, getSslError("SSL handshake failed. ").c_str() );
     return false;
   }
+
+  showCertificates();
 
   return true;
 }
@@ -193,8 +195,6 @@ bool SslConnection::initServerContext( const std::string certificateFile,
 
   if ( !loadCertificates(certificateFile, privateKeyFile) )
     return false;
-
-  showCertificates();
 
   return initHandle();
 }

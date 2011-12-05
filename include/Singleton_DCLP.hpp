@@ -21,20 +21,15 @@ public:
 
     static T* getInstance()
     {
-      if ( not m_instance )
-      {
+      if ( not m_instance ) {
         std::lock_guard<std::mutex> guard(m_lock);
-
-        if ( not m_instance ) // re-check pinstance
-        {
-          // Douglas Schmidt proposed volatile
-          // to prevent "agressive optimalizations"
+        if ( not m_instance ) {
           volatile T *temp = new T();
           m_instance = (T*)temp;
         }
       }
 
-      return m_instance;
+      return (T*)m_instance;
     }
 
     static void destroy()
@@ -47,12 +42,12 @@ private:
 
     static std::mutex m_lock;
 
-    // instance chack shall not be cached
+    // instance double check shall not be cached
     static volatile T* m_instance;
 };
 
 template<class T> std::mutex Singleton_DCLP<T>::m_lock;
-template<class T> T* Singleton_DCLP<T>::m_instance = 0;
+template<class T> volatile T* Singleton_DCLP<T>::m_instance = 0;
 
 
 #endif // SINGLETON_DCLP_HPP

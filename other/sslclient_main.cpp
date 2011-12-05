@@ -1,4 +1,4 @@
-// gpp sslclient_main.cpp -o sslclient -I../include ../src/Logger.cpp ../src/Thread.cpp ../src/Socket.cpp -lpthread ../src/SocketClient.cpp  ../src/Poll.cpp ../src/Connection.cpp ../src/SslConnection.cpp -lssl -lcrypto ../src/TcpConnection.cpp
+// gpp sslclient_main.cpp -o sslclient -I../include ../src/Logger.cpp ../src/Thread.cpp ../src/Socket.cpp -lpthread ../src/SocketClient.cpp  ../src/Poll.cpp ../src/Connection.cpp ../src/SslConnection.cpp -lssl -lcrypto ../src/TcpConnection.cpp ../src/Addrinfo.cpp
 
 
 #include "Logger.hpp"
@@ -77,7 +77,7 @@ int main(int argc, char* argv[] )
   bool finished = false;
 
   SimpleMessage msg(&finished);
-  SslConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
+  SslConnection conn(argv[1], argv[2], &msg);
   conn.initClientContext();
   SocketClient socketClient(&conn);
 

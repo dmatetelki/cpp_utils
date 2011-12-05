@@ -3,11 +3,13 @@
 #include "Logger.hpp"
 #include "Common.hpp"
 
+#include "AddrInfo.hpp"
+
 
 TcpConnection::TcpConnection (  const int      socket,
                                 Message       *message,
                                 const size_t   bufferLength )
-  : StreamConnection()
+  : StreamConnection("invalid", "invalid")
   , m_socket(socket)
   , m_message(message)
   , m_buffer(0)
@@ -18,7 +20,7 @@ TcpConnection::TcpConnection (  const int      socket,
   std::string host, port;
   m_socket.getPeerName(host, port);
   setHost(host);
-  setPort(StrToT<int>(port));
+  setPort(port);
 
   m_buffer = new unsigned char[m_bufferLength];
   m_message->setConnection(this);
@@ -26,7 +28,7 @@ TcpConnection::TcpConnection (  const int      socket,
 
 
 TcpConnection::TcpConnection (  const std::string   host,
-                                const int           port,
+                                const std::string   port,
                                 Message            *message,
                                 const size_t        bufferLength )
   : StreamConnection(host, port)
@@ -63,14 +65,34 @@ Connection* TcpConnection::clone(const int socket)
 bool TcpConnection::connect()
 {
   TRACE;
-  return m_socket.connectToHost(m_host, TToStr(m_port));
+
+  AddrInfo addrInfo;
+  if (!addrInfo.getHostInfo(m_host, m_port))
+    return false;
+
+  addrInfo.printHostDetails();
+
+  if (!m_socket.connect(addrInfo[0]))
+    return false;
+
+  return true;
 }
 
 
 bool TcpConnection::bind()
 {
   TRACE;
-  return m_socket.bindToHost(m_host, TToStr(m_port));
+
+  AddrInfo addrInfo;
+  if (!addrInfo.getHostInfo(m_host, m_port))
+    return false;
+
+  addrInfo.printHostDetails();
+
+  if (!m_socket.bind(addrInfo[0]))
+    return false;
+
+  return true;
 }
 
 
@@ -87,6 +109,7 @@ int TcpConnection::accept()
   sockaddr clientAddr;
   socklen_t clientAddrLen;
 
+  /// @todo move accept to Socket
   int client_socket = ::accept( getSocket(), &clientAddr, &clientAddrLen ) ;
 
   if ( client_socket == -1 ) {
@@ -101,8 +124,8 @@ int TcpConnection::accept()
 bool TcpConnection::disconnect()
 {
   TRACE;
-  if ( getSocket() == -1 )
-    return false;
+//   if ( getSocket() == -1 )
+//     return false;
 
   return m_socket.closeSocket();
 }
@@ -121,10 +144,7 @@ bool TcpConnection::receive()
 
   ssize_t length;
   if ( !m_socket.receive(m_buffer, m_bufferLength, &length) ) {
-    if (length == -1) {
-      LOG( Logger::ERR, errnoToString("ERROR reading from socket. ").c_str() );
-    }
-    else if (length == 0) {
+    if (length == 0) {
       LOG( Logger::INFO, std::string("Connection closed by ").
                       append(m_host).append(":").append(TToStr(m_port)).c_str() );
     }

@@ -1,4 +1,4 @@
-//  gpp sslserver_main.cpp  -o sslserver -I../include ../src/Logger.cpp ../src/Socket.cpp -ggdb ../src/SocketServer.cpp ../src/Connection.cpp ../src/Poll.cpp  ../src/TcpConnection.cpp ../src/SslConnection.cpp  -lssl -lcrypto
+//  gpp sslserver_main.cpp  -o sslserver -I../include ../src/Logger.cpp ../src/Socket.cpp -ggdb ../src/SocketServer.cpp ../src/Connection.cpp ../src/Poll.cpp  ../src/TcpConnection.cpp ../src/SslConnection.cpp  -lssl -lcrypto  ../src/Addrinfo.cpp
 
 #include "Logger.hpp"
 #include "Common.hpp"
@@ -99,7 +99,7 @@ int main(int argc, char* argv[] )
   SslConnection::init();
 
   EchoMessage msg;
-  SslConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
+  SslConnection conn(argv[1], argv[2], &msg);
   if ( !conn.initServerContext(argv[3], argv[4]) ) {
     LOG_STATIC( Logger::ERR, "Failed to init SSL context, exiting...");
     SslConnection::destroy();
