@@ -2,7 +2,6 @@
 #define TIMER_HPP
 
 
-#include <signal.h> // sigset_t
 #include <time.h> // timer_t
 #include <map>
 
@@ -29,18 +28,22 @@ public:
   virtual ~Timer();
 
   timer_t createTimer( TimerUser *m_timerUser,
-                       const time_t interval_sec,
-                       const long interval_nsec = 0,
-                       const time_t initExpr_sec = 0,
-                       const long initExpr_nsec = 0 );
+                       clockid_t clockId = CLOCK_MONOTONIC );
 
+  bool setTimer( timer_t timerId,
+                 const time_t interval_sec,
+                 const long interval_nsec = 0,
+                 const time_t initExpr_sec = 0,
+                 const long initExpr_nsec = 0 );
 
-  void stopTimer( timer_t timerId );
+  bool stopTimer( timer_t timerId );
 
 
 private:
 
-  std::map< timer_t, TimerUser* > m_timerUsers;
+  typedef std::map<timer_t, TimerUser*> TimerUserMap;
+
+  TimerUserMap m_timerUsers;
 
 }; // class Timer
 

@@ -18,9 +18,28 @@ private:
   {
   public:
 
-    DummyTimerUser() : m_counter( 0 ) { TRACE; }
-    void timerExpired() { /*TRACE;*/ m_counter += 100; }
-    void timerDestroyed() { TRACE; m_counter++; };
+    DummyTimerUser()
+      : m_counter(0)
+    {
+      TRACE;
+    }
+
+    ~DummyTimerUser()
+    {
+      TRACE;
+    }
+
+    void timerExpired()
+    {
+      TRACE;
+      m_counter++;
+    }
+
+    void timerDestroyed()
+    {
+      TRACE;
+      m_counter += 100;
+    }
 
     int m_counter;
 
@@ -28,79 +47,57 @@ private:
 
   public:
 
-  void testBasicTimerThread( void )
+  void testBasicTimer( void )
   {
     TEST_HEADER;
 
     DummyTimerUser timerUser;
     Timer timer;
 
-    timer.createTimer( &timerUser, 2 );
+    timer_t timerId = timer.createTimer( &timerUser );
+    timer.setTimer(timerId, 2);
     sleep( 4 );
-    // no destroy
 
-    TS_ASSERT_EQUALS( timerUser.m_counter, 100 );
-  }
-
-
-  void testStopTimerThread( void )
-  {
-    TEST_HEADER;
-
-    DummyTimerUser timerUser;
-    Timer timer;
-
-    timer_t timerId = timer.createTimer( &timerUser, 10 );
-    sleep( 2 );
-    timer.stopTimer( timerId );
-
+    // one expiration, no destroy
     TS_ASSERT_EQUALS( timerUser.m_counter, 1 );
   }
 
 
-
-
-  void testPeriodicTimerThread( void )
+  void testStopTimer( void )
   {
     TEST_HEADER;
 
     DummyTimerUser timerUser;
     Timer timer;
 
-    timer_t timerId = timer.createTimer( &timerUser,
-                                         1, 0,
-                                         1, 0 );
+    timer_t timerId = timer.createTimer( &timerUser );
+    timer.setTimer(timerId, 10);
+    sleep( 2 );
+    timer.stopTimer( timerId );
+
+    // no expiration, just destroy
+    TS_ASSERT_EQUALS( timerUser.m_counter, 100 );
+  }
+
+
+  void testPeriodicTimer( void )
+  {
+    TEST_HEADER;
+
+    DummyTimerUser timerUser;
+    Timer timer;
+
+    timer_t timerId = timer.createTimer( &timerUser );
+
+    // after 1 sec, expire periodically at each sec
+    timer.setTimer(timerId, 1, 0, 1, 0);
 
     sleep(4);
     timer.stopTimer( timerId );
 
-    sleep(4); // did it really stopped?
-    TS_ASSERT_EQUALS( timerUser.m_counter, 400 + 1 );
+    // 1 destroy(stop) + 3 expiration  (+- 1)
+    TS_ASSERT_DELTA( timerUser.m_counter, 103, 1 );
 
-  }
-
-
-  void testTimerThreadHighFreq( void )
-  {
-    TEST_HEADER;
-
-    int nano = 1000000000; // 10^9
-    int freq = 200;
-
-    DummyTimerUser timerUser;
-    Timer timer;
-
-    timer_t timerId = timer.createTimer( &timerUser,
-                                         1, 0,
-                                         0, nano / freq );
-
-    int circle = 2;
-    sleep( 1 + circle );
-    timer.stopTimer( timerId );
-
-    TS_ASSERT_DELTA ( timerUser.m_counter, 100 * freq * circle + 1,
-                      (100 * freq * circle + 1 ) * 0.9);
-    sleep(1);
   }
 
   void testOneUserManyTimers( void )
@@ -110,31 +107,18 @@ private:
     DummyTimerUser timerUser;
     Timer timer;
 
-    timer_t timerId = timer.createTimer( &timerUser,
-                                         1, 0,
-                                         1, 0 );
+    timer_t timerId = timer.createTimer( &timerUser );
+    timer.setTimer(timerId, 1);
 
-    timer_t timerId2 = timer.createTimer( &timerUser,
-                                          1, 0,
-                                          2, 0 );
+    timer_t timerId2 = timer.createTimer( &timerUser );
+    timer.setTimer(timerId2, 2);
 
-    timer_t timerId3 = timer.createTimer( &timerUser,
-                                          1, 0,
-                                          3, 0 );
+    timer_t timerId3 = timer.createTimer( &timerUser );
+    timer.setTimer(timerId3, 3);
 
     sleep(4);
     timer.stopTimer( timerId );
-    TS_ASSERT_EQUALS( timerUser.m_counter, 400 + 200 + 200 + 1 );
-
-    sleep(4);
-    TS_ASSERT_EQUALS( timerUser.m_counter, 400 + 200 + 200 + 200 + 100 + 1 );
-
-    timer.stopTimer( timerId2 );
-    timer.stopTimer( timerId3 );
-
-    sleep(1);
-    TS_ASSERT_EQUALS( timerUser.m_counter, 400 + 200 + 200 + 200 + 100 + 3 );
-
+    TS_ASSERT_EQUALS( timerUser.m_counter, 100 + 1 + 1 + 1 );
   }
 
   void testMenyUserManyTimers( void )
@@ -147,83 +131,58 @@ private:
 
     Timer timer;
 
-    timer_t timerId = timer.createTimer( &timerUser,
-                                         1, 0,
-                                         1, 0 );
+    timer_t timerId = timer.createTimer( &timerUser );
+    timer.setTimer(timerId, 1);
+    timer_t timerId2 = timer.createTimer( &timerUser );
+    timer.setTimer(timerId2, 2);
+    timer_t timerId3 = timer.createTimer( &timerUser );
+    timer.setTimer(timerId3, 3);
 
-    timer_t timerId2 = timer.createTimer( &timerUser,
-                                          1, 0,
-                                          2, 0 );
-
-    timer_t timerId3 = timer.createTimer( &timerUser,
-                                          1, 0,
-                                          3, 0 );
-
-    timer_t timerId4 = timer.createTimer( &timerUser2,
-                                         1, 0,
-                                         1, 0 );
-
-    timer_t timerId5 = timer.createTimer( &timerUser2,
-                                          1, 0,
-                                          2, 0 );
-
+    timer_t timerId4 = timer.createTimer( &timerUser2 );
+    timer.setTimer(timerId4, 1);
+    timer_t timerId5 = timer.createTimer( &timerUser2 );
+    timer.setTimer(timerId5, 2);
 
     sleep(4);
-    TS_ASSERT_EQUALS( timerUser.m_counter, 400 + 200 + 200 );
-    TS_ASSERT_EQUALS( timerUser2.m_counter, 400 + 200 );
-
-    timer.stopTimer( timerId );
-    timer.stopTimer( timerId2 );
-    timer.stopTimer( timerId3 );
-    timer.stopTimer( timerId4 );
-    timer.stopTimer( timerId5 );
-
-    sleep(1);
+    TS_ASSERT_EQUALS( timerUser.m_counter, 1 + 1 + 1 );
+    TS_ASSERT_EQUALS( timerUser2.m_counter, 1 + 1 );
+    TS_ASSERT_EQUALS( timerUser3.m_counter, 0 );
   }
 
-    void test2Timer( void )
+  void test2Timer( void )
   {
     TEST_HEADER;
 
     DummyTimerUser timerUser;
-    DummyTimerUser timerUser2;
-    DummyTimerUser itmerUser3;
 
     Timer timer;
     Timer timer2;
 
-    timer_t timerId = timer.createTimer( &timerUser,
-                                         1, 0,
-                                         1, 0 );
+    timer_t timerId = timer.createTimer( &timerUser );
+    timer.setTimer(timerId, 1);
+    timer_t timerId2 = timer.createTimer( &timerUser );
+    timer.setTimer(timerId2, 2);
+    timer_t timerId3 = timer.createTimer( &timerUser );
+    timer.setTimer(timerId3, 3);
 
-    timer_t timerId2 = timer.createTimer( &timerUser,
-                                          1, 0,
-                                          2, 0 );
-
-    timer_t timerId3 = timer2.createTimer( &timerUser,
-                                          1, 0,
-                                          3, 0 );
-
-    timer_t timerId4 = timer.createTimer( &timerUser2,
-                                         1, 0,
-                                         1, 0 );
-
-    timer_t timerId5 = timer2.createTimer( &timerUser2,
-                                          1, 0,
-                                          2, 0 );
+    timer_t timerId4 = timer.createTimer( &timerUser );
+    timer2.setTimer(timerId4, 1);
+    timer_t timerId5 = timer.createTimer( &timerUser );
+    timer2.setTimer(timerId5, 2);
 
 
     sleep(4);
-    TS_ASSERT_EQUALS( timerUser.m_counter, 400 + 200 + 200 );
-    TS_ASSERT_EQUALS( timerUser2.m_counter, 400 + 200 );
+    TS_ASSERT_EQUALS( timerUser.m_counter, (1 + 1 + 1) + (1 + 1) );
+  }
 
-    timer.stopTimer( timerId );
-    timer.stopTimer( timerId2 );
-    timer2.stopTimer( timerId3 );
-    timer.stopTimer( timerId4 );
-    timer2.stopTimer( timerId5 );
+  void testStopTimerWhichIsNotInTheMap()
+  {
+    TEST_HEADER;
 
-    sleep(1);
+    Timer timer;
+
+    timer_t timerId = (void*)1234;
+    TS_ASSERT_EQUALS(timer.stopTimer( timerId ), false);
   }
 
 };
