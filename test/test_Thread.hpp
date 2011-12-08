@@ -68,6 +68,7 @@ private:
     {
       TRACE;
 
+      // we will got a signal before the sleep finishes
       sleep(665);
 
       void* retVal = malloc(sizeof(int));
@@ -122,7 +123,7 @@ private:
 
 public:
 
-  void eetestEmpty( void )
+  void testEmpty( void )
   {
     TEST_HEADER;
 
@@ -134,16 +135,51 @@ public:
     TS_ASSERT_EQUALS ( retVal , (void *)0 );
   }
 
-//   void testJoiningNotStartedThread( void )
-//   {
-//     TEST_HEADER;
-//
-//     EmptyThreadClass e;
-//
-//     e.stop();
-//     e.join();
-//     void *retVal = e.join();
-//     TS_ASSERT_EQUALS ( retVal , (void *)0 );
-//   }
+  void testJoiningNotStartedThread( void )
+  {
+    TEST_HEADER;
+
+    EmptyThreadClass e;
+
+    e.stop();
+    e.join();
+    void *retVal = e.join();
+    TS_ASSERT_EQUALS ( retVal , (void *)0 );
+  }
+
+private:
+
+  class EndlessThread : public Thread
+  {
+
+  private:
+
+    void* run( void )
+    {
+      TRACE;
+
+      /** @note if m_isRunning is not volatile, it can be optimized out
+        * to a while(1), since body of the loop does not modifies it
+        */
+      while ( m_isRunning )
+        sleep(1);
+
+      return 0;
+    }
+  };
+
+public:
+
+  void testStatusIsVolatile()
+  {
+    TEST_HEADER;
+
+    EndlessThread et;
+    et.start();
+
+    sleep(1);
+    et.stop();
+    et.join();
+  }
 
 };
