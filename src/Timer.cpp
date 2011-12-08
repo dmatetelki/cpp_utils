@@ -70,6 +70,13 @@ bool Timer::setTimer( timer_t timerId,
                       const time_t initExpr_sec,
                       const long initExpr_nsec )
 {
+  if (m_timerUsers.find(timerId) == m_timerUsers.end() ) {
+    LOG_BEGIN(Logger::ERR)
+      LOG_SPROP(timerId)
+    LOG_END("TimerId is not in the map.");
+    return false;
+  }
+
   itimerspec its;
   its.it_value.tv_sec = interval_sec;
   its.it_value.tv_nsec = interval_nsec;

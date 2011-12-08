@@ -185,4 +185,14 @@ private:
     TS_ASSERT_EQUALS(timer.stopTimer( timerId ), false);
   }
 
+  void testSetTimerWhichIsNotInTheMap()
+  {
+    TEST_HEADER;
+
+    Timer timer;
+
+    timer_t timerId = (void*)1234;
+    TS_ASSERT_EQUALS(timer.setTimer( timerId, 1 ), false);
+  }
+
 };
