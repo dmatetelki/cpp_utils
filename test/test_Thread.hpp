@@ -129,6 +129,7 @@ public:
 
     EmptyThreadClass e;
     e.start();
+    sleep(1);
 
     e.stop();
     void *retVal = e.join();
