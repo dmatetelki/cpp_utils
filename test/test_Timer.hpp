@@ -2,197 +2,48 @@
 
 #include "Fixture.hpp"
 
-
 #include "Timer.hpp"
-#include "Thread.hpp"
 
-#include <signal.h>
-#include <climits>
 
 class TestTimer : public CxxTest::TestSuite
 {
+public:
 
-private:
-
-  class DummyTimerUser : public TimerUser
-  {
-  public:
-
-    DummyTimerUser()
-      : m_counter(0)
-    {
-      TRACE;
-    }
-
-    ~DummyTimerUser()
-    {
-      TRACE;
-    }
-
-    void timerExpired()
-    {
-      TRACE;
-      m_counter++;
-    }
-
-    void timerDestroyed()
-    {
-      TRACE;
-      m_counter += 100;
-    }
-
-    int m_counter;
-
-  }; // class TimerUser
-
-  public:
-
-  void testBasicTimer( void )
+  void testCreateTimerInvalidClockId()
   {
     TEST_HEADER;
 
-    DummyTimerUser timerUser;
-    Timer timer;
+    TimerUser *timerUser(0);
+    clockid_t clockId(10); // clockid_t is valid [0,6]
 
-    timer_t timerId = timer.createTimer( &timerUser );
-    timer.setTimer(timerId, 2);
-    sleep( 4 );
-
-    // one expiration, no destroy
-    TS_ASSERT_EQUALS( timerUser.m_counter, 1 );
+    TS_ASSERT_EQUALS(Timer::createTimer(timerUser, clockId), (void*)0);
   }
 
-
-  void testStopTimer( void )
+  void testSetTimerInvalidTimerId()
   {
     TEST_HEADER;
 
-    DummyTimerUser timerUser;
-    Timer timer;
-
-    timer_t timerId = timer.createTimer( &timerUser );
-    timer.setTimer(timerId, 10);
-    sleep( 2 );
-    timer.stopTimer( timerId );
-
-    // no expiration, just destroy
-    TS_ASSERT_EQUALS( timerUser.m_counter, 100 );
+    timer_t timerId((void*)0);
+    TS_ASSERT_EQUALS(Timer::setTimer(timerId, 1), false);
   }
 
-
-  void testPeriodicTimer( void )
+  void testSetTimerInvalidTime()
   {
     TEST_HEADER;
 
-    DummyTimerUser timerUser;
-    Timer timer;
-
-    timer_t timerId = timer.createTimer( &timerUser );
-
-    // after 1 sec, expire periodically at each sec
-    timer.setTimer(timerId, 1, 0, 1, 0);
-
-    sleep(4);
-    timer.stopTimer( timerId );
-
-    // 1 destroy(stop) + 3 expiration  (+- 1)
-    TS_ASSERT_DELTA( timerUser.m_counter, 103, 1 );
-
+    timer_t timerId = Timer::createTimer(0, 1);
+    TS_ASSERT_EQUALS(Timer::setTimer(timerId, -1), false);
+    Timer::deleteTimer(timerId);
   }
 
-  void testOneUserManyTimers( void )
+  void testDeleteTimerInvalidTimerId()
   {
     TEST_HEADER;
 
-    DummyTimerUser timerUser;
-    Timer timer;
-
-    timer_t timerId = timer.createTimer( &timerUser );
-    timer.setTimer(timerId, 1);
-
-    timer_t timerId2 = timer.createTimer( &timerUser );
-    timer.setTimer(timerId2, 2);
-
-    timer_t timerId3 = timer.createTimer( &timerUser );
-    timer.setTimer(timerId3, 3);
-
-    sleep(4);
-    timer.stopTimer( timerId );
-    TS_ASSERT_EQUALS( timerUser.m_counter, 100 + 1 + 1 + 1 );
-  }
-
-  void testMenyUserManyTimers( void )
-  {
-    TEST_HEADER;
-
-    DummyTimerUser timerUser;
-    DummyTimerUser timerUser2;
-    DummyTimerUser timerUser3;
-
-    Timer timer;
-
-    timer_t timerId = timer.createTimer( &timerUser );
-    timer.setTimer(timerId, 1);
-    timer_t timerId2 = timer.createTimer( &timerUser );
-    timer.setTimer(timerId2, 2);
-    timer_t timerId3 = timer.createTimer( &timerUser );
-    timer.setTimer(timerId3, 3);
-
-    timer_t timerId4 = timer.createTimer( &timerUser2 );
-    timer.setTimer(timerId4, 1);
-    timer_t timerId5 = timer.createTimer( &timerUser2 );
-    timer.setTimer(timerId5, 2);
-
-    sleep(4);
-    TS_ASSERT_EQUALS( timerUser.m_counter, 1 + 1 + 1 );
-    TS_ASSERT_EQUALS( timerUser2.m_counter, 1 + 1 );
-    TS_ASSERT_EQUALS( timerUser3.m_counter, 0 );
-  }
-
-  void test2Timer( void )
-  {
-    TEST_HEADER;
-
-    DummyTimerUser timerUser;
-
-    Timer timer;
-    Timer timer2;
-
-    timer_t timerId = timer.createTimer( &timerUser );
-    timer.setTimer(timerId, 1);
-    timer_t timerId2 = timer.createTimer( &timerUser );
-    timer.setTimer(timerId2, 2);
-    timer_t timerId3 = timer.createTimer( &timerUser );
-    timer.setTimer(timerId3, 3);
-
-    timer_t timerId4 = timer.createTimer( &timerUser );
-    timer2.setTimer(timerId4, 1);
-    timer_t timerId5 = timer.createTimer( &timerUser );
-    timer2.setTimer(timerId5, 2);
-
-
-    sleep(4);
-    TS_ASSERT_EQUALS( timerUser.m_counter, (1 + 1 + 1) + (1 + 1) );
-  }
-
-  void testStopTimerWhichIsNotInTheMap()
-  {
-    TEST_HEADER;
-
-    Timer timer;
-
-    timer_t timerId = (void*)1234;
-    TS_ASSERT_EQUALS(timer.stopTimer( timerId ), false);
-  }
-
-  void testSetTimerWhichIsNotInTheMap()
-  {
-    TEST_HEADER;
-
-    Timer timer;
-
-    timer_t timerId = (void*)1234;
-    TS_ASSERT_EQUALS(timer.setTimer( timerId, 1 ), false);
+    timer_t timerId((void*)0);
+    TS_ASSERT_EQUALS(Timer::deleteTimer(timerId), false);
   }
 
 };
+
+
