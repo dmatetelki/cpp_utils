@@ -20,7 +20,7 @@ class Message
 public:
 
   Message( Connection *connection,
-           void             *msgParam = 0 )
+           void       *msgParam = 0 )
     : m_connection(connection)
     , m_param(msgParam)
     , m_buffer()
@@ -55,8 +55,8 @@ protected:
 
 
   Connection   *m_connection;
-  void               *m_param;
-  std::string         m_buffer;
+  void         *m_param;
+  std::string   m_buffer;
 
 private:
 
