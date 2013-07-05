@@ -13,6 +13,7 @@
 #include <string>
 
 #include <time.h> // nanosleep
+#include <unistd.h> // sleep
 
 
 
@@ -78,7 +79,7 @@ int main(int argc, char* argv[] )
 
   SimpleMessage msg(&finished);
 
-  TcpConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
+  TcpConnection conn(argv[1], argv[2], &msg);
   SocketClient socketClient(&conn);
 
   if ( !socketClient.connect() ) {

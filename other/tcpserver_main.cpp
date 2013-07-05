@@ -12,6 +12,8 @@
 #include <iostream>
 #include <string>
 
+#include <unistd.h> // sleep
+
 class EchoMessage : public Message
 {
 public:
@@ -79,7 +81,7 @@ int main(int argc, char* argv[] )
 //   Logger::setNoPrefix();
 
   EchoMessage msg;
-  TcpConnection conn(argv[1], StrToT<int>(argv[2]), &msg);
+  TcpConnection conn(argv[1], argv[2], &msg);
   SocketServer socketServer(&conn);
 
   if ( !socketServer.start() ) {
