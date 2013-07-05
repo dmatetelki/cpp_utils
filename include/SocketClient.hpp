@@ -27,15 +27,18 @@ private:
   protected:
 
     // overridig poll's behaviour
-    virtual void acceptClient();
+    void acceptClient();
 
     // overridig poll's behaviour
-    virtual void handleClient( const int );
+    void handleClient( const int );
 
   private:
 
     PollerThread(const PollerThread&);
     PollerThread& operator=(const PollerThread&);
+
+    // overridig poll's behaviour
+    void removeTimeoutedConnections();
 
     void* run();
 

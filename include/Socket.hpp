@@ -25,6 +25,7 @@ public:
   bool connect(addrinfo *servinfo);
   bool bind(addrinfo *servinfo);
   bool listen( const int maxPendingQueueLen = 64 );
+  bool accept( int &client_socket );
 
   bool send( const void *message, const int lenght );
   bool receive ( void* buffer, const int bufferLen, ssize_t *msgLen );

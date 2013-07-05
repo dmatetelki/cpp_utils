@@ -38,6 +38,11 @@ void SocketClient::PollerThread::handleClient( const int )
 }
 
 
+void SocketClient::PollerThread::removeTimeoutedConnections()
+{
+}
+
+
 void* SocketClient::PollerThread::run()
 {
   TRACE;

@@ -10,6 +10,8 @@
 #include <arpa/inet.h> // inet_ntop
 #include <sys/select.h>
 
+#include <unistd.h>
+
 #include <string.h> // strerror
 #include <errno.h> // errno
 
@@ -63,11 +65,21 @@ bool Socket::closeSocket()
 {
   TRACE;
 
-  /// @note are the return values of shutdown and close meaningful?
-  shutdown(m_socket, SHUT_RDWR);
-  close(m_socket);
-  m_socket = -1;
+  if (shutdown(m_socket, SHUT_RDWR) == -1) {
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not shutdown socket.");
+    return false;
+  }
 
+  if (close(m_socket) == -1) {
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not close socket.");
+    return false;
+  }
+
+  m_socket = -1;
   return true;
 }
 
@@ -84,14 +96,6 @@ bool Socket::connect(struct addrinfo *servinfo)
       LOG_PROP("Error message", strerror(errno))
     LOG_END("Could not connect to peer.");
     return false;
-  }
-
-  std::string address, service;
-  if ( AddrInfo::convertNameInfo( servinfo, address, service) ) {
-    LOG_BEGIN(Logger::INFO)
-      LOG_PROP("Host", address)
-      LOG_PROP("Port", service)
-    LOG_END("Connected to peer.");
   }
   return true;
 }
@@ -110,19 +114,11 @@ bool Socket::bind(struct addrinfo *servinfo )
     LOG_END("Could not bind name to socket.");
     return false;
   }
-
-  std::string address, service;
-  if ( AddrInfo::convertNameInfo( servinfo, address, service) ) {
-    LOG_BEGIN(Logger::INFO)
-      LOG_PROP("Host", address)
-      LOG_PROP("Port", service)
-    LOG_END("Binded to socket.");
-  }
   return true;
 }
 
 
-bool Socket::listen ( const int maxPendingQueueLen )
+bool Socket::listen(const int maxPendingQueueLen)
 {
   TRACE;
 
@@ -130,6 +126,28 @@ bool Socket::listen ( const int maxPendingQueueLen )
     LOG_BEGIN(Logger::ERR)
       LOG_PROP("Error message", strerror(errno))
     LOG_END("Could not listen on socket.");
+    return false;
+  }
+  return true;
+}
+
+
+bool Socket::accept(int &client_socket)
+{
+  TRACE;
+  sockaddr clientAddr;
+  socklen_t clientAddrLen;
+
+  /// @bug This needs to be investigated ASAP: if the m_socket is not used before accept, it fails.
+  LOG_BEGIN(Logger::INFO)
+    LOG_SPROP(m_socket)
+  LOG_END("Accept mystery.");
+
+  client_socket = ::accept( m_socket, &clientAddr, &clientAddrLen ) ;
+  if ( client_socket == -1 ) {
+    LOG_BEGIN(Logger::ERR)
+      LOG_PROP("Error message", strerror(errno))
+    LOG_END("Could not accept connection on socket.");
     return false;
   }
   return true;
