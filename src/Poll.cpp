@@ -10,10 +10,12 @@
 
 
 Poll::Poll( StreamConnection  *connection,
-            const nfds_t       maxClient )
-  : m_connection(connection)
+            const nfds_t       maxClient,
+            const int          timeOut )
+  : m_timeOut(timeOut)
+  , m_connection(connection)
   , m_polling(false)
-  , m_connectionPool()
+  , m_connections()
   , m_maxclients(maxClient)
   , m_fds(0)
   , m_num_of_fds(0)
@@ -36,28 +38,25 @@ void Poll::startPolling()
   TRACE;
 
   m_polling = true;
-  struct timespec tm = {0,1000};
-
   while ( m_polling ) {
 
-    nanosleep(&tm, &tm) ;
-
-    /// @todo put poll into Socket class
-    int ret = poll( m_fds , m_maxclients, 1000);
+    int ret = poll( m_fds , m_maxclients, m_timeOut);
 
     if ( ret == -1 ) {
         LOG( Logger::ERR, errnoToString("ERROR polling. ").c_str() );
-        /// @todo reconnect
+        /// @todo reconnect at client case?
         return;
     }
-    if ( ret == 0 )  // timeout
-      continue;
 
-    for ( nfds_t i = 0; i < m_num_of_fds; ++i )
-      if ( m_fds[i].revents != 0 )
-        m_fds[i].fd == m_connection->getSocket() ?
-            acceptClient() :
-            handleClient(m_fds[i].fd);
+    if ( ret != 0 ) {  // not timeout
+      for ( nfds_t i = 0; i < m_num_of_fds; ++i )
+        if ( m_fds[i].revents != 0 )
+          m_fds[i].fd == m_connection->getSocket() ?
+              acceptClient() :
+              handleClient(m_fds[i].fd);
+    }
+
+    removeTimeoutedConnections();
 
   } // while
 }
@@ -81,19 +80,20 @@ void Poll::acceptClient()
 {
   TRACE;
 
-  int client_socket = m_connection->accept();
-
-  if ( client_socket == -1 ) {
+  int client_socket(-1);
+  if (!m_connection->accept(client_socket))
     return;
-  }
 
-  Connection *connection = m_connection->clone(client_socket);
+  StreamConnection *streamConnection = dynamic_cast<StreamConnection*>(
+                                          m_connection->clone(client_socket));
 
-  LOG( Logger::INFO, std::string("New client connected: ").
-                          append(connection->getHost()).append(":").
-                          append(TToStr(connection->getPort())).c_str() );
+  LOG_BEGIN(Logger::INFO)
+    LOG_PROP("host", streamConnection->getHost())
+    LOG_PROP("port", streamConnection->getPort())
+    LOG_PROP("socket", client_socket)
+  LOG_END("New client connected.");
 
-  m_connectionPool[client_socket] = connection;
+  m_connections[client_socket] = streamConnection;
   addFd( client_socket, POLLIN | POLLPRI );
 }
 
@@ -102,21 +102,52 @@ void Poll::handleClient( const int socket )
 {
   TRACE;
 
-  typename ConnectionPool::iterator it = m_connectionPool.find(socket);
-
-  if ( it == m_connectionPool.end() || !it->second->receive() ) {
-    delete it->second;
-    m_connectionPool.erase(it);
-    removeFd(socket);
+  ConnectionMap::iterator it = m_connections.find(socket);
+  if (it == m_connections.end()) {
+    LOG_BEGIN(Logger::ERR)
+      LOG_SPROP(socket)
+    LOG_END("Socket not found in map.");
+    return;
   }
+
+  if (!it->second->receive())
+    removeConnection(socket, it);
+}
+
+
+void Poll::removeTimeoutedConnections()
+{
+  TRACE;
+
+  if (m_connections.empty())
+    return;
+
+  ConnectionMap::iterator it;
+  for (it = m_connections.begin(); it != m_connections.end(); )
+    if (it->second->closed()) {
+      it = removeConnection(it->second->getSocket(), it++);
+    } else {
+      ++it;
+    }
+}
+
+
+Poll::ConnectionMap::iterator Poll::removeConnection(int socket, ConnectionMap::iterator it)
+{
+  TRACE;
+
+  removeFd(socket);
+  delete it->second;
+  return m_connections.erase(it);
 }
 
 
 bool Poll::addFd( const int socket, const short events )
 {
   TRACE;
-  LOG( Logger::DEBUG, std::string("Adding socket: ").
-                        append(TToStr(socket)).c_str() );
+  LOG_BEGIN(Logger::DEBUG)
+    LOG_SPROP(socket)
+  LOG_END("Adding socket.");
 
   if (m_num_of_fds >= m_maxclients )
     return false;
@@ -133,8 +164,9 @@ bool Poll::addFd( const int socket, const short events )
 bool Poll::removeFd( const int socket )
 {
   TRACE;
-  LOG( Logger::DEBUG, std::string("Removing socket: ").
-                        append(TToStr(socket)).c_str() );
+  LOG_BEGIN(Logger::DEBUG)
+    LOG_SPROP(socket)
+  LOG_END("Removing socket.");
 
   unsigned int i = 0 ;
   while (i < m_maxclients && m_fds[i].fd != socket )
