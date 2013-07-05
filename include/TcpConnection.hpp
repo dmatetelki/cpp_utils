@@ -13,9 +13,11 @@ class TcpConnection : public StreamConnection
 {
 public:
 
-  TcpConnection ( const int      socket,
-                  Message       *message,
-                  const size_t   bufferLength = 1024 );
+  enum State {
+    OPEN,
+    CLOSED
+  };
+
 
   TcpConnection ( const std::string   host,
                   const std::string   port,
@@ -32,13 +34,22 @@ public:
   bool send( const void* message, const size_t length );
   bool receive();
 
-  int getSocket() const;
-
   bool bind();
   bool listen( const int maxPendingQueueLen = 64 );
-  int accept();
+  bool accept(int &client_socket);
+
+  int getSocket() const;
+  void setState(const State state);
+
+  bool closed() const;
+  Message *getMessage() const;
+  size_t getBufferLength() const;
 
 private:
+
+  TcpConnection ( const int      socket,
+                  Message       *message,
+                  const size_t   bufferLength = 1024 );
 
   TcpConnection(const TcpConnection&);
   TcpConnection& operator=(const TcpConnection&);
@@ -47,6 +58,7 @@ private:
   Message        *m_message;
   unsigned char  *m_buffer;
   size_t          m_bufferLength;
+  State           m_state;
 };
 
 

@@ -6,27 +6,6 @@
 #include "AddrInfo.hpp"
 
 
-TcpConnection::TcpConnection (  const int      socket,
-                                Message       *message,
-                                const size_t   bufferLength )
-  : StreamConnection("invalid", "invalid")
-  , m_socket(socket)
-  , m_message(message)
-  , m_buffer(0)
-  , m_bufferLength(bufferLength)
-{
-  TRACE;
-
-  std::string host, port;
-  m_socket.getPeerName(host, port);
-  setHost(host);
-  setPort(port);
-
-  m_buffer = new unsigned char[m_bufferLength];
-  m_message->setConnection(this);
-}
-
-
 TcpConnection::TcpConnection (  const std::string   host,
                                 const std::string   port,
                                 Message            *message,
@@ -36,6 +15,7 @@ TcpConnection::TcpConnection (  const std::string   host,
   , m_message(message)
   , m_buffer(0)
   , m_bufferLength(bufferLength)
+  , m_state(CLOSED)
 {
   TRACE;
   m_socket.createSocket();
@@ -47,18 +27,21 @@ TcpConnection::TcpConnection (  const std::string   host,
 TcpConnection::~TcpConnection()
 {
   TRACE;
-  disconnect();
-  delete m_buffer;
+
+  if (m_state == OPEN)
+    disconnect();
+
+  delete[] m_buffer;
 }
 
 
 Connection* TcpConnection::clone(const int socket)
 {
-  Connection *conn = new TcpConnection(socket,
-                                       m_message->clone(),
-                                       m_bufferLength );
+  TcpConnection *tcpConnection = new TcpConnection(socket,
+                                                   m_message->clone(),
+                                                   m_bufferLength );
 
-  return conn;
+  return tcpConnection;
 }
 
 
@@ -75,6 +58,16 @@ bool TcpConnection::connect()
   if (!m_socket.connect(addrInfo[0]))
     return false;
 
+  std::string address, service;
+  if ( AddrInfo::convertNameInfo( addrInfo[0], address, service) ) {
+    LOG_BEGIN(Logger::INFO)
+      LOG_PROP("Host", address)
+      LOG_PROP("Port", service)
+      LOG_PROP("Socket", m_socket.getSocket())
+    LOG_END("Connected to peer.");
+  }
+
+  m_state = OPEN;
   return true;
 }
 
@@ -92,6 +85,13 @@ bool TcpConnection::bind()
   if (!m_socket.bind(addrInfo[0]))
     return false;
 
+  std::string address, service;
+  if ( AddrInfo::convertNameInfo( addrInfo[0], address, service) ) {
+    LOG_BEGIN(Logger::INFO)
+      LOG_PROP("Host", address)
+      LOG_PROP("Port", service)
+    LOG_END("Binded to socket.");
+  }
   return true;
 }
 
@@ -99,34 +99,27 @@ bool TcpConnection::bind()
 bool TcpConnection::listen( const int maxPendingQueueLen )
 {
   TRACE;
-  return m_socket.listen( maxPendingQueueLen );
+
+  if (m_socket.listen(maxPendingQueueLen)) {
+    m_state = OPEN;
+    return true;
+  }
+
+  return false;
 }
 
 
-int TcpConnection::accept()
+bool TcpConnection::accept(int &client_socket)
 {
   TRACE;
-  sockaddr clientAddr;
-  socklen_t clientAddrLen;
-
-  /// @todo move accept to Socket
-  int client_socket = ::accept( getSocket(), &clientAddr, &clientAddrLen ) ;
-
-  if ( client_socket == -1 ) {
-    LOG( Logger::ERR, errnoToString("ERROR accepting. ").c_str() );
-    return -1;
-  }
-
-  return client_socket;
+  return m_socket.accept(client_socket);
 }
 
 
 bool TcpConnection::disconnect()
 {
   TRACE;
-//   if ( getSocket() == -1 )
-//     return false;
-
+  m_state = CLOSED;
   return m_socket.closeSocket();
 }
 
@@ -143,17 +136,24 @@ bool TcpConnection::receive()
   TRACE;
 
   ssize_t length;
-  if ( !m_socket.receive(m_buffer, m_bufferLength, &length) ) {
-    if (length == 0) {
-      LOG( Logger::INFO, std::string("Connection closed by ").
-                      append(m_host).append(":").append(TToStr(m_port)).c_str() );
-    }
+  if (!m_socket.receive(m_buffer, m_bufferLength, &length))
+    return false;
+
+  if (length == 0) {
+    LOG_BEGIN(Logger::INFO)
+      LOG_PROP("Host", m_host)
+      LOG_PROP("Port", m_port)
+      LOG_PROP("Socket", m_socket.getSocket())
+    LOG_END("Connection closed by peer.");
     return false;
   }
 
-  LOG ( Logger::DEBUG, std::string("Received: ").
-                      append(TToStr(length)).append(" bytes from: ").
-                      append(m_host).append(":").append(TToStr(m_port)).c_str() );
+  LOG_BEGIN(Logger::INFO)
+    LOG_PROP("Host", m_host)
+    LOG_PROP("Port", m_port)
+    LOG_PROP("Socket", m_socket.getSocket())
+    LOG_PROP("Bytes", length)
+  LOG_END("Received message from peer.");
 
   return m_message->buildMessage( (void*)m_buffer, (size_t)length);
 }
@@ -162,6 +162,55 @@ bool TcpConnection::receive()
 int TcpConnection::getSocket() const
 {
   TRACE;
-
   return m_socket.getSocket();
+}
+
+
+void TcpConnection::setState(const State state)
+{
+  TRACE;
+  m_state = state;
+}
+
+
+bool TcpConnection::closed() const
+{
+  TRACE;
+  return m_state == CLOSED;
+}
+
+
+Message* TcpConnection::getMessage() const
+{
+  TRACE;
+  return m_message;
+}
+
+
+size_t TcpConnection::getBufferLength() const
+{
+  TRACE;
+  return m_bufferLength;
+}
+
+
+TcpConnection::TcpConnection (  const int      socket,
+                                Message       *message,
+                                const size_t   bufferLength )
+  : StreamConnection("invalid", "invalid")
+  , m_socket(socket)
+  , m_message(message)
+  , m_buffer(0)
+  , m_bufferLength(bufferLength)
+  , m_state(OPEN)
+{
+  TRACE;
+
+  std::string host, port;
+  m_socket.getPeerName(host, port);
+  setHost(host);
+  setPort(port);
+
+  m_buffer = new unsigned char[m_bufferLength];
+  m_message->setConnection(this);
 }
