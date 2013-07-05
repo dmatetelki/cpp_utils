@@ -1,29 +1,43 @@
+# makefiles
+
 *CMakeCache*
 *CMakeFiles*
 *Makefile*
 *cmake
+
+# temp files
 *.a
 *.so
-*/a.out
 test.out
 */cov
 */lcov.info
 */lcov2.info
-*/core
 *.gcno
 *.gcda
-*.kdev_include_paths
+
+# testing
 test/generated_main.cpp
 test/test
 leak.log
 leak.log.core.*
+*/core
 gdb.out
-html/*
 test/testCppUtils
 test/testCppUtils.out
-*.kate-swp
+
+# doxygen
+html/*
+
+# standalone binaries
 other/client
 other/server
 other/sslclient
 other/sslserver
+
+# certificates to ssl testing
 other/server.*
+
+# kdevelop files
+.kdev4/
+*.kdev4
+*.kdev_include_paths
