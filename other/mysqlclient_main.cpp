@@ -99,14 +99,12 @@ void printResults(std::list<std::string> &results)
 {
   TRACE_STATIC;
 
-  LOG ( Logger::DEBUG, std::string("Got query result number of rows: ").
-                          append(TToStr(results.size())).c_str() );
+  LOG_BEGIN(Logger::DEBUG)
+    LOG_PROP("Number of rows", results.size())
+  LOG_END_STATIC("Got query results.");
 
-  for (std::list<std::string>::const_iterator it = results.begin();
-       it != results.end();
-       ++it ) {
-    LOG ( Logger::DEBUG, (*it).c_str() );
-  }
+  for (std::list<std::string>::const_iterator it = results.begin(); it != results.end(); ++it )
+    LOG_STATIC ( Logger::DEBUG, (*it).c_str() );
 }
 
 
@@ -142,12 +140,16 @@ int main(int argc, char* argv[] )
 
 
   // work
-  std::list<std::string> results;
   MysqlClient *c = cp.acquire();
-  if ( !c->querty("SELECT * FROM seats", results) ) {
-    LOG ( Logger::ERR, "Could not execute query." );
+  MYSQL_RES *result;
+  std::string queryLine("SELECT * FROM seats");
+  if ( !c->querty(queryLine.c_str(), queryLine.length(), &result) ) {
+    LOG_STATIC ( Logger::ERR, "Could not execute query." );
   } else {
-    printResults(results);
+    std::list<std::string> resultList;
+    c->queryResultToStringList(result, resultList);
+    printResults(resultList);
+    mysql_free_result(result);
   }
   cp.release(c);
 

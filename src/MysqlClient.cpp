@@ -1,5 +1,7 @@
 #include "MysqlClient.hpp"
 
+#include <unistd.h>
+
 #include <mysql/errmsg.h>
 
 #include "Logger.hpp"
