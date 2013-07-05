@@ -18,42 +18,16 @@ private:
       TRACE;
     }
 
-    ~DummyConnection()
+    virtual ~DummyConnection()
     {
       TRACE;
     }
 
-    Connection* clone(const int)
-    {
-      TRACE;
-      return 0;
-    }
-
-
-    bool bind()
-    {
-      TRACE;
-      return true;
-    }
-
-
-    bool send(const void*, const size_t)
-    {
-      TRACE;
-      return true;
-    }
-
-    bool receive()
-    {
-      TRACE;
-      return true;
-    }
-
-    int getSocket() const
-    {
-      TRACE;
-      return 0;
-    }
+    Connection* clone(const int) { return 0; }
+    bool bind() { return true; }
+    bool send(const void*, const size_t) { return true; }
+    bool receive() { return true; }
+    int getSocket() const { return 0; }
 
   }; // DummyConnection
 
@@ -62,6 +36,8 @@ public:
 
   void testConnection()
   {
+    TEST_HEADER;
+
     DummyConnection c("localhost", "1234");
 
     TS_ASSERT_EQUALS (c.getHost() , std::string("localhost") );
