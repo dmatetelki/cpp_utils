@@ -12,4 +12,4 @@ include_directories (../include)
 aux_source_directory(../src CPP_UTILS_LIB_SOURCES)
 
 add_library (CppUtils SHARED ${CPP_UTILS_LIB_SOURCES})
-target_link_libraries(CppUtils pthread rt gcov mysqlclient)
+target_link_libraries(CppUtils pthread rt gcov )
