@@ -4,24 +4,26 @@
 
 #include <time.h>
 
+namespace {
 
-pthread_mutex_t& MutexCtor( pthread_mutex_t& mutex )
-{
-  pthread_mutex_init( &mutex, 0 );
-  return mutex;
-}
+  pthread_mutex_t& MutexCtor( pthread_mutex_t& mutex )
+  {
+    pthread_mutex_init( &mutex, 0 );
+    return mutex;
+  }
+
+} // anonym namespace
 
 
-Mutex::Mutex( int kind )
-  : m_mutex( MutexCtor( m_mutex ) )
+Mutex::Mutex( MutexType type )
+  : m_mutex( MutexCtor( m_mutex ) ) // init with function
+  , m_type( type )
 {
   TRACE;
-  if ( kind != PTHREAD_MUTEX_DEFAULT ) {
-    /// @bug passing local variables address
-    pthread_mutexattr_t attr;
-    pthread_mutexattr_init( &attr );
-    pthread_mutexattr_settype( &attr, kind );
-    pthread_mutex_init( &m_mutex, &attr );
+  if ( type != PTHREAD_MUTEX_DEFAULT ) {
+    pthread_mutexattr_init( &m_attr );
+    pthread_mutexattr_settype( &m_attr, type );
+    pthread_mutex_init( &m_mutex, &m_attr );
   }
 }
 
@@ -56,10 +58,4 @@ int Mutex::tryLock( const long int intervalSec, const long int intervalNSec )
     timespec tspec = addTotimespec( intervalSec, intervalSec );
     return pthread_mutex_timedlock( &m_mutex, &tspec );
   }
-}
-
-
-pthread_mutex_t* Mutex::getPThreadMutex()
-{
-  return &m_mutex;
 }
