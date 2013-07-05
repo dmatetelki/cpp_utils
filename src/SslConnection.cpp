@@ -26,33 +26,12 @@ void SslConnection::destroy()
 }
 
 
-SslConnection::SslConnection (  const int      socket,
-                                Message       *message,
-                                const size_t   bufferLength )
-  : StreamConnection("invalid", "invalid")
-  , m_tcpConnection(socket, message, 0)
-  , m_message(message)
-  , m_buffer(0)
-  , m_bufferLength(bufferLength)
-  , m_sslHandle(0)
-  , m_sslContext(0)
-{
-  TRACE;
-
-  setHost(m_tcpConnection.getHost());
-  setPort(m_tcpConnection.getPort());
-
-  m_buffer = new unsigned char[m_bufferLength];
-  m_message->setConnection(this);
-}
-
-
 SslConnection::SslConnection (  const std::string   host,
                                 const std::string   port,
                                 Message            *message,
                                 const size_t        bufferLength )
   : StreamConnection(host, port)
-  , m_tcpConnection(host, port, message, 0)
+  , m_timedTcpConnection(new TimedTcpConnection(host, port, message, 0))
   , m_message(message)
   , m_buffer(0)
   , m_bufferLength(bufferLength)
@@ -70,6 +49,7 @@ SslConnection::~SslConnection()
   TRACE;
   disconnect();
   delete m_buffer;
+  delete m_timedTcpConnection;
 }
 
 
@@ -77,9 +57,14 @@ Connection* SslConnection::clone(const int socket)
 {
   TRACE;
 
-  SslConnection *conn = new SslConnection( socket, m_message->clone(), m_bufferLength );
-  conn->setHandle(m_sslHandle);
-  return conn;
+  Connection* conn = m_timedTcpConnection->clone(socket);
+
+  SslConnection *sslConn = new SslConnection(
+                                        dynamic_cast<TimedTcpConnection*>(conn),
+                                        m_message->clone(),
+                                        m_bufferLength);
+  sslConn->setHandle(m_sslHandle);
+  return sslConn;
 }
 
 
@@ -87,10 +72,10 @@ bool SslConnection::connect()
 {
   TRACE;
 
-  if ( !m_tcpConnection.connect() )
+  if ( !m_timedTcpConnection->connect() )
     return false;
 
-  if ( SSL_set_fd(m_sslHandle, m_tcpConnection.getSocket() ) == 0 ) {
+  if ( SSL_set_fd(m_sslHandle, m_timedTcpConnection->getSocket() ) == 0 ) {
     LOG( Logger::ERR, getSslError("SSL set connection socket failed. ").c_str() );
     return -1;
   }
@@ -110,36 +95,35 @@ bool SslConnection::bind()
 {
   TRACE;
 
-  return m_tcpConnection.bind();
+  return m_timedTcpConnection->bind();
 }
 
 
 bool SslConnection::listen( const int maxPendingQueueLen )
 {
   TRACE;
-  return m_tcpConnection.listen(maxPendingQueueLen);
+  return m_timedTcpConnection->listen(maxPendingQueueLen);
 }
 
 
-int SslConnection::accept()
+bool SslConnection::accept(int &client_socket)
 {
   TRACE;
 
-  int client_socket = m_tcpConnection.accept();
-  if ( client_socket == -1)
-    return client_socket;
+  if(!m_timedTcpConnection->accept(client_socket))
+    return false;
 
   if ( SSL_set_fd(m_sslHandle, client_socket) == 0 ) {
     LOG( Logger::ERR, getSslError("SSL set connection socket failed. ").c_str() );
-    return -1;
+    return false;
   }
 
   if ( SSL_accept(m_sslHandle) == -1 ) {
     LOG( Logger::ERR, getSslError("SSL accept failed. ").c_str() );
-    return -1;
+    return false;
   }
 
-  return client_socket;
+  return true;
 }
 
 /// @todo this function shall be refactored
@@ -148,8 +132,8 @@ bool SslConnection::disconnect()
   TRACE;
 
   /// @note do I have to call this?
-  if ( m_tcpConnection.getSocket() != -1 )
-    m_tcpConnection.disconnect();
+  if ( m_timedTcpConnection->getSocket() != -1 )
+    m_timedTcpConnection->disconnect();
 
   if ( m_sslHandle == 0 || m_sslContext == 0 )
     return false;
@@ -253,10 +237,38 @@ bool SslConnection::receive()
 }
 
 
+bool SslConnection::closed() const
+{
+  TRACE;
+  return m_timedTcpConnection->closed();
+}
+
+
 int SslConnection::getSocket() const
 {
   TRACE;
-  return m_tcpConnection.getSocket();
+  return m_timedTcpConnection->getSocket();
+}
+
+
+SslConnection::SslConnection(TimedTcpConnection *timedTcpConnection,
+                             Message *message,
+                             const size_t bufferLength)
+  : StreamConnection("invalid", "invalid")
+  , m_timedTcpConnection(timedTcpConnection)
+  , m_message(message)
+  , m_buffer(0)
+  , m_bufferLength(bufferLength)
+  , m_sslHandle(0)
+  , m_sslContext(0)
+{
+  TRACE;
+
+  setHost(m_timedTcpConnection->getHost());
+  setPort(m_timedTcpConnection->getPort());
+
+  m_buffer = new unsigned char[m_bufferLength];
+  m_message->setConnection(this);
 }
 
 

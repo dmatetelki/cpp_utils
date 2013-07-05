@@ -3,14 +3,10 @@
 
 
 #include "StreamConnection.hpp"
-#include "TcpConnection.hpp"
-#include "Message.hpp"
+#include "TimedTcpConnection.hpp"
 
 #include <string>
-
-// #include <openssl/rand.h>
 #include <openssl/ssl.h>
-// #include <openssl/err.h>
 
 
 
@@ -21,10 +17,6 @@ public:
 
   static void init();
   static void destroy();
-
-  SslConnection ( const int      socket,
-                  Message       *message,
-                  const size_t   bufferLength = 1024 );
 
   SslConnection ( const std::string   host,
                   const std::string   port,
@@ -47,11 +39,16 @@ public:
 
   bool bind();
   bool listen( const int maxPendingQueueLen = 64 );
-  int accept();
+  bool accept(int &client_socket);
 
+  bool closed() const;
   int getSocket() const;
 
 private:
+
+  SslConnection ( TimedTcpConnection *timedTcpConnection,
+                  Message       *message,
+                  const size_t   bufferLength = 1024 );
 
   SslConnection(const SslConnection&);
   SslConnection& operator=(const SslConnection&);
@@ -64,12 +61,12 @@ private:
   void showCertificates();
 
 
-  TcpConnection   m_tcpConnection;
-  Message        *m_message;
-  unsigned char  *m_buffer;
-  size_t          m_bufferLength;
-  SSL            *m_sslHandle;
-  SSL_CTX        *m_sslContext;
+  TimedTcpConnection *m_timedTcpConnection;
+  Message *m_message;
+  unsigned char *m_buffer;
+  size_t m_bufferLength;
+  SSL *m_sslHandle;
+  SSL_CTX *m_sslContext;
 };
 
 
