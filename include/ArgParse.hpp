@@ -71,7 +71,7 @@ public:
    * @throw std::logic_error If the addArgument was bad.
    */
   void parseArgs(int argc,
-                 char* argv[]);
+                 const char* argv[]);
 
   void parseArgs(const std::list<std::string> argList);
 
