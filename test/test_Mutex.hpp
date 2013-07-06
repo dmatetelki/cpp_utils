@@ -27,7 +27,7 @@ public:
   void testErrorCheck( void )
   {
     TEST_HEADER;
-    Mutex m(PTHREAD_MUTEX_ERRORCHECK);
+    Mutex m(Mutex::ErrorCheck);
     TS_ASSERT_EQUALS ( m.lock() , 0 );
     TS_ASSERT_EQUALS ( m.lock(), EDEADLK );
 
@@ -38,7 +38,7 @@ public:
   void testRecursive( void )
   {
     TEST_HEADER;
-    Mutex m(PTHREAD_MUTEX_RECURSIVE);
+    Mutex m(Mutex::Recursive);
     TS_ASSERT_EQUALS ( m.lock() , 0 );
     TS_ASSERT_EQUALS ( m.lock() , 0 );
 

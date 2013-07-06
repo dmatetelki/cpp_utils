@@ -48,7 +48,7 @@ public:
 
   bool bind();
   bool listen( const int maxPendingQueueLen = 64 );
-  bool accept(int &client_socket);
+  bool accept(int client_socket);
 
   bool closed() const;
 

@@ -1,5 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
+#include <unistd.h>
+
 #include "Common.hpp"
 #include "Fixture.hpp"
 

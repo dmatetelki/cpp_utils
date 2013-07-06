@@ -66,7 +66,7 @@ bool TimedTcpConnection::listen( const int maxPendingQueueLen )
 }
 
 
-bool TimedTcpConnection::accept(int &client_socket)
+bool TimedTcpConnection::accept(int client_socket)
 {
   TRACE;
   return m_tcpConnection->accept(client_socket);

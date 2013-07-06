@@ -109,7 +109,7 @@ bool TcpConnection::listen( const int maxPendingQueueLen )
 }
 
 
-bool TcpConnection::accept(int &client_socket)
+bool TcpConnection::accept(int client_socket)
 {
   TRACE;
   return m_socket.accept(client_socket);

@@ -32,7 +32,7 @@ private:
     bool connect() { return true; }
     bool disconnect() { return true; }
     bool listen(const int) { return true; }
-    bool accept(int &) { return true; }
+    bool accept(int) { return true; }
     bool closed() const { return true; }
 
   }; // StreamConnection

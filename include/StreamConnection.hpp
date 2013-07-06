@@ -19,7 +19,7 @@ public:
   virtual bool listen( const int maxPendingQueueLen = 64 ) = 0;
 
   /// @todo move accept and poll here
-  virtual int accept() = 0;
+  virtual bool accept(int socket) = 0;
 //   virtual bool poll() = 0;
 
 

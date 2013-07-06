@@ -132,7 +132,7 @@ bool Socket::listen(const int maxPendingQueueLen)
 }
 
 
-bool Socket::accept(int &client_socket)
+bool Socket::accept(int client_socket)
 {
   TRACE;
   sockaddr clientAddr;

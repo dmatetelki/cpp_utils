@@ -1,10 +1,12 @@
 #include <cxxtest/TestSuite.h>
 
+#include <unistd.h>
+
 #include "Fixture.hpp"
 
 #include "Thread.hpp"
 #include "TcpConnection.hpp"
-#include "test_Message.hpp" // SimpleMessage
+#include "SimpleMessage.hpp"
 
 #include "SocketClient.hpp"
 
@@ -82,7 +84,8 @@ public:
   {
     TEST_HEADER;
 
-    SimpleMessage message;
+    bool finished = false;
+    SimpleMessage message(&finished);
     std::string host("localhost");
     std::string service("1234");
 
@@ -104,16 +107,18 @@ public:
     TS_ASSERT_EQUALS(socketClient.send( msg1.c_str(), msg1.length()), true);
 
     // wait for the complate &handled reply
-    struct timespec tm = {0,1000};
+//     struct timespec tm = {0,1000};
     while ( !finished && socketClient.isPolling() )
-            nanosleep(&tm, &tm) ;
+      sleep(1);
+
+//             nanosleep(&tm, &tm) ;
 
     socketClient.disconnect();
 
-    TS_ASSERT_EQUALS(tcpServerThread2.bind(), false);
+//     TS_ASSERT_EQUALS(tcpServerThread2.bind(), false);
 
     TS_ASSERT_EQUALS(tcpServerThread1.disconnect(), false);
-    TS_ASSERT_EQUALS(tcpServerThread2.disconnect(), false);
+//     TS_ASSERT_EQUALS(tcpServerThread2.disconnect(), false);
   }
 
 };

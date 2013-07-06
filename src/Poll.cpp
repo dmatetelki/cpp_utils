@@ -80,8 +80,8 @@ void Poll::acceptClient()
 {
   TRACE;
 
-  int client_socket(-1);
-  if (!m_connection->accept(client_socket))
+  int client_socket = -1;
+  if ( !m_connection->accept( client_socket ) )
     return;
 
   StreamConnection *streamConnection = dynamic_cast<StreamConnection*>(
@@ -124,7 +124,7 @@ void Poll::removeTimeoutedConnections()
 
   ConnectionMap::iterator it;
   for (it = m_connections.begin(); it != m_connections.end(); )
-    if (it->second->closed()) {
+    if (it->second->disconnect()) {
       it = removeConnection(it->second->getSocket(), it++);
     } else {
       ++it;
