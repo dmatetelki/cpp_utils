@@ -1,65 +1,18 @@
-// gpp sslclient_main.cpp -o sslclient -I../include ../src/Logger.cpp ../src/Thread.cpp ../src/Socket.cpp -lpthread ../src/SocketClient.cpp  ../src/Poll.cpp ../src/Connection.cpp ../src/SslConnection.cpp -lssl -lcrypto ../src/TcpConnection.cpp ../src/Addrinfo.cpp
-
-
 #include "Logger.hpp"
 
 #include "Message.hpp"
 #include "SslConnection.hpp"
 #include "SocketClient.hpp"
 
+#include "../test/SimpleMessage.hpp"
+
+#include <unistd.h>
 
 #include <iostream>
 #include <string>
 
 #include <time.h> // nanosleep
 #include <Common.hpp>
-
-
-
-
-class SimpleMessage : public Message
-{
-public:
-
-  SimpleMessage( void *msgParam = 0)
-    : Message(msgParam)
-  {
-    TRACE;
-  }
-
-  bool buildMessage( const void   *msgPart,
-                     const size_t  msgLen )
-  {
-    TRACE;
-    m_buffer = std::string( (const char*) msgPart, msgLen );
-    onMessageReady();
-    return true;
-  }
-
-  void onMessageReady()
-  {
-    TRACE;
-
-    LOG( Logger::INFO, std::string("Got reply from server: ").
-                        append(m_buffer).c_str() );
-
-    *( static_cast<bool*>(m_param) ) = true;
-  }
-
-  Message* clone()
-  {
-    TRACE;
-    return new SimpleMessage(m_param);
-  }
-
-protected:
-
-  size_t getExpectedLength()
-  {
-    TRACE;
-    return 0;
-  }
-};
 
 
 int main(int argc, char* argv[] )

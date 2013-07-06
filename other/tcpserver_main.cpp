@@ -1,6 +1,3 @@
-//  gpp tcpserver_main.cpp  -o server -I../include ../src/Logger.cpp ../src/Socket.cpp -ggdb ../src/SocketServer.cpp ../src/SocketConnection.cpp ../src/Poll.cpp  ../src/TcpConnection.cpp
-
-
 #include "Logger.hpp"
 #include "Common.hpp"
 

@@ -61,9 +61,9 @@ public:
                         ArgParse::STRING );
 
     int argc = 3;
-    char *argv[] = { (char*)"test",
-                     (char*)"-u",
-                     (char*)"username" };
+    const char *argv[] = {  "test",
+                            "-u",
+                            "username" };
 
     argParse.parseArgs(argc, argv);
 
@@ -102,12 +102,12 @@ public:
     argParse.addArgument("-b", "bool",   ArgParse::BOOL);
 
     int argc = 10;
-    char *argv[] = { (char*)"test",
-                     (char*)"-i", (char*)"12",
-                     (char*)"-f", (char*)"12.12",
-                     (char*)"-n",
-                     (char*)"-s", (char*)"forever",
-                     (char*)"-b", (char*)"false" };
+    const char *argv[] = {  "test",
+                            "-i", "12",
+                            "-f", "12.12",
+                            "-n",
+                            "-s", "forever",
+                            "-b", "false" };
 
     argParse.parseArgs(argc, argv);
 

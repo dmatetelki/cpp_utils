@@ -1,6 +1,3 @@
-//  gpp tcpclient_main.cpp -o client -I../include ../src/Logger.cpp ../src/Thread.cpp ../src/Socket.cpp -lpthread ../src/SocketClient.cpp  ../src/Poll.cpp ../src/SocketConnection.cpp ../src/TcpConnection.cpp
-
-
 #include "Logger.hpp"
 #include "Common.hpp"
 
@@ -76,7 +73,6 @@ int main(int argc, char* argv[] )
   Logger::setLogLevel(Logger::FINEST);
 
   bool finished = false;
-
   SimpleMessage msg(&finished);
 
   TcpConnection conn(argv[1], argv[2], &msg);

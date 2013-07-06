@@ -40,7 +40,7 @@ void setUpArgs(ArgParse &argParse)
 }
 
 
-void getArgs( int argc, char* argv[],
+void getArgs( int argc, const char* argv[],
               ArgParse &argParse,
               std::string &host,
               std::string &user,
@@ -61,7 +61,7 @@ void getArgs( int argc, char* argv[],
 }
 
 
-bool checkArgs( int argc, char* argv[],
+bool checkArgs( int argc, const char* argv[],
                 ArgParse &argParse,
                 std::string &host,
                 std::string &user,
@@ -108,7 +108,7 @@ void printResults(std::list<std::string> &results)
 }
 
 
-int main(int argc, char* argv[] )
+int main(int argc, const char* argv[] )
 {
   Logger::createInstance();
   Logger::init(std::cout);
