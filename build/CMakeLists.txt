@@ -12,4 +12,8 @@ include_directories (../include)
 aux_source_directory(../src CPP_UTILS_LIB_SOURCES)
 
 add_library (CppUtils SHARED ${CPP_UTILS_LIB_SOURCES})
-target_link_libraries(CppUtils pthread rt gcov )
+
+add_library( mysqlclient SHARED IMPORTED )
+set_target_properties( mysqlclient PROPERTIES IMPORTED_LOCATION /usr/lib/mysql/libmysqlclient.so )
+
+target_link_libraries(CppUtils pthread rt gcov ssl mysqlclient)
