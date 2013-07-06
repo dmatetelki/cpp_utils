@@ -37,4 +37,4 @@ echo "Linking sslserver_main.o"
 $GCC sslserver_main.o Logger.o SocketServer.o TimerUser.o Timer.o TimedTcpConnection.o TcpConnection.o Socket.o AddrInfo.o Connection.o Thread.o Poll.o SslConnection.o -lpthread -lssl -lrt -o sslserver
 
 echo "Linking mysqlclient_main.o"
-$GCC mysqlclient_main.o Logger.o ArgParse.o ConditionVariable.o ScopedLock.o MysqlClient.o Mutex.o MysqlConnectionPool.o -lrt -lpthread -lmysqlclient -o mysqlclient
+$GCC mysqlclient_main.o Logger.o ArgParse.o ConditionVariable.o ScopedLock.o MysqlClient.o Mutex.o MysqlConnectionPool.o -lrt -lpthread -L/usr/lib/mysql -lmysqlclient -o mysqlclient
