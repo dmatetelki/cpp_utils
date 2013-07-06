@@ -12,16 +12,22 @@ namespace {
     return mutex;
   }
 
+  pthread_mutexattr_t& AttrCtor( pthread_mutexattr_t& attr )
+  {
+    pthread_mutexattr_init( &attr );
+    return attr;
+  }
+
 } // anonym namespace
 
 
 Mutex::Mutex( MutexType type )
-  : m_mutex( MutexCtor( m_mutex ) ) // init with function
+  : m_mutex( MutexCtor( m_mutex ) )
   , m_type( type )
+  , m_attr( AttrCtor( m_attr ) )
 {
   TRACE;
-  if ( type != PTHREAD_MUTEX_DEFAULT ) {
-    pthread_mutexattr_init( &m_attr );
+  if ( (int)type != PTHREAD_MUTEX_DEFAULT ) {
     pthread_mutexattr_settype( &m_attr, type );
     pthread_mutex_init( &m_mutex, &m_attr );
   }
