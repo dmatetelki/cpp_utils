@@ -28,10 +28,10 @@ if(CXXTEST_FOUND)
   test_ObjectPool.hpp
   test_ScopedLock.hpp
   test_Semaphore.hpp
-  test_Singleton_DCLP.hpp
-  test_Singleton_call_once.hpp
+#   test_Singleton_DCLP.hpp
+#   test_Singleton_call_once.hpp
   # test_Singleton.hpp Cannot test private member, Ficture.hpp loads it
-  test_Singleton_meyers.hpp
+#   test_Singleton_meyers.hpp
   test_Thread.hpp
   test_ThreadPool.hpp
 
