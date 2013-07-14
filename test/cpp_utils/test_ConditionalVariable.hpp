@@ -1,7 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
-#include "Mutex.hpp"
-#include "ConditionVariable.hpp"
+#include <cpp_utils/Mutex.hpp>
+#include <cpp_utils/ConditionVariable.hpp>
 
 
 class TestConditionVariable : public CxxTest::TestSuite

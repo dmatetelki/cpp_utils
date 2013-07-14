@@ -4,11 +4,11 @@
 
 #include "Fixture.hpp"
 
-#include "Thread.hpp"
-#include "TcpConnection.hpp"
+#include <cpp_utils/Thread.hpp>
+#include <cpp_utils/TcpConnection.hpp>
 #include "SimpleMessage.hpp"
 
-#include "SocketClient.hpp"
+#include <cpp_utils/SocketClient.hpp>
 
 class TestTcpConnection : public CxxTest::TestSuite
 {

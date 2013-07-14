@@ -1,7 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "Fixture.hpp"
-#include "Common.hpp"
+#include <cpp_utils/Common.hpp>
 
 #include <time.h> // timespec
 

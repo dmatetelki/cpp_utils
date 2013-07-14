@@ -2,7 +2,7 @@
 
 #include "Fixture.hpp"
 
-#include "Connection.hpp"
+#include <cpp_utils/Connection.hpp>
 
 class TestConnection : public CxxTest::TestSuite
 {

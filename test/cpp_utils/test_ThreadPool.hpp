@@ -1,10 +1,11 @@
 #include <cxxtest/TestSuite.h>
 
-#include "Task.hpp"
-#include "Thread.hpp"
-#include "WorkerThread.hpp"
-#include "ThreadPool.hpp"
-#include "Common.hpp"
+#include <cpp_utils/Task.hpp>
+#include <cpp_utils/Thread.hpp>
+#include <cpp_utils/WorkerThread.hpp>
+#include <cpp_utils/ThreadPool.hpp>
+#include <cpp_utils/Common.hpp>
+
 #include "Fixture.hpp"
 
 

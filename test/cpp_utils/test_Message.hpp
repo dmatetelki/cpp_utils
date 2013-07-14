@@ -2,9 +2,9 @@
 
 #include "Fixture.hpp"
 
-#include "Message.hpp"
+#include <cpp_utils/Message.hpp>
 #include "SimpleMessage.hpp"
-#include "Connection.hpp"
+#include <cpp_utils/Connection.hpp>
 
 
 class TestMessage : public CxxTest::TestSuite

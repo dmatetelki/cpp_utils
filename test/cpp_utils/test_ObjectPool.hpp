@@ -2,11 +2,11 @@
 
 #include <unistd.h>
 
-#include "Common.hpp"
+#include <cpp_utils/Common.hpp>
 #include "Fixture.hpp"
 
-#include "ObjectPool.hpp"
-#include "Thread.hpp"
+#include <cpp_utils/ObjectPool.hpp>
+#include <cpp_utils/Thread.hpp>
 
 class TestObjectPool : public CxxTest::TestSuite
 {

@@ -1,6 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
-#include "ScopedLock.hpp"
+#include <cpp_utils/ScopedLock.hpp>
+
 #include "Fixture.hpp"
 
 

@@ -1,7 +1,7 @@
 #ifndef SIMPLEMESSAGE_HPP
 #define SIMPLEMESSAGE_HPP
 
-#include "Message.hpp"
+#include <cpp_utils/Message.hpp>
 
 class SimpleMessage : public Message
 {

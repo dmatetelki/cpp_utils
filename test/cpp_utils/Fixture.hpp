@@ -4,7 +4,7 @@
 #include <cxxtest/TestSuite.h>
 #include <cxxtest/GlobalFixture.h>
 
-#include "Common.hpp"
+#include <cpp_utils/Common.hpp>
 #include <iostream>
 
 class TestFixture : public CxxTest::GlobalFixture

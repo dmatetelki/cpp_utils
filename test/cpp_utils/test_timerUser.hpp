@@ -4,7 +4,7 @@
 
 #define protected public
 
-#include "Timer.hpp"
+#include <cpp_utils/Timer.hpp>
 
 
 class TestTimerUser : public CxxTest::TestSuite

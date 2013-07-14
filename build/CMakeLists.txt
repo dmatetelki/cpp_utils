@@ -8,8 +8,8 @@ set (CXX_FLAGS "-Wall -Wextra -pedantic -Weffc++ -Wshadow "
                "-ggdb -fprofile-arcs -ftest-coverage -std=c++0x")
 add_definitions( ${CXX_FLAGS} )
 
-include_directories (../include)
-aux_source_directory(../src CPP_UTILS_LIB_SOURCES)
+include_directories (../lib/cpp_utils/)
+aux_source_directory(../lib/cpp_utils/ CPP_UTILS_LIB_SOURCES)
 
 add_library (CppUtils SHARED ${CPP_UTILS_LIB_SOURCES})
 

@@ -1,8 +1,8 @@
 #include <cxxtest/TestSuite.h>
 
-#include "Common.hpp"
+#include <cpp_utils/Common.hpp>
 #include "Fixture.hpp"
-#include "Mutex.hpp"
+#include <cpp_utils/Mutex.hpp>
 
 #include <errno.h> // EDEADLK, EPERM, ETIMEDOUT
 

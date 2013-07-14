@@ -1,8 +1,9 @@
 #include <cxxtest/TestSuite.h>
 
-#include "Semaphore.hpp"
-#include "Thread.hpp"
-#include "Common.hpp"
+#include <cpp_utils/Semaphore.hpp>
+#include <cpp_utils/Thread.hpp>
+#include <cpp_utils/Common.hpp>
+
 #include "Fixture.hpp"
 
 class TestSemaphore : public CxxTest::TestSuite

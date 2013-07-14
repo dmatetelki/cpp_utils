@@ -2,7 +2,7 @@
 
 #include "Fixture.hpp"
 
-#include "Timer.hpp"
+#include <cpp_utils/Timer.hpp>
 
 
 class TestTimer : public CxxTest::TestSuite

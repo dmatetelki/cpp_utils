@@ -2,7 +2,7 @@
 
 #include "Fixture.hpp"
 
-#include "StreamConnection.hpp"
+#include <cpp_utils/StreamConnection.hpp>
 
 class TestStreamConnection : public CxxTest::TestSuite
 {

@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 
-#include "Common.hpp"
+#include <cpp_utils/Common.hpp>
 #include "Fixture.hpp"
 
 

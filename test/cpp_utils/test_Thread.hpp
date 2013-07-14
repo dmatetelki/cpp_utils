@@ -2,10 +2,10 @@
 
 #include "Fixture.hpp"
 
-#include "Thread.hpp"
-#include "Common.hpp"
-#include "Mutex.hpp"
-#include "ScopedLock.hpp"
+#include <cpp_utils/Thread.hpp>
+#include <cpp_utils/Common.hpp>
+#include <cpp_utils/Mutex.hpp>
+#include <cpp_utils/Semaphore.hpp>
 
 #include <stdlib.h> // malloc
 #include <signal.h> // SIGINT
