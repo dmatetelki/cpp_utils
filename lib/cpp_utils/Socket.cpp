@@ -108,6 +108,7 @@ bool Socket::bind(struct addrinfo *servinfo )
   if (servinfo == 0)
     return false;
 
+  /// @bug Not error message on quick re-bind error.
   if (::bind(m_socket, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
     LOG_BEGIN(Logger::ERR)
       LOG_PROP("Error message", strerror(errno))
@@ -132,16 +133,11 @@ bool Socket::listen(const int maxPendingQueueLen)
 }
 
 
-bool Socket::accept(int client_socket)
+bool Socket::accept(int& client_socket)
 {
   TRACE;
   sockaddr clientAddr;
   socklen_t clientAddrLen;
-
-  /// @bug This needs to be investigated ASAP: if the m_socket is not used before accept, it fails.
-  LOG_BEGIN(Logger::INFO)
-    LOG_SPROP(m_socket)
-  LOG_END("Accept mystery.");
 
   client_socket = ::accept( m_socket, &clientAddr, &clientAddrLen ) ;
   if ( client_socket == -1 ) {

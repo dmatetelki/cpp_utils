@@ -117,28 +117,35 @@ void Poll::handleClient( const int socket )
 
 void Poll::removeTimeoutedConnections()
 {
-  TRACE;
-
-  if (m_connections.empty())
-    return;
-
-  ConnectionMap::iterator it;
-  for (it = m_connections.begin(); it != m_connections.end(); )
-    if (it->second->disconnect()) {
-      it = removeConnection(it->second->getSocket(), it++);
-    } else {
-      ++it;
-    }
+//   TRACE;
+//
+//   if (m_connections.empty())
+//     return;
+//
+//   ConnectionMap::iterator it;
+//   for (it = m_connections.begin(); it != m_connections.end(); )
+//
+//     /// @bug pull up closed() from TcpConnection to StreamConnection?
+//     if (it->second->closed()) {
+//       it = removeConnection(it->second->getSocket(), it);
+//     } else {
+//       ++it;
+//     }
 }
 
 
-Poll::ConnectionMap::iterator Poll::removeConnection(int socket, ConnectionMap::iterator it)
+Poll::ConnectionMap::iterator Poll::removeConnection(int socket, std::map< int, StreamConnection* >::iterator it)
 {
   TRACE;
 
+  ConnectionMap::iterator next = it;
+  next++;
+
   removeFd(socket);
   delete it->second;
-  return m_connections.erase(it);
+  m_connections.erase(it);
+
+  return next;
 }
 
 
