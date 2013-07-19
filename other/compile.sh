@@ -1,12 +1,15 @@
 #!/bin/bash
 
-INCLUDE_DIR="../include"
+WORKING_DIR=`pwd`
+
+INCLUDE_DIR="$WORKING_DIR/../lib"
+LIB_DIR=/home/denes/projects/cpp_utils/cpp_utils/build
 GCC_OPTIONS="-Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-qual -ggdb -Weffc++ -std=c++0x"
-GCC="/usr/lib/colorgcc/bin/g++"
+GCC="g++"
 
-BUILD_DIR="tmp/"
+BUILD_DIR="$WORKING_DIR/tmp"
 
-for SRC_FILE in $(ls ../src/*.cpp)
+for SRC_FILE in $(ls $INCLUDE_DIR/cpp_utils/*.cpp)
 do
   echo "Compiling $SRC_FILE"
   $GCC -c $SRC_FILE -I$INCLUDE_DIR $GCC_OPTIONS
@@ -25,16 +28,16 @@ cd $BUILD_DIR
 
 
 echo "Linking tcpclient_main.o"
-$GCC tcpclient_main.o Logger.o SocketClient.o TcpConnection.o Socket.o AddrInfo.o Connection.o Thread.o Poll.o -lpthread -o tcpclient
+$GCC tcpclient_main.o -L$LIB_DIR -lCppUtils -lpthread -o tcpclient
 
 echo "Linking tcpserver_main.o"
-$GCC tcpserver_main.o Logger.o SocketServer.o TcpConnection.o Socket.o AddrInfo.o Connection.o Thread.o Poll.o -lpthread -o tcpserver
+$GCC tcpserver_main.o -L$LIB_DIR -lCppUtils -lpthread -o tcpserver
 
 echo "Linking sslclient_main.o"
-$GCC sslclient_main.o Logger.o SocketClient.o TimerUser.o Timer.o TimedTcpConnection.o TcpConnection.o Socket.o AddrInfo.o Connection.o Thread.o Poll.o SslConnection.o -lpthread -lssl -lrt -o sslclient
+$GCC sslclient_main.o -L$LIB_DIR -lCppUtils -lpthread -lssl -lrt -o sslclient
 
 echo "Linking sslserver_main.o"
-$GCC sslserver_main.o Logger.o SocketServer.o TimerUser.o Timer.o TimedTcpConnection.o TcpConnection.o Socket.o AddrInfo.o Connection.o Thread.o Poll.o SslConnection.o -lpthread -lssl -lrt -o sslserver
+$GCC sslserver_main.o -L$LIB_DIR -lCppUtils -lpthread -lssl -lrt -o sslserver
 
 echo "Linking mysqlclient_main.o"
-$GCC mysqlclient_main.o Logger.o ArgParse.o ConditionVariable.o ScopedLock.o MysqlClient.o Mutex.o MysqlConnectionPool.o -lrt -lpthread -L/usr/lib/mysql -lmysqlclient -o mysqlclient
+$GCC mysqlclient_main.o -L$LIB_DIR -lCppUtils -lrt -lpthread -L/usr/lib/mysql -lmysqlclient -o mysqlclient
