@@ -1,10 +1,10 @@
-#include "Logger.hpp"
+#include <cpp_utils/Logger.hpp>
 
-#include "Message.hpp"
-#include "SslConnection.hpp"
-#include "SocketClient.hpp"
+#include <cpp_utils/Message.hpp>
+#include <cpp_utils/SslConnection.hpp>
+#include <cpp_utils/SocketClient.hpp>
 
-#include "../test/SimpleMessage.hpp"
+#include "../test/cpp_utils/SimpleMessage.hpp"
 
 #include <unistd.h>
 
@@ -12,7 +12,8 @@
 #include <string>
 
 #include <time.h> // nanosleep
-#include <Common.hpp>
+
+// #include <Common.hpp>
 
 
 int main(int argc, char* argv[] )

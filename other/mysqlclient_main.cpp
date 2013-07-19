@@ -1,12 +1,12 @@
 // g++ mysqlclient_main.cpp src/Logger.cpp src/MysqlClient.cpp  src/ArgParse.cpp -I./include -lmysqlclient
 
 
-#include "Logger.hpp"
-#include "Common.hpp"
+#include <cpp_utils/Logger.hpp>
+#include <cpp_utils/Common.hpp>
 
-#include "ArgParse.hpp"
-#include "MysqlClient.hpp"
-#include "MysqlConnectionPool.hpp"
+#include <cpp_utils/ArgParse.hpp>
+#include <cpp_utils/MysqlClient.hpp>
+#include <cpp_utils/MysqlConnectionPool.hpp>
 
 #include <string>
 #include <list>
