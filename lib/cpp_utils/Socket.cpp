@@ -136,12 +136,7 @@ bool Socket::accept(int client_socket)
 {
   TRACE;
   sockaddr clientAddr;
-  socklen_t clientAddrLen;
-
-  /// @bug This needs to be investigated ASAP: if the m_socket is not used before accept, it fails.
-  LOG_BEGIN(Logger::INFO)
-    LOG_SPROP(m_socket)
-  LOG_END("Accept mystery.");
+  socklen_t clientAddrLen = sizeof(clientAddr);
 
   client_socket = ::accept( m_socket, &clientAddr, &clientAddrLen ) ;
   if ( client_socket == -1 ) {
