@@ -3,6 +3,7 @@ project (CPP_UTILS_LIB)
 
 add_subdirectory (build)
 add_subdirectory (test EXCLUDE_FROM_ALL)
+add_subdirectory (other EXCLUDE_FROM_ALL)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)

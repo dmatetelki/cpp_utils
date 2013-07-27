@@ -106,7 +106,7 @@ bool SslConnection::listen( const int maxPendingQueueLen )
 }
 
 
-bool SslConnection::accept(int client_socket)
+bool SslConnection::accept( int& client_socket )
 {
   TRACE;
 

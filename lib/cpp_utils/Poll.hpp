@@ -38,7 +38,7 @@ private:
   Poll(const Poll&);
   Poll& operator=(const Poll&);
 
-  typedef typename std::map< int, StreamConnection* > ConnectionMap;
+  typedef std::map< int, StreamConnection* > ConnectionMap;
 
   // can be overriden: behaviour alters in server/client
   virtual void removeTimeoutedConnections();
