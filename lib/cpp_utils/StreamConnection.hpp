@@ -4,7 +4,7 @@
 
 #include "Connection.hpp"
 
-#include "string"
+#include <string>
 
 class StreamConnection : public Connection
 {
