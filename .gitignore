@@ -29,8 +29,8 @@ test/testCppUtils.out
 html/*
 
 # standalone binaries
-other/client
-other/server
+other/tcpclient
+other/tcpserver
 other/sslclient
 other/sslserver
 

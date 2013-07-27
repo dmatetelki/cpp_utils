@@ -6,6 +6,7 @@
 #include <string>
 #include <list>
 
+/// @todo shall inherit connection?
 
 /// @note Call init/destroy before/after usage
 class MysqlClient

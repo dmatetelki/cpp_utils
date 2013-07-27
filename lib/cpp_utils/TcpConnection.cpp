@@ -49,6 +49,11 @@ bool TcpConnection::connect()
 {
   TRACE;
 
+  if (m_state == OPEN) {
+    LOG(Logger::ERR, "Connection is open already.");
+    return false;
+  }
+
   AddrInfo addrInfo;
   if (!addrInfo.getHostInfo(m_host, m_port))
     return false;
@@ -76,6 +81,11 @@ bool TcpConnection::bind()
 {
   TRACE;
 
+  if (m_state == OPEN) {
+    LOG(Logger::ERR, "Connection is open already.");
+    return false;
+  }
+
   AddrInfo addrInfo;
   if (!addrInfo.getHostInfo(m_host, m_port))
     return false;
@@ -100,6 +110,11 @@ bool TcpConnection::listen( const int maxPendingQueueLen )
 {
   TRACE;
 
+  if (m_state == OPEN) {
+    LOG(Logger::ERR, "Connection is open already.");
+    return false;
+  }
+
   if (m_socket.listen(maxPendingQueueLen)) {
     m_state = OPEN;
     return true;
@@ -112,6 +127,9 @@ bool TcpConnection::listen( const int maxPendingQueueLen )
 bool TcpConnection::accept(int& client_socket)
 {
   TRACE;
+  if (m_state == CLOSED)
+    return false;
+
   return m_socket.accept(client_socket);
 }
 
@@ -119,6 +137,9 @@ bool TcpConnection::accept(int& client_socket)
 bool TcpConnection::disconnect()
 {
   TRACE;
+  if (m_state == CLOSED)
+    return false;
+
   m_state = CLOSED;
   return m_socket.closeSocket();
 }
@@ -127,6 +148,9 @@ bool TcpConnection::disconnect()
 bool TcpConnection::send( const void* message, const size_t length )
 {
   TRACE;
+  if (m_state == CLOSED)
+    return false;
+
   return m_socket.send( message, length );
 }
 
@@ -134,6 +158,9 @@ bool TcpConnection::send( const void* message, const size_t length )
 bool TcpConnection::receive()
 {
   TRACE;
+
+  if (m_state == CLOSED)
+    return false;
 
   ssize_t length;
   if (!m_socket.receive(m_buffer, m_bufferLength, &length))
@@ -202,7 +229,7 @@ TcpConnection::TcpConnection (  const int      socket,
   , m_message(message)
   , m_buffer(0)
   , m_bufferLength(bufferLength)
-  , m_state(OPEN)
+  , m_state(OPEN)  /// @todo can clone only open ones?
 {
   TRACE;
 
