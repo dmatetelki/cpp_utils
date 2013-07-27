@@ -65,13 +65,6 @@ bool Socket::closeSocket()
 {
   TRACE;
 
-  if (shutdown(m_socket, SHUT_RDWR) == -1) {
-    LOG_BEGIN(Logger::ERR)
-      LOG_PROP("Error message", strerror(errno))
-    LOG_END("Could not shutdown socket.");
-    return false;
-  }
-
   if (close(m_socket) == -1) {
     LOG_BEGIN(Logger::ERR)
       LOG_PROP("Error message", strerror(errno))
