@@ -1,5 +1,5 @@
 
-set(CMAKE_CXX_COMPILER "/usr/lib/colorgcc/bin/g++")
+set(CMAKE_CXX_COMPILER "/usr/bin/g++-4.7")
 
 set (CXX_FLAGS "-Wall -Wextra -pedantic -Weffc++ -Wshadow "
                "-Wpointer-arith -Wcast-qual "

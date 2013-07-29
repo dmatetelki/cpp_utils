@@ -1,7 +1,14 @@
 cmake_minimum_required (VERSION 2.6)
 project (CPP_UTILS_LIB)
 
-add_subdirectory (build)
+set(CMAKE_CXX_COMPILER "/usr/bin/g++-4.7")
+
+set (CXX_FLAGS "-Wall -Wextra -pedantic -Weffc++ -Wshadow "
+               "-Wpointer-arith -Wcast-qual "
+               "-ggdb -fprofile-arcs -ftest-coverage -std=c++0x")
+add_definitions( ${CXX_FLAGS} )
+
+add_subdirectory (lib)
 add_subdirectory (test EXCLUDE_FROM_ALL)
 add_subdirectory (other EXCLUDE_FROM_ALL)
 
