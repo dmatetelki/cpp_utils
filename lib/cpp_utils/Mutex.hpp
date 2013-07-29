@@ -15,7 +15,7 @@ public:
     Default = PTHREAD_MUTEX_DEFAULT // equals normal
   };
 
-  Mutex(MutexType type = MutexType::Default);
+  Mutex(MutexType type = Default);
   ~Mutex();
 
   MutexType getType() const { return m_type; }
