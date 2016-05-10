@@ -27,7 +27,7 @@ bool SocketServer::start()
   if ( !m_connection->bind() )
     return false;
 
-  if ( m_connection->listen( m_maxPendingQueueLen ) == -1 ) {
+  if ( m_connection->listen( m_maxPendingQueueLen ) == false ) {
     return false;
   }
 

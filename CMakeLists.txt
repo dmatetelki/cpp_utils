@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (CPP_UTILS_LIB)
 
-set(CMAKE_CXX_COMPILER "/usr/bin/g++-4.7")
+set(CMAKE_CXX_COMPILER "/usr/bin/g++-5.1.0")
 
 set (CXX_FLAGS "-Wall -Wextra -pedantic -Weffc++ -Wshadow "
                "-Wpointer-arith -Wcast-qual "
