@@ -1,4 +1,6 @@
-//  gpp sslserver_main.cpp  -o sslserver -I../include ../src/Logger.cpp ../src/Socket.cpp -ggdb ../src/SocketServer.cpp ../src/Connection.cpp ../src/Poll.cpp  ../src/TcpConnection.cpp ../src/SslConnection.cpp  -lssl -lcrypto  ../src/Addrinfo.cpp
+// run with
+// ./sslserver  127.0.0.1 9001  ./cert.pem ./key.pem
+
 
 #include <cpp_utils/Logger.hpp>
 #include <cpp_utils/Common.hpp>

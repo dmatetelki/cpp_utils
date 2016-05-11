@@ -29,7 +29,9 @@ void SslConnection::destroy()
 SslConnection::SslConnection (  const std::string   host,
                                 const std::string   port,
                                 Message            *message,
-                                const size_t        bufferLength )
+                                const size_t        bufferLength,
+                                bool                bidirectional_shutdown
+                             )
   : StreamConnection(host, port)
   , m_timedTcpConnection(new TimedTcpConnection(host, port, message, 0))
   , m_message(message)
@@ -37,6 +39,7 @@ SslConnection::SslConnection (  const std::string   host,
   , m_bufferLength(bufferLength)
   , m_sslHandle(0)
   , m_sslContext(0)
+  , m_bidirectional_shutdown(bidirectional_shutdown)
 {
   TRACE;
   m_buffer = new unsigned char[m_bufferLength];
@@ -131,25 +134,33 @@ bool SslConnection::disconnect()
 {
   TRACE;
 
-  /// @note do I have to call this?
-  if ( m_timedTcpConnection->getSocket() != -1 )
-    m_timedTcpConnection->disconnect();
-
   if ( m_sslHandle == 0 || m_sslContext == 0 )
     return false;
 
   int ret = SSL_shutdown(m_sslHandle);
   if ( ret == 0 ) {
-    LOG( Logger::INFO, "\"close notify\" alert was sent and the peer's "
-                       "\"close notify\" alert was received.");
+    LOG( Logger::INFO, "\"close notify\" alert was sent, "
+                       "shutdown is not yet finished");
+    if (m_bidirectional_shutdown) {
+      int ret2 = SSL_shutdown(m_sslHandle);
+      if ( ret2 == 0 ) {
+        LOG( Logger::ERR, "Shutdown is not finished, giving up.");
+      } else if ( ret2 == 1 ) {
+        LOG( Logger::INFO, "Peer's \"close notify\" alert reply was received.");
+      } else if ( ret2 < 0 ) {
+        LOG (Logger::INFO, "No reply, the peer probably closed the underlying connection." );
+      }
+    }
   }
   else if (ret == 1 ) {
-    LOG( Logger::WARNING, "The shutdown is not yet finished. "
-                          "Calling SSL_shutdown() for a second time...");
-    SSL_shutdown(m_sslHandle);
+    LOG( Logger::INFO, "\"close notify\" alert was sent"
+                       " and the peer's \"close notify\" alert was received.");
   }
-  else if ( ret == 2 ) {
-    LOG (Logger::ERR, getSslError("The shutdown was not successful. ").c_str() );
+  else if ( ret < 0 ) {
+    LOG (Logger::ERR, (getSslError("The shutdown was not successful. ")
+      + "system error: " + std::string(strerror(errno))).c_str()
+
+    );
   }
 
   /// @note I have to check the ref count?! This stinks
@@ -161,6 +172,10 @@ bool SslConnection::disconnect()
 
   m_sslHandle = 0;
   m_sslContext = 0;
+
+  /// @note do I have to call this?
+  if ( m_timedTcpConnection->getSocket() != -1 )
+    m_timedTcpConnection->disconnect();
 
   return true;
 }
@@ -207,10 +222,10 @@ bool SslConnection::send( const void* message, const size_t length )
   if ( ret > 0 )
     return true;
 
-  unsigned long sslErrNo = ERR_peek_error();
+  unsigned long sslErrNo = ERR_get_error();
   if ( ret == 0 && sslErrNo == SSL_ERROR_ZERO_RETURN ) {
-    LOG( Logger::INFO, "Underlying connection has been closed.");
-    return true;
+    LOG( Logger::INFO, "SSL connection has been closed, cannot write.");
+    return false;
   }
 
   LOG (Logger::ERR, getSslError("SSL write failed. ").c_str() );
@@ -222,17 +237,21 @@ bool SslConnection::receive()
 {
   TRACE;
 
-  int length = SSL_read(m_sslHandle, m_buffer, m_bufferLength);
+  int ret = SSL_read(m_sslHandle, m_buffer, m_bufferLength);
 
-  if ( length > 0 )
-    return m_message->buildMessage( (void*)m_buffer, (size_t)length);
+  if ( ret > 0 )
+    return m_message->buildMessage( (void*)m_buffer, (size_t)ret);
 
-  if ( length == 0 ) {
-    LOG( Logger::INFO, "SSL connection has been closed.");
+  unsigned long sslErrNo = ERR_get_error();
+  if ( ret == 0  && (sslErrNo == SSL_ERROR_ZERO_RETURN ||
+                     sslErrNo == SSL_ERROR_NONE) ) {
+    LOG( Logger::INFO, "SSL connection has been closed, cannot read.");
     return false;
   }
 
-  LOG (Logger::ERR, getSslError("SSL read failed. ").c_str() );
+  LOG (Logger::ERR, (getSslError("The shutdown was not successful. ")
+      + "system error: " + std::string(strerror(errno))).c_str() );
+
   return false;
 }
 
@@ -251,9 +270,11 @@ int SslConnection::getSocket() const
 }
 
 
-SslConnection::SslConnection(TimedTcpConnection *timedTcpConnection,
-                             Message *message,
-                             const size_t bufferLength)
+SslConnection::SslConnection(TimedTcpConnection* timedTcpConnection,
+                             Message*            message,
+                             const size_t        bufferLength,
+                             bool                bidirectional_shutdown
+                            )
   : StreamConnection("invalid", "invalid")
   , m_timedTcpConnection(timedTcpConnection)
   , m_message(message)
@@ -261,6 +282,7 @@ SslConnection::SslConnection(TimedTcpConnection *timedTcpConnection,
   , m_bufferLength(bufferLength)
   , m_sslHandle(0)
   , m_sslContext(0)
+  , m_bidirectional_shutdown(bidirectional_shutdown)
 {
   TRACE;
 

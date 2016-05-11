@@ -21,7 +21,8 @@ public:
   SslConnection ( const std::string   host,
                   const std::string   port,
                   Message            *message,
-                  const size_t        bufferLength = 1024 );
+                  const size_t        bufferLength = 1024,
+                  bool                bidirectional_shutdown = true );
 
   virtual ~SslConnection();
 
@@ -46,9 +47,11 @@ public:
 
 private:
 
-  SslConnection ( TimedTcpConnection *timedTcpConnection,
-                  Message       *message,
-                  const size_t   bufferLength = 1024 );
+  SslConnection ( TimedTcpConnection* timedTcpConnection,
+                  Message*            message,
+                  const size_t        bufferLength = 1024,
+                  bool                bidirectional_shutdown = true
+                );
 
   SslConnection(const SslConnection&);
   SslConnection& operator=(const SslConnection&);
@@ -67,6 +70,7 @@ private:
   size_t m_bufferLength;
   SSL *m_sslHandle;
   SSL_CTX *m_sslContext;
+  bool m_bidirectional_shutdown;
 };
 
 
