@@ -186,11 +186,16 @@ bool SslConnection::initServerContext( const std::string certificateFile,
 {
   TRACE;
 
-  m_sslContext = SSL_CTX_new (SSLv3_method ());
+  m_sslContext = SSL_CTX_new (TLSv1_2_server_method ());
   if ( m_sslContext == NULL ) {
     LOG (Logger::ERR, getSslError("Creating SSL context failed. ").c_str() );
     return false;
   }
+
+  SSL_CTX_set_options(m_sslContext, SSL_OP_NO_SSLv2);
+  SSL_CTX_set_options(m_sslContext, SSL_OP_NO_SSLv3);
+  SSL_CTX_set_options(m_sslContext, SSL_OP_NO_TLSv1);
+  SSL_CTX_set_options(m_sslContext, SSL_OP_NO_TLSv1_1);
 
   if ( !loadCertificates(certificateFile, privateKeyFile) )
     return false;
@@ -203,11 +208,16 @@ bool SslConnection::initClientContext()
 {
   TRACE;
 
-  m_sslContext = SSL_CTX_new (SSLv3_method ());
+  m_sslContext = SSL_CTX_new (TLSv1_2_client_method ());
   if ( m_sslContext == NULL ) {
     LOG (Logger::ERR, getSslError("Creating SSL context failed. ").c_str() );
     return false;
   }
+
+  SSL_CTX_set_options(m_sslContext, SSL_OP_NO_SSLv2);
+  SSL_CTX_set_options(m_sslContext, SSL_OP_NO_SSLv3);
+  SSL_CTX_set_options(m_sslContext, SSL_OP_NO_TLSv1);
+  SSL_CTX_set_options(m_sslContext, SSL_OP_NO_TLSv1_1);
 
   return initHandle();
 }
