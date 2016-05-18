@@ -4,11 +4,8 @@
 
 #include "PrintMessage.hpp"
 
-#include <unistd.h>
 #include <iostream>
 #include <string>
-
-#include <time.h> // nanosleep
 
 
 int main(int argc, char* argv[] )
@@ -23,22 +20,16 @@ int main(int argc, char* argv[] )
   Logger::setLogLevel(Logger::FINEST);
   SslConnection::init();
 
-  bool finished = false;
-
-  PrintMessage msg(&finished);
+  PrintMessage msg;
   SslConnection conn(argv[1], argv[2], &msg);
   conn.initClientContext();
   SocketClient socketClient(&conn);
-
   if ( !socketClient.connect() ) {
     LOG_STATIC( Logger::ERR, "Couldn't connect to server, exiting..." );
     SslConnection::destroy();
     Logger::destroy();
     return 1;
   }
-
-  // wait for thread creation
-  sleep(1);
 
   // send message to server
   std::string msg1(argv[3]);
@@ -48,11 +39,7 @@ int main(int argc, char* argv[] )
     Logger::destroy();
     return 1;
   }
-
-  // wait for the complate &handled reply
-  struct timespec tm = {0,1000};
-  while ( !finished && socketClient.isPolling() )
-    nanosleep(&tm, &tm) ;
+  msg.waitForReady();
 
   socketClient.disconnect();
   SslConnection::destroy();

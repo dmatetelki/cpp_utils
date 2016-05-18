@@ -8,9 +8,6 @@
 #include <iostream>
 #include <string>
 
-#include <time.h> // nanosleep
-#include <unistd.h> // sleep
-
 
 int main(int argc, char* argv[] )
 {
@@ -24,9 +21,7 @@ int main(int argc, char* argv[] )
   Logger::init(std::cout);
   Logger::setLogLevel(Logger::FINEST);
 
-  bool finished = false;
-  PrintMessage msg(&finished);
-
+  PrintMessage msg;
   TcpConnection conn(argv[1], argv[2], &msg);
   SocketClient socketClient(&conn);
 
@@ -36,9 +31,6 @@ int main(int argc, char* argv[] )
     return 1;
   }
 
-  // wait for thread creation
-  sleep(1);
-
   // send message to server
   std::string msg1(argv[3]);
   if ( !socketClient.send( msg1.c_str(), msg1.length()) ) {
@@ -46,11 +38,7 @@ int main(int argc, char* argv[] )
     Logger::destroy();
     return 1;
   }
-
-  // wait for the complate &handled reply
-  struct timespec tm = {0,1000};
-  while ( !finished && socketClient.isPolling() )
-    nanosleep(&tm, &tm) ;
+  msg.waitForReady();
 
   socketClient.disconnect();
   Logger::destroy();
