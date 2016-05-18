@@ -33,7 +33,7 @@ public:
     TRACE;
   }
 
-  void push(const T value)
+  void push(const T& value)
   {
     TRACE;
     std::unique_lock<std::mutex> lock(m_mutex);
