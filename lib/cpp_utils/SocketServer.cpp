@@ -40,5 +40,4 @@ void SocketServer::stop()
 {
   TRACE;
   m_poll.stopPolling();
-  m_connection->disconnect();
 }
