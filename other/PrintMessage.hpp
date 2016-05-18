@@ -1,13 +1,14 @@
-#ifndef SIMPLEMESSAGE_HPP
-#define SIMPLEMESSAGE_HPP
+#ifndef PRINT_MESSAGE_HPP
+#define PRINT_MESSAGE_HPP
 
 #include <cpp_utils/Message.hpp>
 
-class SimpleMessage : public Message
+/// @brief prints the received message
+class PrintMessage : public Message
 {
 public:
 
-  SimpleMessage( void *msgParam = 0)
+  PrintMessage( void *msgParam = 0)
     : Message(msgParam)
   {
     TRACE;
@@ -18,6 +19,8 @@ public:
   {
     TRACE;
     m_buffer = std::string( (const char*) msgPart, msgLen );
+
+    // not using getExpectedLength
     onMessageReady();
     return true;
   }
@@ -28,12 +31,12 @@ public:
 
     LOG_BEGIN(Logger::INFO)
       LOG_PROP("message", m_buffer)
-    LOG_END("Got reply from server.");
+      LOG_PROP("host", m_connection->getHost())
+      LOG_PROP("port", m_connection->getPort())
+    LOG_END("Got message.");
 
+    // threat m_params as "isready" flag
     *( static_cast<bool*>(m_param) ) = true;
-
-    if (m_connection != 0)
-      m_connection->send(m_buffer.c_str(), m_buffer.length());
 
     m_buffer.clear();
   }
@@ -41,7 +44,7 @@ public:
   Message* clone()
   {
     TRACE;
-    return new SimpleMessage(m_param);
+    return new PrintMessage(m_param);
   }
 
   std::string getBuffer()
@@ -60,4 +63,4 @@ protected:
 
 };
 
-#endif // SIMPLEMESSAGE_HPP
+#endif // PRINT_MESSAGE_HPP

@@ -4,67 +4,15 @@
 
 #include <cpp_utils/Logger.hpp>
 #include <cpp_utils/Common.hpp>
-
-#include <cpp_utils/Message.hpp>
 #include <cpp_utils/SslConnection.hpp>
 #include <cpp_utils/SocketServer.hpp>
 
+#include "EchoMessage.hpp"
 
 #include <iostream>
 #include <string>
 
 #include <signal.h>
-
-class EchoMessage : public Message
-{
-public:
-
-  EchoMessage( void *msgParam = 0)
-    : Message(msgParam)
-  {
-    TRACE;
-  }
-
-  bool buildMessage( const void   *msgPart,
-                     const size_t  msgLen )
-  {
-    TRACE;
-    m_buffer = std::string( (const char*) msgPart, msgLen );
-    onMessageReady();
-    return true;
-  }
-
-  void onMessageReady()
-  {
-    TRACE;
-
-    LOG( Logger::INFO, std::string("Got message: \"").
-                        append(m_buffer).append("\" from: ").
-                        append(m_connection->getHost().append(":").
-                        append(TToStr(m_connection->getPort())) ).c_str() );
-
-    std::string reply("Got your message, ");
-    reply.append(m_connection->getHost()).append(":").
-          append(TToStr(m_connection->getPort())).
-          append(" \"").append(m_buffer).append("\"");
-
-    m_connection->send( reply.c_str(), reply.length() );
-  }
-
-  Message* clone()
-  {
-    TRACE;
-    return new EchoMessage(m_param);
-  }
-
-protected:
-
-  size_t getExpectedLength()
-  {
-    TRACE;
-    return 0;
-  }
-};
 
 
 SocketServer *socketServer;

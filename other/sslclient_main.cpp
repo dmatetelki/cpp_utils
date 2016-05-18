@@ -1,19 +1,14 @@
 #include <cpp_utils/Logger.hpp>
-
-#include <cpp_utils/Message.hpp>
 #include <cpp_utils/SslConnection.hpp>
 #include <cpp_utils/SocketClient.hpp>
 
-#include "../test/cpp_utils/SimpleMessage.hpp"
+#include "PrintMessage.hpp"
 
 #include <unistd.h>
-
 #include <iostream>
 #include <string>
 
 #include <time.h> // nanosleep
-
-// #include <Common.hpp>
 
 
 int main(int argc, char* argv[] )
@@ -30,7 +25,7 @@ int main(int argc, char* argv[] )
 
   bool finished = false;
 
-  SimpleMessage msg(&finished);
+  PrintMessage msg(&finished);
   SslConnection conn(argv[1], argv[2], &msg);
   conn.initClientContext();
   SocketClient socketClient(&conn);
@@ -59,7 +54,7 @@ int main(int argc, char* argv[] )
   while ( !finished && socketClient.isPolling() )
     nanosleep(&tm, &tm) ;
 
-//   socketClient.disconnect();
+  socketClient.disconnect();
   SslConnection::destroy();
   Logger::destroy();
   return 0;

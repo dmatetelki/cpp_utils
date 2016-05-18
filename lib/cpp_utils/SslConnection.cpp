@@ -249,8 +249,16 @@ bool SslConnection::receive()
 
   int ret = SSL_read(m_sslHandle, m_buffer, m_bufferLength);
 
-  if ( ret > 0 )
+  if ( ret > 0 ) {
+    LOG_BEGIN(Logger::INFO)
+      LOG_PROP("Host", m_timedTcpConnection->getHost())
+      LOG_PROP("Port", m_timedTcpConnection->getPort())
+      LOG_PROP("Socket", m_timedTcpConnection->getSocket())
+      LOG_PROP("Bytes", ret)
+    LOG_END("Received message from peer.");
+
     return m_message->buildMessage( (void*)m_buffer, (size_t)ret);
+  }
 
   unsigned long sslErrNo = ERR_get_error();
   if ( ret == 0  && (sslErrNo == SSL_ERROR_ZERO_RETURN ||

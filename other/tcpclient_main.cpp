@@ -1,63 +1,15 @@
 #include <cpp_utils/Logger.hpp>
 #include <cpp_utils/Common.hpp>
-
-#include <cpp_utils/Message.hpp>
 #include <cpp_utils/TcpConnection.hpp>
 #include <cpp_utils/SocketClient.hpp>
 
+#include "PrintMessage.hpp"
 
 #include <iostream>
 #include <string>
 
 #include <time.h> // nanosleep
 #include <unistd.h> // sleep
-
-
-
-
-class SimpleMessage : public Message
-{
-public:
-
-  SimpleMessage( void *msgParam = 0)
-    : Message(msgParam)
-  {
-    TRACE;
-  }
-
-  bool buildMessage( const void   *msgPart,
-                     const size_t  msgLen )
-  {
-    TRACE;
-    m_buffer = std::string( (const char*) msgPart, msgLen );
-    onMessageReady();
-    return true;
-  }
-
-  void onMessageReady()
-  {
-    TRACE;
-
-    LOG( Logger::INFO, std::string("Got reply from server: ").
-                        append(m_buffer).c_str() );
-
-    *( static_cast<bool*>(m_param) ) = true;
-  }
-
-  Message* clone()
-  {
-    TRACE;
-    return new SimpleMessage(m_param);
-  }
-
-protected:
-
-  size_t getExpectedLength()
-  {
-    TRACE;
-    return 0;
-  }
-};
 
 
 int main(int argc, char* argv[] )
@@ -73,7 +25,7 @@ int main(int argc, char* argv[] )
   Logger::setLogLevel(Logger::FINEST);
 
   bool finished = false;
-  SimpleMessage msg(&finished);
+  PrintMessage msg(&finished);
 
   TcpConnection conn(argv[1], argv[2], &msg);
   SocketClient socketClient(&conn);
