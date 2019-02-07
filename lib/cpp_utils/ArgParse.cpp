@@ -72,7 +72,7 @@ void ArgParse::addArgument(const std::string arg,
 
 
 void ArgParse::parseArgs(int argc,
-                         const char* argv[])
+                         char* argv[])
 {
   std::list<std::string> argList;
   for (int i = 0; i < argc; ++i )
