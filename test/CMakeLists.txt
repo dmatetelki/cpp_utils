@@ -46,7 +46,7 @@ if(CXXTEST_FOUND)
   target_link_libraries(testCppUtils CppUtils gcov)
 endif()
 
-add_custom_target( test
+add_custom_target( cpp_utils_test
                    COMMAND ./tools/run_test.sh ./testCppUtils
                    DEPENDS testCppUtils
 )
